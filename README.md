@@ -42,14 +42,14 @@ docker compose up -d
 This starts a PostgreSQL 17 instance on `localhost:5432` with:
 - user: `postgres`
 - password: `postgres`
-- database: `todo`
+- database: `duilio`
 
 ### 3. Configure environment
 
 `back-end/.env` is pre-configured for the Docker setup above:
 
 ```sh
-DATABASE_URL=postgres://postgres:postgres@localhost:5432/todo
+DATABASE_URL=postgres://postgres:postgres@localhost:5432/duilio
 PORT=3000
 ```
 
@@ -126,6 +126,6 @@ All endpoints require a `Bearer` JWT token in the `Authorization` header except 
 
 | Variable | Default | Description |
 |---|---|---|
-| `DATABASE_URL` | `postgres://postgres:postgres@localhost:5432/todo` | PostgreSQL connection string |
+| `DATABASE_URL` | `postgres://postgres:postgres@localhost:5432/duilio` | PostgreSQL connection string |
 | `PORT` | `3000` | Port the back-end server listens on |
 | `JWT_SECRET` | `super-secret-key` | Secret used to sign JWTs — **change in production** |
