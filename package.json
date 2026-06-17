@@ -1,0 +1,19 @@
+{
+  "name": "duilio",
+  "private": true,
+  "version": "0.0.1",
+  "workspaces": [
+    "back-end",
+    "front-end"
+  ],
+  "scripts": {
+    "dev": "concurrently -n server,client -c blue,green \"npm run dev -w back-end\" \"npm run dev -w front-end\"",
+    "build": "npm run build -w front-end && npm run build -w back-end",
+    "start": "npm run start -w back-end",
+    "migrate": "npm run migrate -w back-end",
+    "generate": "npm run generate -w back-end"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.0"
+  }
+}

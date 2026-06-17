@@ -62,7 +62,7 @@ export async function authRoutes(app: FastifyInstance) {
     const { email, password } = request.body as any
     const existingUser = await getUserByEmail(email)
     if (existingUser) {
-      return reply.code(400).send({ error: 'Bad Request', message: 'User already exists' })
+      return reply.code(400 as any).send({ error: 'Bad Request', message: 'User already exists' })
     }
 
     const passwordHash = await bcrypt.hash(password, 10)
@@ -74,12 +74,12 @@ export async function authRoutes(app: FastifyInstance) {
     const { email, password } = request.body as any
     const user = await getUserByEmail(email)
     if (!user) {
-      return reply.code(401).send({ error: 'Unauthorized', message: 'Invalid credentials' })
+      return reply.code(401 as any).send({ error: 'Unauthorized', message: 'Invalid credentials' })
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.passwordHash)
     if (!isPasswordValid) {
-      return reply.code(401).send({ error: 'Unauthorized', message: 'Invalid credentials' })
+      return reply.code(401 as any).send({ error: 'Unauthorized', message: 'Invalid credentials' })
     }
 
     const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' })

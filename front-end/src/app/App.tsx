@@ -122,10 +122,10 @@ export default function App() {
             Get Started
           </Button>
         </div>
-        <AuthModal 
-          isOpen={isAuthModalOpen} 
-          onClose={() => setIsAuthModalOpen(false)} 
-          onSuccess={handleLoginSuccess} 
+        <AuthModal
+          isOpen={isAuthModalOpen}
+          onClose={() => setIsAuthModalOpen(false)}
+          onSuccess={handleLoginSuccess}
         />
       </div>
     )
@@ -134,7 +134,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-muted/30 p-6 md:p-12 font-sans text-foreground">
       <div className="mx-auto max-w-3xl space-y-8">
-        
+
         {/* Header */}
         <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-xl bg-card p-6 shadow-sm border border-border">
           <div className="flex items-center gap-3">
@@ -143,7 +143,7 @@ export default function App() {
             </div>
             <div>
               <h1 className="text-xl font-semibold tracking-tight text-foreground">Duilio</h1>
-              <p className="text-sm text-muted-foreground">Manage your projects and activities</p>
+              <p className="text-sm text-muted-foreground"></p>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -151,8 +151,8 @@ export default function App() {
               <button
                 onClick={() => setFilterStatus('all')}
                 className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                  filterStatus === 'all' 
-                    ? 'bg-background shadow-sm text-foreground' 
+                  filterStatus === 'all'
+                    ? 'bg-background shadow-sm text-foreground'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
@@ -163,8 +163,8 @@ export default function App() {
                   key={group.value}
                   onClick={() => setFilterStatus(group.value)}
                   className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                    filterStatus === group.value 
-                      ? 'bg-background shadow-sm text-foreground' 
+                    filterStatus === group.value
+                      ? 'bg-background shadow-sm text-foreground'
                       : 'text-muted-foreground hover:text-foreground'
                   }`}
                 >
@@ -196,7 +196,7 @@ export default function App() {
             if (filterStatus !== 'all' && filterStatus !== group.value) return null;
 
             const groupTodos = todos.filter(t => t.status === group.value)
-            
+
             if (groupTodos.length === 0) return null
 
             return (
@@ -207,7 +207,7 @@ export default function App() {
                     {groupTodos.length}
                   </span>
                 </div>
-                
+
                 <div className="grid gap-3">
                   {groupTodos.map(todo => (
                     <TodoCard
@@ -255,10 +255,10 @@ export default function App() {
         allTags={tags}
         onCreateTag={handleCreateTag}
       />
-      <AuthModal 
-        isOpen={isAuthModalOpen} 
-        onClose={() => setIsAuthModalOpen(false)} 
-        onSuccess={handleLoginSuccess} 
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        onSuccess={handleLoginSuccess}
       />
     </div>
   )
