@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "todo-app",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "back-end", "run", "dev"],
+      "port": 3000
+    }
+  ]
+}
