@@ -1,4 +1,4 @@
-# todo-ema
+# Duilio
 
 Single-user, full-stack todo app: React (Vite) front-end, Fastify + Drizzle ORM
 back-end in TypeScript, PostgreSQL storage.

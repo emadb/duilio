@@ -115,7 +115,7 @@ export default function App() {
             </div>
           </div>
           <div className="space-y-2">
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">Welcome Back</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">Duilio</h1>
             <p className="text-muted-foreground">Please login to manage your tasks.</p>
           </div>
           <Button onClick={() => setIsAuthModalOpen(true)} size="lg" className="px-8">
@@ -142,7 +142,7 @@ export default function App() {
               <ListTodo className="h-5 w-5" />
             </div>
             <div>
-              <h1 className="text-xl font-semibold tracking-tight text-foreground">My Tasks</h1>
+              <h1 className="text-xl font-semibold tracking-tight text-foreground">Duilio</h1>
               <p className="text-sm text-muted-foreground">Manage your projects and activities</p>
             </div>
           </div>
