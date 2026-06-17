@@ -7,6 +7,7 @@ import jwt from 'jsonwebtoken'
 import { pool } from './db/client.js'
 import { todoRoutes } from './routes/todos.js'
 import { authRoutes } from './routes/auth.js'
+import { tagRoutes } from './routes/tags.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const FRONTEND_DIST = path.resolve(__dirname, '../../front-end/dist')
@@ -46,6 +47,7 @@ app.addHook('onRequest', async (request, reply) => {
 
 await app.register(authRoutes)
 await app.register(todoRoutes)
+await app.register(tagRoutes)
 
 if (existsSync(FRONTEND_DIST)) {
   await app.register(fastifyStatic, { root: FRONTEND_DIST })

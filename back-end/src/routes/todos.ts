@@ -4,18 +4,29 @@ import { createTodo, deleteTodo, listTodosByUser, updateTodo } from '../reposito
 
 const UUID_PATTERN = '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
 
+const tagShape = {
+  type: 'object',
+  properties: {
+    id: { type: 'string' },
+    name: { type: 'string' },
+    color: { type: 'string' },
+  },
+  required: ['id', 'name', 'color'],
+} as const
+
 const todoProperties = {
   id: { type: 'string' },
   title: { type: 'string' },
   description: { type: 'string' },
   dueDate: { type: ['string', 'null'] },
   status: { type: 'string', enum: [...TODO_STATUSES] },
+  tags: { type: 'array', items: tagShape },
 } as const
 
 const todoResponse = {
   type: 'object',
   properties: todoProperties,
-  required: ['id', 'title', 'description', 'dueDate', 'status'],
+  required: ['id', 'title', 'description', 'dueDate', 'status', 'tags'],
 } as const
 
 const idParams = {
@@ -29,6 +40,7 @@ interface TodoBody {
   description?: string
   dueDate?: string | null
   status?: TodoStatus
+  tagIds?: string[]
 }
 
 function isInvalidDate(dueDate: string | null | undefined): boolean {
@@ -51,6 +63,7 @@ export async function todoRoutes(app: FastifyInstance) {
           description: { type: 'string' },
           dueDate: { type: ['string', 'null'] },
           status: { type: 'string', enum: [...TODO_STATUSES] },
+          tagIds: { type: 'array', items: { type: 'string' } },
         },
         required: ['title'],
         additionalProperties: false,
@@ -63,7 +76,7 @@ export async function todoRoutes(app: FastifyInstance) {
     }
     const todo = await createTodo({
       ...request.body,
-      userId: request.user!.userId
+      userId: request.user!.userId,
     })
     return reply.code(201).send(todo)
   })
@@ -78,6 +91,7 @@ export async function todoRoutes(app: FastifyInstance) {
           description: { type: 'string' },
           dueDate: { type: ['string', 'null'] },
           status: { type: 'string', enum: [...TODO_STATUSES] },
+          tagIds: { type: 'array', items: { type: 'string' } },
         },
         additionalProperties: false,
       },

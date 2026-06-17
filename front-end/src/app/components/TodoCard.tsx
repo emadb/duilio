@@ -3,6 +3,7 @@ import { Calendar, CheckCircle2, Circle, Clock } from "lucide-react"
 import { format } from "date-fns"
 import { Todo } from "../types"
 import { Badge } from "./ui/badge"
+import { getTagColor } from "../constants/tagColors"
 
 interface TodoCardProps {
   todo: Todo
@@ -36,6 +37,23 @@ export function TodoCard({ todo, onClick }: TodoCardProps) {
         <div className="mt-2 flex items-center gap-1.5 text-xs text-zinc-400">
           <Calendar className="h-3.5 w-3.5" />
           <span>{format(new Date(todo.dueDate), "MMM d, yyyy")}</span>
+        </div>
+      )}
+
+      {todo.tags && todo.tags.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-1">
+          {todo.tags.map(tag => {
+            const c = getTagColor(tag.color)
+            return (
+              <Badge
+                key={tag.id}
+                variant="secondary"
+                className={`${c.bg} ${c.text} border-transparent text-xs`}
+              >
+                {tag.name}
+              </Badge>
+            )
+          })}
         </div>
       )}
     </div>

@@ -1,7 +1,7 @@
 import * as React from "react"
 import { Plus, ListTodo, LogOut } from "lucide-react"
 import { toast } from "sonner"
-import { Todo, TodoStatus } from "./types"
+import { Todo, Tag, TodoStatus } from "./types"
 import { api } from "../lib/api"
 import { Button } from "./components/ui/button"
 import { TodoCard } from "./components/TodoCard"
@@ -16,6 +16,7 @@ const STATUS_GROUPS: { value: TodoStatus; label: string }[] = [
 
 export default function App() {
   const [todos, setTodos] = React.useState<Todo[]>([])
+  const [tags, setTags] = React.useState<Tag[]>([])
   const [isLoading, setIsLoading] = React.useState(true)
   const [isModalOpen, setIsModalOpen] = React.useState(false)
   const [isAuthModalOpen, setIsAuthModalOpen] = React.useState(false)
@@ -26,10 +27,12 @@ export default function App() {
   const handleLoginSuccess = () => {
     setIsLoggedIn(true)
     setIsAuthModalOpen(false)
-    // Re-fetch todos after login
-    api.listTodos()
-      .then(setTodos)
-      .catch((err: Error) => toast.error(`Failed to load tasks: ${err.message}`))
+    Promise.all([api.listTodos(), api.listTags()])
+      .then(([fetchedTodos, fetchedTags]) => {
+        setTodos(fetchedTodos)
+        setTags(fetchedTags)
+      })
+      .catch((err: Error) => toast.error(`Failed to load data: ${err.message}`))
       .finally(() => setIsLoading(false))
   }
 
@@ -37,19 +40,23 @@ export default function App() {
     api.setAuthToken(null)
     setIsLoggedIn(false)
     setTodos([])
+    setTags([])
   }
 
   React.useEffect(() => {
     const token = localStorage.getItem('auth_token')
     if (token) {
       setIsLoggedIn(true)
-      api.listTodos()
-        .then(setTodos)
+      Promise.all([api.listTodos(), api.listTags()])
+        .then(([fetchedTodos, fetchedTags]) => {
+          setTodos(fetchedTodos)
+          setTags(fetchedTags)
+        })
         .catch((err: Error) => {
           if (err.message.includes('Unauthorized')) {
             handleLogout()
           } else {
-            toast.error(`Failed to load tasks: ${err.message}`)
+            toast.error(`Failed to load data: ${err.message}`)
           }
         })
         .finally(() => setIsLoading(false))
@@ -81,6 +88,12 @@ export default function App() {
     } catch (err) {
       toast.error(`Failed to save task: ${(err as Error).message}`)
     }
+  }
+
+  const handleCreateTag = async (name: string, color: string): Promise<Tag> => {
+    const newTag = await api.createTag({ name, color })
+    setTags(prev => [...prev, newTag].sort((a, b) => a.name.localeCompare(b.name)))
+    return newTag
   }
 
   const handleDeleteTodo = async (id: string) => {
@@ -239,6 +252,8 @@ export default function App() {
         onSave={handleSaveTodo}
         onDelete={handleDeleteTodo}
         initialData={selectedTodo}
+        allTags={tags}
+        onCreateTag={handleCreateTag}
       />
       <AuthModal 
         isOpen={isAuthModalOpen} 

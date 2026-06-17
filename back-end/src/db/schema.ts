@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm'
-import { check, pgTable, text, timestamp, uuid, foreignKey } from 'drizzle-orm/pg-core'
+import { check, pgTable, text, timestamp, uuid, primaryKey, unique, foreignKey } from 'drizzle-orm/pg-core'
 
 export const TODO_STATUSES = ['todo', 'in-progress', 'done'] as const
 export type TodoStatus = (typeof TODO_STATUSES)[number]
@@ -37,3 +37,38 @@ export const todos = pgTable(
 )
 
 export type TodoRow = typeof todos.$inferSelect
+
+export const tags = pgTable(
+  'tags',
+  {
+    id: uuid('id').primaryKey().default(sql`gen_random_uuid()`),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    name: text('name').notNull(),
+    color: text('color').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    unique('tags_user_id_name_unique').on(table.userId, table.name),
+  ],
+)
+
+export type TagRow = typeof tags.$inferSelect
+
+export const todoTags = pgTable(
+  'todo_tags',
+  {
+    todoId: uuid('todo_id')
+      .notNull()
+      .references(() => todos.id, { onDelete: 'cascade' }),
+    tagId: uuid('tag_id')
+      .notNull()
+      .references(() => tags.id, { onDelete: 'cascade' }),
+  },
+  (table) => [
+    primaryKey({ columns: [table.todoId, table.tagId] }),
+  ],
+)
+
+export type TodoTagRow = typeof todoTags.$inferSelect

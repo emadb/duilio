@@ -1,4 +1,4 @@
-import { Todo, TodoStatus } from "../app/types"
+import { Tag, Todo, TodoStatus } from "../app/types"
 
 let authToken: string | null = null
 
@@ -64,6 +64,11 @@ export const api = {
 
   deleteTodo: (id: string) =>
     request<void>(`/todos/${id}`, { method: "DELETE" }),
+
+  listTags: () => request<Tag[]>("/tags"),
+
+  createTag: (data: { name: string; color: string }) =>
+    request<Tag>("/tags", { method: "POST", body: JSON.stringify(data) }),
 
   register: (data: { email: string; password: string }) =>
     request<any>("/auth/register", { method: "POST", body: JSON.stringify(data) }),

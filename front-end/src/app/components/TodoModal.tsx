@@ -1,6 +1,6 @@
 import * as React from "react"
 import { format } from "date-fns"
-import { Todo, TodoStatus } from "../types"
+import { Tag, Todo, TodoStatus } from "../types"
 import {
   Dialog,
   DialogContent,
@@ -12,6 +12,7 @@ import { Button } from "./ui/button"
 import { Input } from "./ui/input"
 import { Textarea } from "./ui/textarea"
 import { Label } from "./ui/label"
+import { TagCombobox } from "./TagCombobox"
 
 interface TodoModalProps {
   isOpen: boolean
@@ -19,13 +20,16 @@ interface TodoModalProps {
   onSave: (todo: Omit<Todo, 'id'> | Todo) => void
   onDelete?: (id: string) => void
   initialData?: Todo | null
+  allTags: Tag[]
+  onCreateTag: (name: string, color: string) => Promise<Tag>
 }
 
-export function TodoModal({ isOpen, onClose, onSave, onDelete, initialData }: TodoModalProps) {
+export function TodoModal({ isOpen, onClose, onSave, onDelete, initialData, allTags, onCreateTag }: TodoModalProps) {
   const [title, setTitle] = React.useState("")
   const [description, setDescription] = React.useState("")
   const [dueDate, setDueDate] = React.useState("")
   const [status, setStatus] = React.useState<TodoStatus>("todo")
+  const [selectedTags, setSelectedTags] = React.useState<Tag[]>([])
 
   React.useEffect(() => {
     if (initialData && isOpen) {
@@ -33,11 +37,13 @@ export function TodoModal({ isOpen, onClose, onSave, onDelete, initialData }: To
       setDescription(initialData.description)
       setDueDate(initialData.dueDate ? format(new Date(initialData.dueDate), 'yyyy-MM-dd') : "")
       setStatus(initialData.status)
+      setSelectedTags(initialData.tags ?? [])
     } else if (isOpen && !initialData) {
       setTitle("")
       setDescription("")
       setDueDate("")
       setStatus("todo")
+      setSelectedTags([])
     }
   }, [initialData, isOpen])
 
@@ -49,6 +55,8 @@ export function TodoModal({ isOpen, onClose, onSave, onDelete, initialData }: To
       description,
       dueDate: dueDate || null,
       status,
+      tags: selectedTags,
+      tagIds: selectedTags.map(t => t.id),
     }
 
     if (initialData) {
@@ -112,6 +120,15 @@ export function TodoModal({ isOpen, onClose, onSave, onDelete, initialData }: To
               />
             </div>
           </div>
+          <div className="grid gap-2">
+            <Label>Tags</Label>
+            <TagCombobox
+              allTags={allTags}
+              selectedTags={selectedTags}
+              onChange={setSelectedTags}
+              onCreateTag={onCreateTag}
+            />
+          </div>
         </div>
         <DialogFooter className="flex items-center sm:justify-between">
           {isEditing && onDelete ? (
@@ -126,7 +143,7 @@ export function TodoModal({ isOpen, onClose, onSave, onDelete, initialData }: To
               Delete
             </Button>
           ) : (
-            <div></div> // Spacer
+            <div></div>
           )}
           <div className="flex gap-2">
             <Button variant="outline" onClick={onClose}>
