@@ -1,133 +1,186 @@
 @custom-variant dark (&:is(.dark *));
 
+/* ═══════════════════════════════════════════════════════════════
+   PALETTE — the only place you need to edit to change colors.
+   Every other value in this file is derived from these variables.
+   ═══════════════════════════════════════════════════════════════
+
+   Brand colors (5 palette entries, each with a light tint and a
+   deep shade used for tag badges and text):
+
+   --c-jungle    Jungle Teal   #6B9080
+   --c-teal      Muted Teal    #A4C3B2
+   --c-frozen    Frozen Water  #CCE3DE
+   --c-azure     Azure Mist    #EAF4F4
+   --c-mint      Mint Cream    #F6FFF8
+
+   Surface & utility colors (background, text, danger):
+
+   --c-white     Page background (light mode)
+   --c-text      Body text (light mode)
+   --c-text-dim  Muted text (light mode)
+   --c-danger    Destructive actions (light mode)
+
+   Dark mode surfaces:
+
+   --c-dark-base   Page background (dark mode)
+   --c-dark-card   Card/popover background (dark mode)
+   --c-dark-muted  Muted/input background (dark mode)
+   --c-dark-dim    Muted text (dark mode)
+   --c-dark-danger Destructive actions (dark mode)
+   ═══════════════════════════════════════════════════════════════ */
+
 :root {
   --font-size: 16px;
 
-  /* Palette */
-  --pink-orchid: #CDB4DB;
-  --pastel-petal: #FFC8DD;
-  --blush-pop: #FFAFCC;
-  --icy-blue: #BDE0FE;
-  --sky-blue: #A2D2FF;
-  --icy-white: #f0f5f8;
+  /* ── Brand palette ── */
+  --c-jungle:       #6B9080;
+  --c-jungle-light: #d0e2db;
+  --c-jungle-dark:  #2e5a4a;
 
-  --background: #ffffff;
-  --foreground: #3b2e54;
-  --card: #faf8fc;
-  --card-foreground: #3b2e54;
-  --popover: #faf8fc;
-  --popover-foreground: #3b2e54;
-  --primary: var(--pink-orchid);
-  --primary-foreground: #3b2e54;
-  --secondary: var(--pastel-petal);
-  --secondary-foreground: #5a3d6a;
-  --muted: var(--icy-white);
-  --muted-foreground: #6b5f7e;
-  --accent: var(--sky-blue);
-  --accent-foreground: #2e4a6e;
-  --destructive: var(--blush-pop);
-  --destructive-foreground: #6e3050;
-  --border: rgba(107, 88, 140, 0.15);
-  --input: transparent;
-  --input-background: #f3eef7;
-  --switch-background: var(--pink-orchid);
-  --font-weight-medium: 500;
-  --font-weight-normal: 400;
-  --ring: var(--sky-blue);
-  --chart-1: var(--pink-orchid);
-  --chart-2: var(--pastel-petal);
-  --chart-3: var(--icy-blue);
-  --chart-4: var(--sky-blue);
-  --chart-5: var(--blush-pop);
-  --radius: 0.625rem;
-  --sidebar: #ffffff;
-  --sidebar-foreground: #3b2e54;
-  --sidebar-primary: var(--pink-orchid);
-  --sidebar-primary-foreground: #3b2e54;
-  --sidebar-accent: var(--icy-blue);
-  --sidebar-accent-foreground: #3b2e54;
-  --sidebar-border: rgba(107, 88, 140, 0.12);
-  --sidebar-ring: var(--sky-blue);
+  --c-teal:         #A4C3B2;
+  --c-teal-light:   #daeee5;
+  --c-teal-dark:    #3a6050;
+
+  --c-frozen:       #CCE3DE;
+  --c-frozen-light: #e4f0ec;
+  --c-frozen-dark:  #2e5a4a;
+
+  --c-azure:        #EAF4F4;
+  --c-azure-light:  #f0f8f8;
+  --c-azure-dark:   #2a5050;
+
+  --c-mint:         #F6FFF8;
+  --c-mint-light:   #e8f8ec;
+  --c-mint-dark:    #2a5438;
+
+  /* ── Surfaces & utility ── */
+  --c-white:      #ffffff;
+  --c-text:       #1c3a30;
+  --c-text-dim:   #4a7060;
+  --c-danger:     #c0564a;
+
+  /* ── Dark mode surfaces ── */
+  --c-dark-base:   #0f2420;
+  --c-dark-card:   #1a3a30;
+  --c-dark-muted:  #1e4a3a;
+  --c-dark-dim:    #7ab09a;
+  --c-dark-danger: #d97070;
+
+  /* ═══════════════════════════════════════════════════════════════
+     SEMANTIC TOKENS — do not edit below unless changing structure.
+     ═══════════════════════════════════════════════════════════════ */
+
+  --background:            var(--c-white);
+  --foreground:            var(--c-text);
+  --card:                  var(--c-mint);
+  --card-foreground:       var(--c-text);
+  --popover:               var(--c-mint);
+  --popover-foreground:    var(--c-text);
+  --primary:               var(--c-jungle);
+  --primary-foreground:    var(--c-white);
+  --secondary:             var(--c-frozen);
+  --secondary-foreground:  var(--c-text);
+  --muted:                 var(--c-azure);
+  --muted-foreground:      var(--c-text-dim);
+  --accent:                var(--c-teal);
+  --accent-foreground:     var(--c-text);
+  --destructive:           var(--c-danger);
+  --destructive-foreground: var(--c-white);
+  --border:                color-mix(in srgb, var(--c-jungle) 20%, transparent);
+  --input:                 transparent;
+  --input-background:      var(--c-azure);
+  --switch-background:     var(--c-jungle);
+  --ring:                  var(--c-teal);
+  --chart-1:               var(--c-jungle);
+  --chart-2:               var(--c-teal);
+  --chart-3:               var(--c-frozen);
+  --chart-4:               var(--c-azure);
+  --chart-5:               var(--c-mint);
+  --radius:                0.625rem;
+  --font-weight-medium:    500;
+  --font-weight-normal:    400;
+  --sidebar:               var(--c-white);
+  --sidebar-foreground:    var(--c-text);
+  --sidebar-primary:       var(--c-jungle);
+  --sidebar-primary-foreground: var(--c-white);
+  --sidebar-accent:        var(--c-frozen);
+  --sidebar-accent-foreground: var(--c-text);
+  --sidebar-border:        color-mix(in srgb, var(--c-jungle) 15%, transparent);
+  --sidebar-ring:          var(--c-teal);
 }
 
 .dark {
-  --background: #1e1630;
-  --foreground: #ede6f3;
-  --card: #2a1f3d;
-  --card-foreground: #ede6f3;
-  --popover: #2a1f3d;
-  --popover-foreground: #ede6f3;
-  --primary: var(--pink-orchid);
-  --primary-foreground: #3b2e54;
-  --secondary: var(--pastel-petal);
-  --secondary-foreground: #5a3d6a;
-  --muted: #352850;
-  --muted-foreground: #a89bbe;
-  --accent: var(--sky-blue);
-  --accent-foreground: #1e2d4a;
-  --destructive: var(--blush-pop);
-  --destructive-foreground: #6e3050;
-  --border: rgba(205, 180, 219, 0.2);
-  --input: #352850;
-  --input-background: #352850;
-  --switch-background: var(--pink-orchid);
-  --font-weight-medium: 500;
-  --font-weight-normal: 400;
-  --ring: var(--sky-blue);
-  --chart-1: var(--pink-orchid);
-  --chart-2: var(--pastel-petal);
-  --chart-3: var(--icy-blue);
-  --chart-4: var(--sky-blue);
-  --chart-5: var(--blush-pop);
-  --sidebar: #2a1f3d;
-  --sidebar-foreground: #ede6f3;
-  --sidebar-primary: var(--pink-orchid);
-  --sidebar-primary-foreground: #3b2e54;
-  --sidebar-accent: #352850;
-  --sidebar-accent-foreground: #ede6f3;
-  --sidebar-border: rgba(205, 180, 219, 0.15);
-  --sidebar-ring: var(--sky-blue);
+  --background:            var(--c-dark-base);
+  --foreground:            var(--c-mint);
+  --card:                  var(--c-dark-card);
+  --card-foreground:       var(--c-mint);
+  --popover:               var(--c-dark-card);
+  --popover-foreground:    var(--c-mint);
+  --primary:               var(--c-teal);
+  --primary-foreground:    var(--c-dark-base);
+  --secondary:             var(--c-frozen);
+  --secondary-foreground:  var(--c-dark-base);
+  --muted:                 var(--c-dark-muted);
+  --muted-foreground:      var(--c-dark-dim);
+  --accent:                var(--c-teal);
+  --accent-foreground:     var(--c-dark-base);
+  --destructive:           var(--c-dark-danger);
+  --destructive-foreground: var(--c-white);
+  --border:                color-mix(in srgb, var(--c-teal) 20%, transparent);
+  --input:                 var(--c-dark-muted);
+  --input-background:      var(--c-dark-muted);
+  --switch-background:     var(--c-teal);
+  --ring:                  var(--c-teal);
+  --sidebar:               var(--c-dark-card);
+  --sidebar-foreground:    var(--c-mint);
+  --sidebar-primary:       var(--c-teal);
+  --sidebar-primary-foreground: var(--c-dark-base);
+  --sidebar-accent:        var(--c-dark-muted);
+  --sidebar-accent-foreground: var(--c-mint);
+  --sidebar-border:        color-mix(in srgb, var(--c-teal) 15%, transparent);
+  --sidebar-ring:          var(--c-teal);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-input-background: var(--input-background);
-  --color-switch-background: var(--switch-background);
-  --color-ring: var(--ring);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
+  --color-background:              var(--background);
+  --color-foreground:              var(--foreground);
+  --color-card:                    var(--card);
+  --color-card-foreground:         var(--card-foreground);
+  --color-popover:                 var(--popover);
+  --color-popover-foreground:      var(--popover-foreground);
+  --color-primary:                 var(--primary);
+  --color-primary-foreground:      var(--primary-foreground);
+  --color-secondary:               var(--secondary);
+  --color-secondary-foreground:    var(--secondary-foreground);
+  --color-muted:                   var(--muted);
+  --color-muted-foreground:        var(--muted-foreground);
+  --color-accent:                  var(--accent);
+  --color-accent-foreground:       var(--accent-foreground);
+  --color-destructive:             var(--destructive);
+  --color-destructive-foreground:  var(--destructive-foreground);
+  --color-border:                  var(--border);
+  --color-input:                   var(--input);
+  --color-input-background:        var(--input-background);
+  --color-switch-background:       var(--switch-background);
+  --color-ring:                    var(--ring);
+  --color-chart-1:                 var(--chart-1);
+  --color-chart-2:                 var(--chart-2);
+  --color-chart-3:                 var(--chart-3);
+  --color-chart-4:                 var(--chart-4);
+  --color-chart-5:                 var(--chart-5);
+  --radius-sm:  calc(var(--radius) - 4px);
+  --radius-md:  calc(var(--radius) - 2px);
+  --radius-lg:  var(--radius);
+  --radius-xl:  calc(var(--radius) + 4px);
+  --color-sidebar:                      var(--sidebar);
+  --color-sidebar-foreground:           var(--sidebar-foreground);
+  --color-sidebar-primary:              var(--sidebar-primary);
+  --color-sidebar-primary-foreground:   var(--sidebar-primary-foreground);
+  --color-sidebar-accent:               var(--sidebar-accent);
+  --color-sidebar-accent-foreground:    var(--sidebar-accent-foreground);
+  --color-sidebar-border:               var(--sidebar-border);
+  --color-sidebar-ring:                 var(--sidebar-ring);
 }
 
 @layer base {
@@ -138,11 +191,6 @@
   body {
     @apply bg-background text-foreground;
   }
-
-  /**
-  * Default typography styles for HTML elements (h1-h4, p, label, button, input).
-  * These are in @layer base, so Tailwind utility classes (like text-sm, text-lg) automatically override them.
-  */
 
   html {
     font-size: var(--font-size);

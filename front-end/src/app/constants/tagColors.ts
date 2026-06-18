@@ -6,16 +6,23 @@ export interface TagColor {
   swatch: string   // Tailwind bg class for the colour swatch tile
 }
 
+// Tag colours reference the palette CSS variables defined in theme.css.
+// To change a tag colour, update the corresponding --c-* variable there.
 export const TAG_COLORS: TagColor[] = [
-  { key: 'orchid',  label: 'Orchid',  bg: 'bg-[#e8ddf0]', text: 'text-[#6b5280]', swatch: 'bg-[#CDB4DB]' },
-  { key: 'petal',   label: 'Petal',   bg: 'bg-[#fde4ed]', text: 'text-[#8a5070]', swatch: 'bg-[#FFC8DD]' },
-  { key: 'blush',   label: 'Blush',   bg: 'bg-[#fdd5df]', text: 'text-[#9e4a68]', swatch: 'bg-[#FFAFCC]' },
-  { key: 'icy',     label: 'Icy',     bg: 'bg-[#dce9f7]', text: 'text-[#3a6a9e]', swatch: 'bg-[#BDE0FE]' },
-  { key: 'sky',     label: 'Sky',     bg: 'bg-[#d4e8fc]', text: 'text-[#2e5f8a]', swatch: 'bg-[#A2D2FF]' },
-  { key: 'lavender',label: 'Lavender',bg: 'bg-[#e0d6ea]', text: 'text-[#5e4d72]', swatch: 'bg-[#b89ec4]' },
-  { key: 'peach',   label: 'Peach',   bg: 'bg-[#fde3d7]', text: 'text-[#8a5a40]', swatch: 'bg-[#f4b89a]' },
-  { key: 'mint',    label: 'Mint',    bg: 'bg-[#d6f0e4]', text: 'text-[#3a7a5e]', swatch: 'bg-[#a4dac0]' },
-  { key: 'lilac',   label: 'Lilac',   bg: 'bg-[#ddd4e8]', text: 'text-[#5a4d6e]', swatch: 'bg-[#c0b3d4]' },
+  // Jungle Teal family
+  { key: 'jungle',  label: 'Jungle',  bg: 'bg-[var(--c-jungle-light)]',  text: 'text-[var(--c-jungle-dark)]',  swatch: 'bg-[var(--c-jungle)]' },
+  { key: 'forest',  label: 'Forest',  bg: 'bg-[var(--c-frozen-light)]',  text: 'text-[var(--c-frozen-dark)]',  swatch: 'bg-[var(--c-jungle)]' },
+  // Muted Teal family
+  { key: 'sage',    label: 'Sage',    bg: 'bg-[var(--c-teal-light)]',    text: 'text-[var(--c-teal-dark)]',    swatch: 'bg-[var(--c-teal)]' },
+  { key: 'fern',    label: 'Fern',    bg: 'bg-[var(--c-frozen-light)]',  text: 'text-[var(--c-teal-dark)]',    swatch: 'bg-[var(--c-teal)]' },
+  // Frozen Water family
+  { key: 'frost',   label: 'Frost',   bg: 'bg-[var(--c-frozen-light)]',  text: 'text-[var(--c-frozen-dark)]',  swatch: 'bg-[var(--c-frozen)]' },
+  { key: 'glacier', label: 'Glacier', bg: 'bg-[var(--c-azure-light)]',   text: 'text-[var(--c-azure-dark)]',   swatch: 'bg-[var(--c-frozen)]' },
+  // Azure Mist family
+  { key: 'mist',    label: 'Mist',    bg: 'bg-[var(--c-azure-light)]',   text: 'text-[var(--c-azure-dark)]',   swatch: 'bg-[var(--c-azure)]' },
+  { key: 'sky',     label: 'Sky',     bg: 'bg-[var(--c-azure)]',         text: 'text-[var(--c-azure-dark)]',   swatch: 'bg-[var(--c-teal)]' },
+  // Mint Cream family
+  { key: 'mint',    label: 'Mint',    bg: 'bg-[var(--c-mint-light)]',    text: 'text-[var(--c-mint-dark)]',    swatch: 'bg-[var(--c-mint)]' },
 ]
 
 export function getTagColor(key: string): TagColor {

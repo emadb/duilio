@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Calendar, CheckCircle2, Circle, Clock } from "lucide-react"
+import { Calendar } from "lucide-react"
 import { format } from "date-fns"
 import { Todo } from "../types"
 import { Badge } from "./ui/badge"
@@ -11,26 +11,13 @@ interface TodoCardProps {
 }
 
 export function TodoCard({ todo, onClick }: TodoCardProps) {
-  const statusConfig = {
-    'todo': { label: 'To Do', icon: Circle, color: 'text-[#7b6b8a]', bg: 'bg-[#ede6f3]' },
-    'in-progress': { label: 'In Progress', icon: Clock, color: 'text-[#3a7cb8]', bg: 'bg-[#dce9f7]' },
-    'done': { label: 'Done', icon: CheckCircle2, color: 'text-[#6b5f7e]', bg: 'bg-[#e8ddf0]' },
-  }
-
-  const config = statusConfig[todo.status]
-  const StatusIcon = config.icon
-
   return (
     <div 
       onClick={() => onClick(todo)}
       className="group relative flex flex-col gap-2 rounded-lg border border-border bg-card text-card-foreground p-4 shadow-sm transition-all hover:border-ring hover:shadow-md cursor-pointer"
     >
       <div className="flex items-start justify-between gap-4">
-        <h3 className="font-medium line-clamp-1">{todo.title}</h3>
-        <Badge variant="secondary" className={`shrink-0 ${config.bg} ${config.color} border-transparent`}>
-          <StatusIcon className="mr-1 h-3 w-3" />
-          {config.label}
-        </Badge>
+        <h3 className="font-medium line-clamp-2">{todo.title}</h3>
       </div>
 
       {todo.dueDate && (

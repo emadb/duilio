@@ -23,6 +23,7 @@ export default function App() {
   const [isLoggedIn, setIsLoggedIn] = React.useState(false)
   const [selectedTodo, setSelectedTodo] = React.useState<Todo | null>(null)
   const [filterStatus, setFilterStatus] = React.useState<TodoStatus | 'all'>('all')
+  const [filterTag, setFilterTag] = React.useState('')
 
   const handleLoginSuccess = () => {
     setIsLoggedIn(true)
@@ -133,7 +134,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-muted/30 p-6 md:p-12 font-sans text-foreground">
-      <div className="mx-auto max-w-3xl space-y-8">
+      <div className="mx-auto max-w-7xl space-y-8">
 
         {/* Header */}
         <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-xl bg-card p-6 shadow-sm border border-border">
@@ -146,7 +147,14 @@ export default function App() {
               <p className="text-sm text-muted-foreground"></p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+            <input
+              type="text"
+              placeholder="Filter by tag..."
+              value={filterTag}
+              onChange={(e) => setFilterTag(e.target.value)}
+              className="w-full sm:w-64 px-3 py-1.5 text-sm rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50"
+            />
             <div className="flex p-1 bg-muted rounded-lg border border-border">
               <button
                 onClick={() => setFilterStatus('all')}
@@ -195,7 +203,13 @@ export default function App() {
           {!isLoading && STATUS_GROUPS.map(group => {
             if (filterStatus !== 'all' && filterStatus !== group.value) return null;
 
-            const groupTodos = todos.filter(t => t.status === group.value)
+            // Always filter by this group's status, then optionally by tag
+            const groupTodos = todos.filter(t =>
+              t.status === group.value &&
+              (filterTag
+                ? t.tags.some(tag => tag.name.toLowerCase().includes(filterTag.toLowerCase()))
+                : true)
+            );
 
             if (groupTodos.length === 0) return null
 
@@ -208,7 +222,7 @@ export default function App() {
                   </span>
                 </div>
 
-                <div className="grid gap-3">
+                <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
                   {groupTodos.map(todo => (
                     <TodoCard
                       key={todo.id}
@@ -233,13 +247,19 @@ export default function App() {
                 Add First Task
               </Button>
             </div>
-          ) : filterStatus !== 'all' && todos.filter(t => t.status === filterStatus).length === 0 ? (
+          ) : filterStatus !== 'all' && todos.filter(t => {
+              const matchesTag = !filterTag ||
+                t.tags.some(tag => tag.name.toLowerCase().includes(filterTag.toLowerCase()));
+              return matchesTag && t.status === filterStatus;
+            }).length === 0 ? (
              <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-muted/20 py-16 text-center">
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-secondary">
                 <ListTodo className="h-6 w-6 text-muted-foreground" />
               </div>
               <h3 className="mb-1 text-lg font-medium text-foreground">No tasks found</h3>
-              <p className="mb-4 text-sm text-muted-foreground">No tasks match the selected filter.</p>
+              <p className="mb-4 text-sm text-muted-foreground">
+                {filterTag ? `No tasks with tag "${filterTag}"` : 'No tasks match the selected filter.'}
+              </p>
             </div>
           ) : null}
         </main>
