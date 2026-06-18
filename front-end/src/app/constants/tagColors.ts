@@ -6,17 +6,17 @@ export interface TagColor {
   swatch: string   // Tailwind bg class for the colour swatch dot
 }
 
-// 8 distinct muted hues that complement the green/teal brand palette.
-// Colors are defined as CSS variables in theme.css under "Tag colour palette".
+// 8 vibrant colours, each with a light tint (badge bg) and dark shade (badge text).
+// Swatch values, light tints and dark shades are CSS variables defined in theme.css.
 export const TAG_COLORS: TagColor[] = [
-  { key: 'sage',     label: 'Sage',     bg: 'bg-[var(--tag-sage-light)]',     text: 'text-[var(--tag-sage-dark)]',     swatch: 'bg-[var(--tag-sage)]'     },
-  { key: 'clay',     label: 'Clay',     bg: 'bg-[var(--tag-clay-light)]',     text: 'text-[var(--tag-clay-dark)]',     swatch: 'bg-[var(--tag-clay)]'     },
-  { key: 'sand',     label: 'Sand',     bg: 'bg-[var(--tag-sand-light)]',     text: 'text-[var(--tag-sand-dark)]',     swatch: 'bg-[var(--tag-sand)]'     },
-  { key: 'lavender', label: 'Lavender', bg: 'bg-[var(--tag-lavender-light)]', text: 'text-[var(--tag-lavender-dark)]', swatch: 'bg-[var(--tag-lavender)]' },
-  { key: 'peach',    label: 'Peach',    bg: 'bg-[var(--tag-peach-light)]',    text: 'text-[var(--tag-peach-dark)]',    swatch: 'bg-[var(--tag-peach)]'    },
-  { key: 'slate',    label: 'Slate',    bg: 'bg-[var(--tag-slate-light)]',    text: 'text-[var(--tag-slate-dark)]',    swatch: 'bg-[var(--tag-slate)]'    },
-  { key: 'amber',    label: 'Amber',    bg: 'bg-[var(--tag-amber-light)]',    text: 'text-[var(--tag-amber-dark)]',    swatch: 'bg-[var(--tag-amber)]'    },
-  { key: 'rose',     label: 'Rose',     bg: 'bg-[var(--tag-rose-light)]',     text: 'text-[var(--tag-rose-dark)]',     swatch: 'bg-[var(--tag-rose)]'     },
+  { key: 'coral',  label: 'Coral',  bg: 'bg-[var(--tag-coral-light)]',  text: 'text-[var(--tag-coral-dark)]',  swatch: 'bg-[var(--tag-coral)]'  },
+  { key: 'peach',  label: 'Peach',  bg: 'bg-[var(--tag-peach-light)]',  text: 'text-[var(--tag-peach-dark)]',  swatch: 'bg-[var(--tag-peach)]'  },
+  { key: 'lime',   label: 'Lime',   bg: 'bg-[var(--tag-lime-light)]',   text: 'text-[var(--tag-lime-dark)]',   swatch: 'bg-[var(--tag-lime)]'   },
+  { key: 'navy',   label: 'Navy',   bg: 'bg-[var(--tag-navy-light)]',   text: 'text-[var(--tag-navy-dark)]',   swatch: 'bg-[var(--tag-navy)]'   },
+  { key: 'steel',  label: 'Steel',  bg: 'bg-[var(--tag-steel-light)]',  text: 'text-[var(--tag-steel-dark)]',  swatch: 'bg-[var(--tag-steel)]'  },
+  { key: 'forest', label: 'Forest', bg: 'bg-[var(--tag-forest-light)]', text: 'text-[var(--tag-forest-dark)]', swatch: 'bg-[var(--tag-forest)]' },
+  { key: 'amber',  label: 'Amber',  bg: 'bg-[var(--tag-amber-light)]',  text: 'text-[var(--tag-amber-dark)]',  swatch: 'bg-[var(--tag-amber)]'  },
+  { key: 'yellow', label: 'Yellow', bg: 'bg-[var(--tag-yellow-light)]', text: 'text-[var(--tag-yellow-dark)]', swatch: 'bg-[var(--tag-yellow)]' },
 ]
 
 export function getTagColor(key: string): TagColor {

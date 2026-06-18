@@ -2,177 +2,169 @@
 
 /* ═══════════════════════════════════════════════════════════════
    PALETTE — the only place you need to edit to change colors.
-   Every other value in this file is derived from these variables.
    ═══════════════════════════════════════════════════════════════
 
-   Brand colors (5 palette entries, each with a light tint and a
-   deep shade used for tag badges and text):
+   Core
+   --c-primary        #84a59d  Muted teal — buttons, icons, rings
+   --c-primary-dark   #5c7d76  Darker teal — hover / active states
+   --c-primary-light  #bdd4cf  Light teal  — subtle accents
 
-   --c-jungle    Jungle Teal   #6B9080
-   --c-teal      Muted Teal    #A4C3B2
-   --c-frozen    Frozen Water  #CCE3DE
-   --c-azure     Azure Mist    #EAF4F4
-   --c-mint      Mint Cream    #F6FFF8
+   Surfaces
+   --c-bg             #f5f5f5  Page background (light grey, almost white)
+   --c-surface        #ffffff  Card / popover background (pure white)
+   --c-surface-muted  #f0f0f0  Secondary surfaces, inputs
 
-   Surface & utility colors (background, text, danger):
+   Typography
+   --c-text           #1a1a1a  Almost-black — all titles and body text
+   --c-text-dim       #707070  Muted / placeholder text
 
-   --c-white     Page background (light mode)
-   --c-text      Body text (light mode)
-   --c-text-dim  Muted text (light mode)
-   --c-danger    Destructive actions (light mode)
+   Utility
+   --c-border         #e0e0e0  Default border colour
+   --c-accent         #edf2f1  Hover tint on menus / dropdowns
+   --c-danger         #c0564a  Destructive actions
 
-   Dark mode surfaces:
-
-   --c-dark-base   Page background (dark mode)
-   --c-dark-card   Card/popover background (dark mode)
-   --c-dark-muted  Muted/input background (dark mode)
-   --c-dark-dim    Muted text (dark mode)
-   --c-dark-danger Destructive actions (dark mode)
+   Tag colours (8 vibrant swatches)
+   Each has a -light tint (badge bg) and a -dark shade (badge text).
    ═══════════════════════════════════════════════════════════════ */
 
 :root {
   --font-size: 16px;
 
-  /* ── Tag colour palette (8 distinct muted hues, each with light bg and dark text) ── */
-  --tag-sage:           #6B9080;   /* green   — matches the primary brand color    */
-  --tag-sage-light:     #d4e8e0;
-  --tag-sage-dark:      #2a5440;
+  /* ── Core ── */
+  --c-primary:        #fb8500;
+  --c-primary-dark:   #CA6B00;
+  --c-primary-light:  #FBCC97;
 
-  --tag-clay:           #A86050;   /* terracotta — warm earth, complements green   */
-  --tag-clay-light:     #eeddd8;
-  --tag-clay-dark:      #5a2818;
+  /* ── Surfaces ── */
+  --c-bg:             #f5f5f5;
+  --c-surface:        #ffffff;
+  --c-surface-muted:  #f0f0f0;
 
-  --tag-sand:           #B89860;   /* tan/gold  — warm neutral                    */
-  --tag-sand-light:     #f0e8d4;
-  --tag-sand-dark:      #543a18;
+  /* ── Typography ── */
+  --c-text:           #1a1a1a;
+  --c-text-dim:       #707070;
 
-  --tag-lavender:       #8870B0;   /* violet   — cool contrast to the warm greens */
-  --tag-lavender-light: #dcdaee;
-  --tag-lavender-dark:  #342060;
-
-  --tag-peach:          #C88060;   /* apricot  — muted orange                     */
-  --tag-peach-light:    #f5e0d4;
-  --tag-peach-dark:     #5a2e18;
-
-  --tag-slate:          #5880A0;   /* steel blue — cool, desaturated               */
-  --tag-slate-light:    #d0dce8;
-  --tag-slate-dark:     #1e3058;
-
-  --tag-amber:          #B09030;   /* amber/gold — warm, high-contrast             */
-  --tag-amber-light:    #ede8c0;
-  --tag-amber-dark:     #483808;
-
-  --tag-rose:           #A87088;   /* dusty rose — muted pink, rounds out the set  */
-  --tag-rose-light:     #ecdce4;
-  --tag-rose-dark:      #582040;
-
-  /* ── Brand palette ── */
-  --c-jungle:       #6B9080;
-  --c-jungle-light: #d0e2db;
-  --c-jungle-dark:  #2e5a4a;
-
-  --c-teal:         #A4C3B2;
-  --c-teal-light:   #daeee5;
-  --c-teal-dark:    #3a6050;
-
-  --c-frozen:       #CCE3DE;
-  --c-frozen-light: #e4f0ec;
-  --c-frozen-dark:  #2e5a4a;
-
-  --c-azure:        #EAF4F4;
-  --c-azure-light:  #f0f8f8;
-  --c-azure-dark:   #2a5050;
-
-  --c-mint:         #F6FFF8;
-  --c-mint-light:   #e8f8ec;
-  --c-mint-dark:    #2a5438;
-
-  /* ── Surfaces & utility ── */
-  --c-white:      #ffffff;
-  --c-text:       #1c3a30;
-  --c-text-dim:   #4a7060;
-  --c-danger:     #c0564a;
+  /* ── Utility ── */
+  --c-border:         #e0e0e0;
+  --c-accent:         #edf2f1;
+  --c-danger:         #c0564a;
 
   /* ── Dark mode surfaces ── */
-  --c-dark-base:   #0f2420;
-  --c-dark-card:   #1a3a30;
-  --c-dark-muted:  #1e4a3a;
-  --c-dark-dim:    #7ab09a;
-  --c-dark-danger: #d97070;
+  --c-dark-bg:        #181818;
+  --c-dark-surface:   #222222;
+  --c-dark-muted:     #2c2c2c;
+  --c-dark-dim:       #888888;
+  --c-dark-text:      #f0f0f0;
+  --c-dark-border:    #383838;
+  --c-dark-accent:    color-mix(in srgb, var(--c-primary) 18%, #2c2c2c);
+  --c-dark-danger:    #d97070;
+
+  /* ── Tag colours ── */
+  --tag-coral:          #ff6b35;
+  --tag-coral-light:    #fff0ea;
+  --tag-coral-dark:     #7a2800;
+
+  --tag-peach:          #e63946;
+  --tag-peach-light:    #E6A1A6;
+  --tag-peach-dark:     #E60013;
+
+  --tag-lime:           #efefd0;
+  --tag-lime-light:     #f8f8ee;
+  --tag-lime-dark:      #4a4a10;
+
+  --tag-navy:           #004e89;
+  --tag-navy-light:     #e0edf5;
+  --tag-navy-dark:      #002040;
+
+  --tag-steel:          #546a7b;
+  --tag-steel-light:    #e4eaee;
+  --tag-steel-dark:     #1e2e3a;
+
+  --tag-forest:         #2c6e49;
+  --tag-forest-light:   #dceee6;
+  --tag-forest-dark:    #0e2e1e;
+
+  --tag-amber:          #d89f0a;
+  --tag-amber-light:    #faf0cc;
+  --tag-amber-dark:     #5a3a00;
+
+  --tag-yellow:         #fcf300;
+  --tag-yellow-light:   #fefde0;
+  --tag-yellow-dark:    #3a3000;
 
   /* ═══════════════════════════════════════════════════════════════
      SEMANTIC TOKENS — do not edit below unless changing structure.
      ═══════════════════════════════════════════════════════════════ */
 
-  --background:            var(--c-white);
-  --foreground:            var(--c-text);
-  --card:                  var(--c-mint);
-  --card-foreground:       var(--c-text);
-  --popover:               var(--c-mint);
-  --popover-foreground:    var(--c-text);
-  --primary:               var(--c-jungle);
-  --primary-foreground:    var(--c-white);
-  --secondary:             var(--c-frozen);
-  --secondary-foreground:  var(--c-text);
-  --muted:                 var(--c-azure);
-  --muted-foreground:      var(--c-text-dim);
-  --accent:                var(--c-teal);
-  --accent-foreground:     var(--c-text);
-  --destructive:           var(--c-danger);
-  --destructive-foreground: var(--c-white);
-  --border:                color-mix(in srgb, var(--c-jungle) 20%, transparent);
-  --input:                 transparent;
-  --input-background:      var(--c-azure);
-  --switch-background:     var(--c-jungle);
-  --ring:                  var(--c-teal);
-  --chart-1:               var(--c-jungle);
-  --chart-2:               var(--c-teal);
-  --chart-3:               var(--c-frozen);
-  --chart-4:               var(--c-azure);
-  --chart-5:               var(--c-mint);
-  --radius:                0.625rem;
-  --font-weight-medium:    500;
-  --font-weight-normal:    400;
-  --sidebar:               var(--c-white);
-  --sidebar-foreground:    var(--c-text);
-  --sidebar-primary:       var(--c-jungle);
-  --sidebar-primary-foreground: var(--c-white);
-  --sidebar-accent:        var(--c-frozen);
+  --background:             var(--c-bg);
+  --foreground:             var(--c-text);
+  --card:                   var(--c-surface);
+  --card-foreground:        var(--c-text);
+  --popover:                var(--c-surface);
+  --popover-foreground:     var(--c-text);
+  --primary:                var(--c-primary);
+  --primary-foreground:     #ffffff;
+  --secondary:              var(--c-surface-muted);
+  --secondary-foreground:   var(--c-text);
+  --muted:                  var(--c-surface-muted);
+  --muted-foreground:       var(--c-text-dim);
+  --accent:                 var(--c-accent);
+  --accent-foreground:      var(--c-text);
+  --destructive:            var(--c-danger);
+  --destructive-foreground: #ffffff;
+  --border:                 var(--c-border);
+  --input:                  transparent;
+  --input-background:       var(--c-surface-muted);
+  --switch-background:      var(--c-primary);
+  --ring:                   var(--c-primary);
+  --chart-1:                var(--c-primary);
+  --chart-2:                var(--tag-steel);
+  --chart-3:                var(--tag-amber);
+  --chart-4:                var(--tag-coral);
+  --chart-5:                var(--tag-forest);
+  --radius:                 0.625rem;
+  --font-weight-medium:     500;
+  --font-weight-normal:     400;
+  --sidebar:                var(--c-surface);
+  --sidebar-foreground:     var(--c-text);
+  --sidebar-primary:        var(--c-primary);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent:         var(--c-surface-muted);
   --sidebar-accent-foreground: var(--c-text);
-  --sidebar-border:        color-mix(in srgb, var(--c-jungle) 15%, transparent);
-  --sidebar-ring:          var(--c-teal);
+  --sidebar-border:         var(--c-border);
+  --sidebar-ring:           var(--c-primary);
 }
 
 .dark {
-  --background:            var(--c-dark-base);
-  --foreground:            var(--c-mint);
-  --card:                  var(--c-dark-card);
-  --card-foreground:       var(--c-mint);
-  --popover:               var(--c-dark-card);
-  --popover-foreground:    var(--c-mint);
-  --primary:               var(--c-teal);
-  --primary-foreground:    var(--c-dark-base);
-  --secondary:             var(--c-frozen);
-  --secondary-foreground:  var(--c-dark-base);
-  --muted:                 var(--c-dark-muted);
-  --muted-foreground:      var(--c-dark-dim);
-  --accent:                var(--c-teal);
-  --accent-foreground:     var(--c-dark-base);
-  --destructive:           var(--c-dark-danger);
-  --destructive-foreground: var(--c-white);
-  --border:                color-mix(in srgb, var(--c-teal) 20%, transparent);
-  --input:                 var(--c-dark-muted);
-  --input-background:      var(--c-dark-muted);
-  --switch-background:     var(--c-teal);
-  --ring:                  var(--c-teal);
-  --sidebar:               var(--c-dark-card);
-  --sidebar-foreground:    var(--c-mint);
-  --sidebar-primary:       var(--c-teal);
-  --sidebar-primary-foreground: var(--c-dark-base);
-  --sidebar-accent:        var(--c-dark-muted);
-  --sidebar-accent-foreground: var(--c-mint);
-  --sidebar-border:        color-mix(in srgb, var(--c-teal) 15%, transparent);
-  --sidebar-ring:          var(--c-teal);
+  --background:             var(--c-dark-bg);
+  --foreground:             var(--c-dark-text);
+  --card:                   var(--c-dark-surface);
+  --card-foreground:        var(--c-dark-text);
+  --popover:                var(--c-dark-surface);
+  --popover-foreground:     var(--c-dark-text);
+  --primary:                var(--c-primary);
+  --primary-foreground:     #ffffff;
+  --secondary:              var(--c-dark-muted);
+  --secondary-foreground:   var(--c-dark-text);
+  --muted:                  var(--c-dark-muted);
+  --muted-foreground:       var(--c-dark-dim);
+  --accent:                 var(--c-dark-accent);
+  --accent-foreground:      var(--c-dark-text);
+  --destructive:            var(--c-dark-danger);
+  --destructive-foreground: #ffffff;
+  --border:                 var(--c-dark-border);
+  --input:                  var(--c-dark-muted);
+  --input-background:       var(--c-dark-muted);
+  --switch-background:      var(--c-primary);
+  --ring:                   var(--c-primary);
+  --sidebar:                var(--c-dark-surface);
+  --sidebar-foreground:     var(--c-dark-text);
+  --sidebar-primary:        var(--c-primary);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent:         var(--c-dark-muted);
+  --sidebar-accent-foreground: var(--c-dark-text);
+  --sidebar-border:         var(--c-dark-border);
+  --sidebar-ring:           var(--c-primary);
 }
 
 @theme inline {

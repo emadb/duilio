@@ -154,7 +154,7 @@ export function TagCombobox({ allTags, selectedTags, onChange, onCreateTag }: Ta
                       type="button"
                       title={c.label}
                       onClick={() => setNewTagColor(c.key)}
-                      className={`h-5 w-5 rounded-full shrink-0 transition-transform hover:scale-110 ${c.swatch} ${
+                      className={`h-5 w-5 rounded-full shrink-0 transition-transform hover:scale-110 shadow-[inset_0_0_0_1.5px_rgba(0,0,0,0.15)] ${c.swatch} ${
                         newTagColor === c.key
                           ? 'ring-2 ring-offset-1 ring-foreground scale-110'
                           : ''
