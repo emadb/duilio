@@ -21,7 +21,6 @@ interface TagComboboxProps {
 export function TagCombobox({ allTags, selectedTags, onChange, onCreateTag }: TagComboboxProps) {
   const [open, setOpen] = React.useState(false)
   const [query, setQuery] = React.useState("")
-  const [isCreating, setIsCreating] = React.useState(false)
   const [newTagColor, setNewTagColor] = React.useState(TAG_COLORS[0].key)
   const [isSubmitting, setIsSubmitting] = React.useState(false)
 
@@ -32,7 +31,7 @@ export function TagCombobox({ allTags, selectedTags, onChange, onCreateTag }: Ta
   )
 
   const exactMatch = allTags.some(t => t.name.toLowerCase() === query.toLowerCase())
-  const showCreateOption = query.trim().length > 0 && !exactMatch
+  const showCreate = query.trim().length > 0 && !exactMatch
 
   function toggleTag(tag: Tag) {
     if (selectedIds.has(tag.id)) {
@@ -53,7 +52,7 @@ export function TagCombobox({ allTags, selectedTags, onChange, onCreateTag }: Ta
       const newTag = await onCreateTag(query.trim(), newTagColor)
       onChange([...selectedTags, newTag])
       setQuery("")
-      setIsCreating(false)
+      setNewTagColor(TAG_COLORS[0].key)
     } finally {
       setIsSubmitting(false)
     }
@@ -63,9 +62,11 @@ export function TagCombobox({ allTags, selectedTags, onChange, onCreateTag }: Ta
     setOpen(next)
     if (!next) {
       setQuery("")
-      setIsCreating(false)
+      setNewTagColor(TAG_COLORS[0].key)
     }
   }
+
+  const selectedColor = TAG_COLORS.find(c => c.key === newTagColor)!
 
   return (
     <div className="flex flex-col gap-2">
@@ -111,15 +112,13 @@ export function TagCombobox({ allTags, selectedTags, onChange, onCreateTag }: Ta
           <Input
             placeholder="Search or create tag…"
             value={query}
-            onChange={e => {
-              setQuery(e.target.value)
-              setIsCreating(false)
-            }}
+            onChange={e => setQuery(e.target.value)}
             className="mb-2 h-8 text-sm"
             autoFocus
           />
 
-          <div className="max-h-48 overflow-y-auto space-y-0.5">
+          {/* Existing tags list */}
+          <div className="max-h-40 overflow-y-auto space-y-0.5">
             {filtered.map(tag => {
               const c = getTagColor(tag.color)
               const selected = selectedIds.has(tag.id)
@@ -137,59 +136,49 @@ export function TagCombobox({ allTags, selectedTags, onChange, onCreateTag }: Ta
               )
             })}
 
-            {filtered.length === 0 && !showCreateOption && (
+            {filtered.length === 0 && !showCreate && (
               <p className="px-2 py-3 text-center text-xs text-muted-foreground">No tags found.</p>
-            )}
-
-            {showCreateOption && !isCreating && (
-              <button
-                type="button"
-                onClick={() => setIsCreating(true)}
-                className="w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-accent transition-colors text-left text-primary"
-              >
-                <Plus className="h-3.5 w-3.5 shrink-0" />
-                Create "{query}"
-              </button>
             )}
           </div>
 
-          {/* Inline create form */}
-          {isCreating && (
+          {/* Inline create — appears as soon as the typed name has no exact match */}
+          {showCreate && (
             <div className="mt-2 border-t pt-2 space-y-2">
-              <p className="text-xs font-medium text-muted-foreground px-1">Pick a colour for "{query}"</p>
-              <div className="flex flex-wrap gap-1.5 px-1">
-                {TAG_COLORS.map(c => (
-                  <button
-                    key={c.key}
-                    type="button"
-                    title={c.label}
-                    onClick={() => setNewTagColor(c.key)}
-                    className={`h-5 w-5 rounded-full ${c.swatch} transition-transform hover:scale-110 ${
-                      newTagColor === c.key ? 'ring-2 ring-offset-1 ring-foreground scale-110' : ''
-                    }`}
-                  />
-                ))}
+              {/* Colour picker */}
+              <div className="flex items-center gap-2 px-1">
+                <span className="text-xs text-muted-foreground shrink-0">Colour</span>
+                <div className="flex gap-1.5 flex-wrap">
+                  {TAG_COLORS.map(c => (
+                    <button
+                      key={c.key}
+                      type="button"
+                      title={c.label}
+                      onClick={() => setNewTagColor(c.key)}
+                      className={`h-5 w-5 rounded-full shrink-0 transition-transform hover:scale-110 ${c.swatch} ${
+                        newTagColor === c.key
+                          ? 'ring-2 ring-offset-1 ring-foreground scale-110'
+                          : ''
+                      }`}
+                    />
+                  ))}
+                </div>
               </div>
-              <div className="flex gap-2 px-1">
-                <Button
-                  type="button"
-                  size="sm"
-                  className="flex-1 h-7 text-xs"
-                  onClick={handleCreate}
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? "Creating…" : "Create tag"}
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  className="h-7 text-xs"
-                  onClick={() => setIsCreating(false)}
-                >
-                  Cancel
-                </Button>
-              </div>
+
+              {/* Create button — shows a preview of the badge */}
+              <button
+                type="button"
+                onClick={handleCreate}
+                disabled={isSubmitting}
+                className="w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-accent transition-colors text-left disabled:opacity-50"
+              >
+                <Plus className="h-3.5 w-3.5 shrink-0 text-primary" />
+                <span className="text-muted-foreground shrink-0">
+                  {isSubmitting ? 'Creating…' : 'Create'}
+                </span>
+                <Badge className={`${selectedColor.bg} ${selectedColor.text} border-transparent text-xs`}>
+                  {query}
+                </Badge>
+              </button>
             </div>
           )}
         </PopoverContent>

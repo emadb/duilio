@@ -33,6 +33,39 @@
 :root {
   --font-size: 16px;
 
+  /* ── Tag colour palette (8 distinct muted hues, each with light bg and dark text) ── */
+  --tag-sage:           #6B9080;   /* green   — matches the primary brand color    */
+  --tag-sage-light:     #d4e8e0;
+  --tag-sage-dark:      #2a5440;
+
+  --tag-clay:           #A86050;   /* terracotta — warm earth, complements green   */
+  --tag-clay-light:     #eeddd8;
+  --tag-clay-dark:      #5a2818;
+
+  --tag-sand:           #B89860;   /* tan/gold  — warm neutral                    */
+  --tag-sand-light:     #f0e8d4;
+  --tag-sand-dark:      #543a18;
+
+  --tag-lavender:       #8870B0;   /* violet   — cool contrast to the warm greens */
+  --tag-lavender-light: #dcdaee;
+  --tag-lavender-dark:  #342060;
+
+  --tag-peach:          #C88060;   /* apricot  — muted orange                     */
+  --tag-peach-light:    #f5e0d4;
+  --tag-peach-dark:     #5a2e18;
+
+  --tag-slate:          #5880A0;   /* steel blue — cool, desaturated               */
+  --tag-slate-light:    #d0dce8;
+  --tag-slate-dark:     #1e3058;
+
+  --tag-amber:          #B09030;   /* amber/gold — warm, high-contrast             */
+  --tag-amber-light:    #ede8c0;
+  --tag-amber-dark:     #483808;
+
+  --tag-rose:           #A87088;   /* dusty rose — muted pink, rounds out the set  */
+  --tag-rose-light:     #ecdce4;
+  --tag-rose-dark:      #582040;
+
   /* ── Brand palette ── */
   --c-jungle:       #6B9080;
   --c-jungle-light: #d0e2db;

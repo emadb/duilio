@@ -3,28 +3,22 @@ export interface TagColor {
   label: string
   bg: string       // Tailwind bg class for badge background
   text: string     // Tailwind text class for badge text
-  swatch: string   // Tailwind bg class for the colour swatch tile
+  swatch: string   // Tailwind bg class for the colour swatch dot
 }
 
-// Tag colours reference the palette CSS variables defined in theme.css.
-// To change a tag colour, update the corresponding --c-* variable there.
+// 8 distinct muted hues that complement the green/teal brand palette.
+// Colors are defined as CSS variables in theme.css under "Tag colour palette".
 export const TAG_COLORS: TagColor[] = [
-  // Jungle Teal family
-  { key: 'jungle',  label: 'Jungle',  bg: 'bg-[var(--c-jungle-light)]',  text: 'text-[var(--c-jungle-dark)]',  swatch: 'bg-[var(--c-jungle)]' },
-  { key: 'forest',  label: 'Forest',  bg: 'bg-[var(--c-frozen-light)]',  text: 'text-[var(--c-frozen-dark)]',  swatch: 'bg-[var(--c-jungle)]' },
-  // Muted Teal family
-  { key: 'sage',    label: 'Sage',    bg: 'bg-[var(--c-teal-light)]',    text: 'text-[var(--c-teal-dark)]',    swatch: 'bg-[var(--c-teal)]' },
-  { key: 'fern',    label: 'Fern',    bg: 'bg-[var(--c-frozen-light)]',  text: 'text-[var(--c-teal-dark)]',    swatch: 'bg-[var(--c-teal)]' },
-  // Frozen Water family
-  { key: 'frost',   label: 'Frost',   bg: 'bg-[var(--c-frozen-light)]',  text: 'text-[var(--c-frozen-dark)]',  swatch: 'bg-[var(--c-frozen)]' },
-  { key: 'glacier', label: 'Glacier', bg: 'bg-[var(--c-azure-light)]',   text: 'text-[var(--c-azure-dark)]',   swatch: 'bg-[var(--c-frozen)]' },
-  // Azure Mist family
-  { key: 'mist',    label: 'Mist',    bg: 'bg-[var(--c-azure-light)]',   text: 'text-[var(--c-azure-dark)]',   swatch: 'bg-[var(--c-azure)]' },
-  { key: 'sky',     label: 'Sky',     bg: 'bg-[var(--c-azure)]',         text: 'text-[var(--c-azure-dark)]',   swatch: 'bg-[var(--c-teal)]' },
-  // Mint Cream family
-  { key: 'mint',    label: 'Mint',    bg: 'bg-[var(--c-mint-light)]',    text: 'text-[var(--c-mint-dark)]',    swatch: 'bg-[var(--c-mint)]' },
+  { key: 'sage',     label: 'Sage',     bg: 'bg-[var(--tag-sage-light)]',     text: 'text-[var(--tag-sage-dark)]',     swatch: 'bg-[var(--tag-sage)]'     },
+  { key: 'clay',     label: 'Clay',     bg: 'bg-[var(--tag-clay-light)]',     text: 'text-[var(--tag-clay-dark)]',     swatch: 'bg-[var(--tag-clay)]'     },
+  { key: 'sand',     label: 'Sand',     bg: 'bg-[var(--tag-sand-light)]',     text: 'text-[var(--tag-sand-dark)]',     swatch: 'bg-[var(--tag-sand)]'     },
+  { key: 'lavender', label: 'Lavender', bg: 'bg-[var(--tag-lavender-light)]', text: 'text-[var(--tag-lavender-dark)]', swatch: 'bg-[var(--tag-lavender)]' },
+  { key: 'peach',    label: 'Peach',    bg: 'bg-[var(--tag-peach-light)]',    text: 'text-[var(--tag-peach-dark)]',    swatch: 'bg-[var(--tag-peach)]'    },
+  { key: 'slate',    label: 'Slate',    bg: 'bg-[var(--tag-slate-light)]',    text: 'text-[var(--tag-slate-dark)]',    swatch: 'bg-[var(--tag-slate)]'    },
+  { key: 'amber',    label: 'Amber',    bg: 'bg-[var(--tag-amber-light)]',    text: 'text-[var(--tag-amber-dark)]',    swatch: 'bg-[var(--tag-amber)]'    },
+  { key: 'rose',     label: 'Rose',     bg: 'bg-[var(--tag-rose-light)]',     text: 'text-[var(--tag-rose-dark)]',     swatch: 'bg-[var(--tag-rose)]'     },
 ]
 
 export function getTagColor(key: string): TagColor {
-  return TAG_COLORS.find(c => c.key === key) ?? TAG_COLORS[TAG_COLORS.length - 1]
+  return TAG_COLORS.find(c => c.key === key) ?? TAG_COLORS[0]
 }
