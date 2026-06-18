@@ -12,9 +12,9 @@ interface TodoCardProps {
 
 export function TodoCard({ todo, onClick }: TodoCardProps) {
   const statusConfig = {
-    'todo': { label: 'To Do', icon: Circle, color: 'text-zinc-500', bg: 'bg-zinc-100' },
-    'in-progress': { label: 'In Progress', icon: Clock, color: 'text-blue-500', bg: 'bg-blue-50' },
-    'done': { label: 'Done', icon: CheckCircle2, color: 'text-green-500', bg: 'bg-green-50' },
+    'todo': { label: 'To Do', icon: Circle, color: 'text-[#7b6b8a]', bg: 'bg-[#ede6f3]' },
+    'in-progress': { label: 'In Progress', icon: Clock, color: 'text-[#3a7cb8]', bg: 'bg-[#dce9f7]' },
+    'done': { label: 'Done', icon: CheckCircle2, color: 'text-[#6b5f7e]', bg: 'bg-[#e8ddf0]' },
   }
 
   const config = statusConfig[todo.status]
@@ -34,7 +34,7 @@ export function TodoCard({ todo, onClick }: TodoCardProps) {
       </div>
 
       {todo.dueDate && (
-        <div className="mt-2 flex items-center gap-1.5 text-xs text-zinc-400">
+        <div className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
           <Calendar className="h-3.5 w-3.5" />
           <span>{format(new Date(todo.dueDate), "MMM d, yyyy")}</span>
         </div>
