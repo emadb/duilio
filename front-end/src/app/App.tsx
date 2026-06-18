@@ -1,13 +1,10 @@
 import * as React from "react"
-import { DndProvider } from "react-dnd"
-import { HTML5Backend } from "react-dnd-html5-backend"
 import { Plus, ListTodo, LogOut } from "lucide-react"
 import { toast } from "sonner"
 import { Todo, Tag, TodoStatus } from "./types"
 import { api } from "../lib/api"
 import { Button } from "./components/ui/button"
-import { DraggableTodoCard } from "./components/DraggableTodoCard"
-import { StatusColumn } from "./components/StatusColumn"
+import { TodoCard } from "./components/TodoCard"
 import { TodoModal } from "./components/TodoModal"
 import { AuthModal } from "./components/AuthModal"
 
@@ -99,23 +96,6 @@ export default function App() {
     return newTag
   }
 
-  const handleStatusChange = async (todoId: string, newStatus: TodoStatus) => {
-    // Optimistic update
-    setTodos(prev =>
-      prev.map(t => t.id === todoId ? { ...t, status: newStatus } : t)
-    )
-    try {
-      const updated = await api.updateTodo(todoId, { status: newStatus })
-      setTodos(prev => prev.map(t => t.id === updated.id ? updated : t))
-    } catch (err) {
-      // Rollback on failure
-      setTodos(prev =>
-        prev.map(t => t.id === todoId ? { ...t, status: t.status } : t)
-      )
-      toast.error(`Failed to move task: ${(err as Error).message}`)
-    }
-  }
-
   const handleDeleteTodo = async (id: string) => {
     try {
       await api.deleteTodo(id)
@@ -152,7 +132,6 @@ export default function App() {
   }
 
   return (
-    <DndProvider backend={HTML5Backend}>
     <div className="min-h-screen bg-muted/30 p-6 md:p-12 font-sans text-foreground">
       <div className="mx-auto max-w-3xl space-y-8">
 
@@ -218,26 +197,27 @@ export default function App() {
 
             const groupTodos = todos.filter(t => t.status === group.value)
 
-            // When filtered to a single status, keep hiding empty other columns
-            // When showing all, always render so they act as drop targets
-            if (filterStatus !== 'all' && groupTodos.length === 0) return null
+            if (groupTodos.length === 0) return null
 
             return (
-              <StatusColumn
-                key={group.value}
-                status={group.value}
-                label={group.label}
-                count={groupTodos.length}
-                onDrop={handleStatusChange}
-              >
-                {groupTodos.map(todo => (
-                  <DraggableTodoCard
-                    key={todo.id}
-                    todo={todo}
-                    onClick={handleEditTodo}
-                  />
-                ))}
-              </StatusColumn>
+              <section key={group.value} className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">{group.label}</h2>
+                  <span className="flex h-5 items-center rounded-full bg-secondary px-2 text-xs font-medium text-secondary-foreground">
+                    {groupTodos.length}
+                  </span>
+                </div>
+
+                <div className="grid gap-3">
+                  {groupTodos.map(todo => (
+                    <TodoCard
+                      key={todo.id}
+                      todo={todo}
+                      onClick={handleEditTodo}
+                    />
+                  ))}
+                </div>
+              </section>
             )
           })}
 
@@ -281,6 +261,5 @@ export default function App() {
         onSuccess={handleLoginSuccess}
       />
     </div>
-    </DndProvider>
   )
 }
