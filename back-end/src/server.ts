@@ -2,8 +2,10 @@ import { existsSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import fastifyStatic from '@fastify/static'
+import rateLimit from '@fastify/rate-limit'
 import Fastify from 'fastify'
 import jwt from 'jsonwebtoken'
+import { config } from './config.js'
 import { pool } from './db/client.js'
 import { todoRoutes } from './routes/todos.js'
 import { authRoutes } from './routes/auth.js'
@@ -11,10 +13,12 @@ import { tagRoutes } from './routes/tags.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const FRONTEND_DIST = path.resolve(__dirname, '../../front-end/dist')
-const PORT = Number(process.env.PORT ?? 3000)
-const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-key'
+const { port: PORT, jwtSecret: JWT_SECRET } = config
 
 const app = Fastify({ logger: true })
+
+// Rate limiting — disabled globally, enabled per-route where needed
+await app.register(rateLimit, { global: false })
 
 // Authentication middleware
 app.addHook('onRequest', async (request, reply) => {

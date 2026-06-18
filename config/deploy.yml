@@ -25,7 +25,7 @@ proxy:
     - duilio.codiceplastico.com
 
   # Proxy connects to your container on port 80 by default.
-  app_port: 4000
+  app_port: 3000
 
 # Credentials for your image host.
 registry:
@@ -51,13 +51,16 @@ env:
     PORT: 3000
   secret:
     - DATABASE_URL
-    - GITHUB_TOKEN
+    - JWT_SECRET
 
 # Aliases are triggered with "bin/kamal <alias>". You can overwrite arguments on invocation:
 # "bin/kamal app logs -r job" will tail logs from the first server in the job section.
 #
 # aliases:
 #   shell: app exec --interactive --reuse "bash"
+
+# Shared Docker network — lets the app container reach the postgres accessory by name
+network: duilio
 
 # Use a different ssh user than root
 #
@@ -83,9 +86,10 @@ ssh:
 # Use accessory services (secrets come from .kamal/secrets).
 accessories:
   postgres:
-    image: postgres:18
+    image: postgres:17
     host: vps-7dcbeab1.vps.ovh.net
     port: 5432
+    network: duilio
     env:
       clear:
         POSTGRES_USER: postgres
@@ -93,4 +97,4 @@ accessories:
       secret:
         - POSTGRES_PASSWORD
     directories:
-      - data:/var/lib/postgresql
+      - data:/var/lib/postgresql/data

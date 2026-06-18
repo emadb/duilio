@@ -1,0 +1,6 @@
+#!/bin/sh
+set -e
+
+echo "[$KAMAL_VERSION] Running database migrations..."
+kamal app exec -q 'npm run migrate'
+echo "[$KAMAL_VERSION] Migrations complete."

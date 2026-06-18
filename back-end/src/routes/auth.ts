@@ -1,9 +1,10 @@
 import type { FastifyInstance } from 'fastify'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
+import { config } from '../config.js'
 import { createUser, getUserByEmail } from '../repository.js'
 
-const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-key'
+const JWT_SECRET = config.jwtSecret
 
 const registerSchema = {
   body: {
@@ -58,7 +59,10 @@ const loginSchema = {
 }
 
 export async function authRoutes(app: FastifyInstance) {
-  app.post('/api/auth/register', { schema: registerSchema }, async (request, reply) => {
+  app.post('/api/auth/register', {
+    schema: registerSchema,
+    config: { rateLimit: { max: 10, timeWindow: '1 minute' } },
+  }, async (request, reply) => {
     const { email, password } = request.body as any
     const existingUser = await getUserByEmail(email)
     if (existingUser) {
@@ -70,7 +74,10 @@ export async function authRoutes(app: FastifyInstance) {
     return reply.code(201).send(user)
   })
 
-  app.post('/api/auth/login', { schema: loginSchema }, async (request, reply) => {
+  app.post('/api/auth/login', {
+    schema: loginSchema,
+    config: { rateLimit: { max: 10, timeWindow: '1 minute' } },
+  }, async (request, reply) => {
     const { email, password } = request.body as any
     const user = await getUserByEmail(email)
     if (!user) {
