@@ -2,6 +2,6 @@
 set -e
 
 # Database migrations are embedded in the Rust binary and applied automatically
-# when the application boots (see back-end/src/main.rs `sqlx::migrate!`), so no
+# when the application boots (see src/main.rs `sqlx::migrate!`), so no
 # explicit migration step is needed here.
 echo "[$KAMAL_VERSION] Migrations run automatically on application boot."

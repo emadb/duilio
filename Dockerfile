@@ -20,12 +20,12 @@ FROM rust:1-slim-bookworm AS backend
 WORKDIR /app
 
 # SQLx queries are verified at compile time. There is no database during the
-# image build, so rely on the committed offline cache in back-end/.sqlx.
+# image build, so rely on the offline cache in .sqlx.
 ENV SQLX_OFFLINE=true
 
 # Pre-build dependencies against a dummy main so they are cached independently
 # of the application sources.
-COPY back-end/Cargo.toml back-end/Cargo.lock ./
+COPY Cargo.toml Cargo.lock ./
 RUN mkdir src \
     && echo 'fn main() {}' > src/main.rs \
     && cargo build --release \
@@ -34,7 +34,9 @@ RUN mkdir src \
 # Build the real application. Touch the sources so their mtimes are newer than
 # the cached dummy build (Docker COPY preserves mtimes), forcing a rebuild of the
 # crate while keeping the dependency layer cached.
-COPY back-end/ ./
+COPY src ./src
+COPY migrations ./migrations
+COPY .sqlx ./.sqlx
 RUN find src -type f -name '*.rs' -exec touch {} + \
     && cargo build --release
 

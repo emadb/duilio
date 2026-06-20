@@ -5,20 +5,26 @@ Rust (Axum + SQLx) API back-end, backed by PostgreSQL.
 
 ## Project structure
 
+The Rust crate lives at the repository root and is the whole application — it
+serves both the API and the built front-end. The React app is a sub-folder.
+
 ```
 duilio/
-  docker-compose.yml   # PostgreSQL service
-  back-end/            # Rust API server (Axum + SQLx)
-    src/
-      main.rs          # entry point: builds the router, runs migrations
-      auth_middleware.rs
-      modules/         # feature modules: auth, todos, tags, health
-    migrations/        # SQL migrations (applied automatically at startup)
-    Cargo.toml
+  Cargo.toml           # Rust crate (package "duilio")
+  src/
+    main.rs            # entry point: builds the router, runs migrations, serves the SPA
+    auth_middleware.rs
+    modules/           # feature modules: auth, todos, tags, health
+  migrations/          # SQL migrations (applied automatically at startup)
+  .sqlx/               # SQLx offline query cache (used for the Docker build)
   front-end/           # React SPA (Vite, Tailwind, shadcn components)
     src/
     index.html
     vite.config.ts
+  package.json         # root: builds the front-end (npm workspace)
+  Dockerfile           # multi-stage build → single deployable image
+  docker-compose.yml   # local PostgreSQL service
+  config/deploy.yml    # Kamal deployment config
 ```
 
 ## Prerequisites
@@ -42,7 +48,7 @@ This starts a PostgreSQL 17 instance on `localhost:5432` with:
 
 ### 2. Configure environment
 
-The back-end reads its configuration from environment variables:
+The app reads its configuration from environment variables:
 
 ```sh
 export DATABASE_URL=postgres://postgres:postgres@localhost:5432/duilio
@@ -52,47 +58,69 @@ export JWT_SECRET=dev-only-insecure-secret   # optional in development
 You can keep these in a `.env` file at the repo root and load them into your shell
 (for example with [direnv](https://direnv.net) or `export $(grep -v '^#' .env | xargs)`).
 
-> **Note:** the back-end uses SQLx's compile-time-checked queries, so a running,
+> **Note:** the app uses SQLx's compile-time-checked queries, so a running,
 > migrated database must be reachable via `DATABASE_URL` when you *build* the
 > project — not just when you run it. For a brand-new database, apply the
 > migrations first with [`sqlx-cli`](https://crates.io/crates/sqlx-cli)
-> (`cargo install sqlx-cli`, then `cd back-end && sqlx migrate run`). After that
-> the app also re-applies any pending migrations automatically on startup.
+> (`cargo install sqlx-cli`, then `sqlx migrate run`). After that the app also
+> re-applies any pending migrations automatically on startup.
 
-### 3. Run the back-end
+### 3. Run the app
 
 ```sh
-cd back-end
 cargo run
 ```
 
-On startup it applies pending migrations from `back-end/migrations/` and listens on
-`http://localhost:3000`.
+On startup it applies pending migrations from `migrations/` and listens on
+`http://localhost:3000`. If a `front-end/dist` build is present it is served at the
+same address (see production below).
 
-### 4. Run the front-end
+### 4. Run the front-end dev server
+
+For hot-reloading UI work, run Vite alongside `cargo run`:
 
 ```sh
-cd front-end
-npm install
-npm run dev
+npm install          # once, from the repo root
+npm run dev -w front-end
 ```
 
 The Vite dev server runs at `http://localhost:5173` and proxies `/api` requests to
-the back-end on port `3000`. Open `http://localhost:5173` in your browser.
+the app on port `3000`. Open `http://localhost:5173` in your browser.
+
+Alternatively, `npm run dev` from the root starts both `cargo run` and the Vite dev
+server together (via `concurrently`).
 
 ## Building for production
 
-```sh
-# Front-end: produces static assets in front-end/dist
-cd front-end && npm run build
+The application ships as a **single binary** that serves the API and the built
+front-end. Build the front-end first, then run/build the Rust app:
 
-# Back-end: an optimized binary in back-end/target/release
-cd ../back-end && cargo build --release
+```sh
+npm run build        # from the root → produces front-end/dist
+cargo build --release
 ```
 
-The back-end serves the API only; deploy the built front-end (`front-end/dist`)
-through your static host or reverse proxy of choice, routing `/api` to the Rust
-server.
+At runtime the server serves static files from the directory in `STATIC_DIR`
+(default `front-end/dist`), falling back to `index.html` for client-side routes.
+
+### Container image (Kamal)
+
+The `Dockerfile` performs the whole build — front-end assets, Rust binary, and a
+slim runtime image that serves everything on port `3000`:
+
+```sh
+docker build -t duilio .
+```
+
+The Rust build runs with `SQLX_OFFLINE=true` against the `.sqlx/` cache, so no
+database is needed during the image build. Regenerate that cache whenever you change
+a SQL query: `cargo sqlx prepare` (requires `sqlx-cli` and a reachable
+`DATABASE_URL`). Deployment is driven by `config/deploy.yml` (Kamal); migrations run
+automatically when the container boots.
+
+> `.sqlx/` is currently in `.gitignore`. Kamal builds the image from your working
+> tree, so local deploys work as-is. If you build from a fresh clone or CI, commit
+> `.sqlx/` instead (remove it from `.gitignore`).
 
 ## API reference
 
