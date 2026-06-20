@@ -1,0 +1,15 @@
+[package]
+name = "foglietto"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+axum = "0.8.8"
+bcrypt = "0.18.0"
+jsonwebtoken = { version = "10", features = ["rust_crypto"] }
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1.0"
+chrono = { version = "0.4", features = ["serde"] }
+sqlx = { version = "0.8.6", features = ["runtime-tokio-rustls", "any", "postgres", "chrono", "uuid", "macros"] }
+tokio = { version = "1.49.0", features = ["macros", "rt-multi-thread"] }
+uuid = { version = "1", features = ["v4", "serde"] }
