@@ -4,6 +4,7 @@ use serde::{Serialize, Deserialize};
 pub mod health;
 pub mod auth;
 pub mod todos;
+pub mod tags;
 
 
 #[derive(Debug, Serialize, Deserialize, Clone, Type)]

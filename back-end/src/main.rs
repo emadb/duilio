@@ -27,6 +27,7 @@ async fn main() {
         .merge(crate::modules::health::router::build_routes())
         .merge(crate::modules::auth::router::build_routes())
         .merge(crate::modules::todos::router::build_routes())
+        .merge(crate::modules::tags::router::build_routes())
         .with_state(pool);
 
 

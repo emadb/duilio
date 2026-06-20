@@ -1,39 +1,35 @@
 # Duilio
 
-A full-stack personal task manager: React (Vite + Tailwind + shadcn) front-end, Fastify + Drizzle ORM back-end, PostgreSQL storage.
+A full-stack personal task manager: a React (Vite + Tailwind + shadcn) front-end and a
+Rust (Axum + SQLx) API back-end, backed by PostgreSQL.
 
 ## Project structure
 
 ```
 duilio/
-  package.json        # workspace root — all scripts live here
-  back-end/           # Fastify API server (TypeScript, Drizzle ORM)
+  docker-compose.yml   # PostgreSQL service
+  back-end/            # Rust API server (Axum + SQLx)
     src/
-    drizzle/          # SQL migrations
-    drizzle.config.ts
-    tsconfig.json
-    .env              # local environment variables (not committed)
-  front-end/          # React SPA (Vite, Tailwind, shadcn components)
+      main.rs          # entry point: builds the router, runs migrations
+      auth_middleware.rs
+      modules/         # feature modules: auth, todos, tags, health
+    migrations/        # SQL migrations (applied automatically at startup)
+    Cargo.toml
+  front-end/           # React SPA (Vite, Tailwind, shadcn components)
     src/
     index.html
     vite.config.ts
-  docs/               # Design documents and PRDs
 ```
 
 ## Prerequisites
 
+- **Rust** ≥ 1.85 (the crate uses edition 2024)
 - **Node.js** ≥ 20
 - **Docker** (for PostgreSQL)
 
 ## Getting started
 
-### 1. Install dependencies
-
-```sh
-npm install
-```
-
-### 2. Start PostgreSQL
+### 1. Start PostgreSQL
 
 ```sh
 docker compose up -d
@@ -44,88 +40,102 @@ This starts a PostgreSQL 17 instance on `localhost:5432` with:
 - password: `postgres`
 - database: `duilio`
 
-### 3. Configure environment
+### 2. Configure environment
 
-`back-end/.env` is pre-configured for the Docker setup above:
+The back-end reads its configuration from environment variables:
 
 ```sh
-DATABASE_URL=postgres://postgres:postgres@localhost:5432/duilio
-PORT=3000
+export DATABASE_URL=postgres://postgres:postgres@localhost:5432/duilio
+export JWT_SECRET=dev-only-insecure-secret   # optional in development
 ```
 
-Edit it if your database credentials differ.
+You can keep these in a `.env` file at the repo root and load them into your shell
+(for example with [direnv](https://direnv.net) or `export $(grep -v '^#' .env | xargs)`).
 
-### 4. Apply database migrations
+> **Note:** the back-end uses SQLx's compile-time-checked queries, so a running,
+> migrated database must be reachable via `DATABASE_URL` when you *build* the
+> project — not just when you run it. For a brand-new database, apply the
+> migrations first with [`sqlx-cli`](https://crates.io/crates/sqlx-cli)
+> (`cargo install sqlx-cli`, then `cd back-end && sqlx migrate run`). After that
+> the app also re-applies any pending migrations automatically on startup.
+
+### 3. Run the back-end
 
 ```sh
-npm run migrate
+cd back-end
+cargo run
 ```
 
-### 5. Build and run
+On startup it applies pending migrations from `back-end/migrations/` and listens on
+`http://localhost:3000`.
 
-**Development** (hot reload for both front-end and back-end):
+### 4. Run the front-end
 
 ```sh
+cd front-end
+npm install
 npm run dev
 ```
 
-This starts two processes concurrently:
-- Back-end at `http://localhost:3000` (tsx watch)
-- Front-end Vite dev server at `http://localhost:5173` (proxies `/api` → port 3000)
+The Vite dev server runs at `http://localhost:5173` and proxies `/api` requests to
+the back-end on port `3000`. Open `http://localhost:5173` in your browser.
 
-Open `http://localhost:5173` in your browser.
-
-**Production**:
+## Building for production
 
 ```sh
-npm run build      # compiles front-end (Vite) then back-end (tsc)
-npm run start      # serves everything from http://localhost:3000
+# Front-end: produces static assets in front-end/dist
+cd front-end && npm run build
+
+# Back-end: an optimized binary in back-end/target/release
+cd ../back-end && cargo build --release
 ```
 
-In production mode the back-end serves both the API and the built front-end from `http://localhost:3000`.
-
-## All npm scripts
-
-| Script | Description |
-|---|---|
-| `npm run dev` | Start back-end + front-end dev servers concurrently |
-| `npm run build` | Build front-end (Vite) then compile back-end (tsc) |
-| `npm run start` | Start the compiled back-end (production) |
-| `npm run migrate` | Apply pending database migrations |
-| `npm run generate` | Generate a new migration from schema changes |
+The back-end serves the API only; deploy the built front-end (`front-end/dist`)
+through your static host or reverse proxy of choice, routing `/api` to the Rust
+server.
 
 ## API reference
 
-All endpoints require a `Bearer` JWT token in the `Authorization` header except the auth routes.
+All endpoints require a `Bearer` JWT in the `Authorization` header except the auth
+routes. The token is returned by `POST /api/auth/login`.
 
 ### Auth
 
 | Method | Path | Description |
 |---|---|---|
-| `POST` | `/api/auth/register` | Register a new user `{ email, password }` |
-| `POST` | `/api/auth/login` | Login and receive a JWT `{ email, password }` |
+| `POST` | `/api/auth/register` | Register a new user `{ email, password }` → `{ id, email, createdAt }` |
+| `POST` | `/api/auth/login` | Login `{ email, password }` → `{ token, user: { id, email } }` |
 
 ### Todos
 
 | Method | Path | Description |
 |---|---|---|
-| `GET` | `/api/todos` | List all todos (with tags) |
+| `GET` | `/api/todos` | List the current user's todos (with tags), newest first |
 | `POST` | `/api/todos` | Create a todo `{ title, description?, dueDate?, status?, tagIds? }` |
 | `PATCH` | `/api/todos/:id` | Update a todo (any subset of fields + `tagIds?`) |
-| `PATCH` | `/api/todos/:id/status` | Update only the status |
+| `PATCH` | `/api/todos/:id/status` | Update only the status `{ status }` |
 | `DELETE` | `/api/todos/:id` | Delete a todo |
+
+`status` is one of `todo`, `in-progress`, `done`.
 
 ### Tags
 
 | Method | Path | Description |
 |---|---|---|
-| `GET` | `/api/tags` | List all tags for the current user |
-| `POST` | `/api/tags` | Create a tag `{ name, color }` — returns `409` if name already exists |
+| `GET` | `/api/tags` | List the current user's tags |
+| `POST` | `/api/tags` | Create a tag `{ name, color }` — returns `409` if the name already exists |
+
+### Health
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/health` | Liveness check; reports database connectivity |
 
 ## Environment variables
 
-| Variable | Default | Description |
-|---|---|---|
-| `DATABASE_URL` | `postgres://postgres:postgres@localhost:5432/duilio` | PostgreSQL connection string |
-| `PORT` | `3000` | Port the back-end server listens on |
-| `JWT_SECRET` | `super-secret-key` | Secret used to sign JWTs — **change in production** |
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `DATABASE_URL` | yes | — | PostgreSQL connection string (needed at build time and run time) |
+| `JWT_SECRET` | no | `dev-only-insecure-secret` | Secret used to sign and verify JWTs — **set a strong value in production** |
+
+The back-end listens on `0.0.0.0:3000`.
