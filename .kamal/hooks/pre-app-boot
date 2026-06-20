@@ -1,6 +1,7 @@
 #!/bin/sh
 set -e
 
-echo "[$KAMAL_VERSION] Running database migrations..."
-kamal app exec -q 'npm run migrate'
-echo "[$KAMAL_VERSION] Migrations complete."
+# Database migrations are embedded in the Rust binary and applied automatically
+# when the application boots (see back-end/src/main.rs `sqlx::migrate!`), so no
+# explicit migration step is needed here.
+echo "[$KAMAL_VERSION] Migrations run automatically on application boot."
