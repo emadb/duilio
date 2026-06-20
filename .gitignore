@@ -1,5 +1,5 @@
 node_modules/
-dist/
+/static-assets
 .env
 .DS_Store
 .claude/

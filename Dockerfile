@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # ----------------------------------------------------------------------------
-# Stage 1 — build the React front-end into static assets (front-end/dist)
+# Stage 1 — build the React front-end into static assets (/app/static-assets)
 # ----------------------------------------------------------------------------
 FROM node:20-slim AS frontend
 WORKDIR /app/front-end
@@ -54,9 +54,10 @@ WORKDIR /app
 COPY --from=backend /app/target/release/duilio /app/duilio
 
 # The built front-end, served by the API as static files / SPA fallback.
-COPY --from=frontend /app/front-end/dist /app/static
+# Vite's outDir (../static-assets) resolves to /app/static-assets in this stage.
+COPY --from=frontend /app/static-assets /app/static-assets
 
-ENV STATIC_DIR=/app/static
+ENV STATIC_DIR=/app/static-assets
 ENV PORT=3000
 
 EXPOSE 3000

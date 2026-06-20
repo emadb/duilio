@@ -21,6 +21,7 @@ duilio/
     src/
     index.html
     vite.config.ts
+  static-assets/       # built front-end (generated; served by the Rust server)
   package.json         # root: builds the front-end (npm workspace)
   Dockerfile           # multi-stage build → single deployable image
   docker-compose.yml   # local PostgreSQL service
@@ -72,7 +73,7 @@ cargo run
 ```
 
 On startup it applies pending migrations from `migrations/` and listens on
-`http://localhost:3000`. If a `front-end/dist` build is present it is served at the
+`http://localhost:3000`. If a `static-assets/` build is present it is served at the
 same address (see production below).
 
 ### 4. Run the front-end dev server
@@ -81,14 +82,11 @@ For hot-reloading UI work, run Vite alongside `cargo run`:
 
 ```sh
 npm install          # once, from the repo root
-npm run dev -w front-end
+npm run dev          # Vite dev server (alias for `npm run dev -w front-end`)
 ```
 
 The Vite dev server runs at `http://localhost:5173` and proxies `/api` requests to
 the app on port `3000`. Open `http://localhost:5173` in your browser.
-
-Alternatively, `npm run dev` from the root starts both `cargo run` and the Vite dev
-server together (via `concurrently`).
 
 ## Building for production
 
@@ -96,12 +94,12 @@ The application ships as a **single binary** that serves the API and the built
 front-end. Build the front-end first, then run/build the Rust app:
 
 ```sh
-npm run build        # from the root → produces front-end/dist
+npm run build        # from the root → produces static-assets/
 cargo build --release
 ```
 
 At runtime the server serves static files from the directory in `STATIC_DIR`
-(default `front-end/dist`), falling back to `index.html` for client-side routes.
+(default `static-assets`), falling back to `index.html` for client-side routes.
 
 ### Container image (Kamal)
 

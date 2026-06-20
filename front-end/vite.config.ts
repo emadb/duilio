@@ -31,9 +31,17 @@ export default defineConfig({
     },
   },
 
+  build: {
+    // Emit the build into a top-level `static-assets/` folder that the Rust
+    // server serves. `emptyOutDir` is required because the directory lives
+    // outside this project root.
+    outDir: '../static-assets',
+    emptyOutDir: true,
+  },
+
   server: {
     proxy: {
-      // In dev, forward API calls to the backend (npm run dev in back-end/)
+      // In dev, forward API calls to the backend (`cargo run`)
       '/api': 'http://localhost:3000',
     },
   },

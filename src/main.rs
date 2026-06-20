@@ -13,7 +13,7 @@ async fn main() {
 
     let port = std::env::var("PORT").ok().and_then(|p| p.parse::<u16>().ok()).unwrap_or(3000);
     let host_and_port = format!("0.0.0.0:{port}");
-    let static_dir = std::env::var("STATIC_DIR").unwrap_or_else(|_| "front-end/dist".to_string());
+    let static_dir = std::env::var("STATIC_DIR").unwrap_or_else(|_| "static-assets".to_string());
 
     let pool = PgPoolOptions::new()
            .max_connections(5)

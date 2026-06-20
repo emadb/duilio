@@ -6,11 +6,8 @@
     "front-end"
   ],
   "scripts": {
-    "dev": "concurrently -n server,client -c blue,green \"cargo run\" \"npm run dev -w front-end\"",
+    "dev": "npm run dev -w front-end",
     "build": "npm run build -w front-end",
     "start": "cargo run --release"
-  },
-  "devDependencies": {
-    "concurrently": "^9.0.0"
   }
 }
