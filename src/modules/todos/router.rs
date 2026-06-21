@@ -6,7 +6,7 @@ use axum::{
     response::{IntoResponse, Response},
     routing::{get, patch},
 };
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, NaiveDate, TimeZone, Utc};
 use serde::{Deserialize, Deserializer};
 use sqlx::PgPool;
 use sqlx::types::Uuid;
@@ -18,14 +18,42 @@ use crate::{
     },
 };
 
-/// Distinguishes "field absent" (`None`) from "field present and null" (`Some(None)`)
-/// so a `dueDate: null` clears the value while an omitted `dueDate` leaves it.
-fn double_option<'de, T, D>(de: D) -> Result<Option<Option<T>>, D::Error>
+/// Parses a `dueDate` string. Accepts both a full RFC3339 timestamp
+/// (e.g. `2026-06-21T00:00:00Z`) and a bare calendar date (`2026-06-21`, as
+/// produced by the `<input type="date">` UI), treating the latter as midnight UTC.
+fn parse_due_date<E: serde::de::Error>(s: &str) -> Result<DateTime<Utc>, E> {
+    if let Ok(dt) = DateTime::parse_from_rfc3339(s) {
+        return Ok(dt.with_timezone(&Utc));
+    }
+    if let Ok(date) = NaiveDate::parse_from_str(s, "%Y-%m-%d") {
+        let midnight = date.and_hms_opt(0, 0, 0).expect("00:00:00 is always valid");
+        return Ok(Utc.from_utc_datetime(&midnight));
+    }
+    Err(E::custom(format!(
+        "invalid dueDate '{s}': expected YYYY-MM-DD or an RFC3339 timestamp"
+    )))
+}
+
+/// Deserializes an optional `dueDate` for create: `null`/absent → `None`,
+/// otherwise a date-only or RFC3339 string (see [`parse_due_date`]).
+fn opt_due_date<'de, D>(de: D) -> Result<Option<DateTime<Utc>>, D::Error>
 where
-    T: Deserialize<'de>,
     D: Deserializer<'de>,
 {
-    Deserialize::deserialize(de).map(Some)
+    match Option::<String>::deserialize(de)? {
+        Some(s) if !s.is_empty() => parse_due_date(&s).map(Some),
+        _ => Ok(None),
+    }
+}
+
+/// Like [`opt_due_date`] but distinguishes "field absent" (`None`) from "field
+/// present and null/empty" (`Some(None)`), so on update a `dueDate: null` clears
+/// the value while an omitted `dueDate` leaves it untouched.
+fn double_opt_due_date<'de, D>(de: D) -> Result<Option<Option<DateTime<Utc>>>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    opt_due_date(de).map(Some)
 }
 
 #[derive(Deserialize)]
@@ -34,7 +62,7 @@ struct CreateTodoReq {
     title: String,
     #[serde(default)]
     description: String,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "opt_due_date")]
     due_date: Option<DateTime<Utc>>,
     status: Option<TodoStatus>,
     #[serde(default)]
@@ -46,7 +74,7 @@ struct CreateTodoReq {
 struct UpdateTodoReq {
     title: Option<String>,
     description: Option<String>,
-    #[serde(default, deserialize_with = "double_option")]
+    #[serde(default, deserialize_with = "double_opt_due_date")]
     due_date: Option<Option<DateTime<Utc>>>,
     status: Option<TodoStatus>,
     tag_ids: Option<Vec<String>>,
@@ -175,4 +203,50 @@ pub fn build_routes() -> Router<PgPool> {
         .route("/api/todos/{id}", patch(update_todo).delete(delete_todo))
         .route("/api/todos/{id}/status", patch(update_todo_status))
         .layer(middleware::from_fn(auth_middleware_admin))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn create_accepts_date_only() {
+        let req: CreateTodoReq =
+            serde_json::from_str(r#"{"title":"A","dueDate":"2026-06-21"}"#).unwrap();
+        assert_eq!(
+            req.due_date.unwrap().to_rfc3339(),
+            "2026-06-21T00:00:00+00:00"
+        );
+    }
+
+    #[test]
+    fn create_accepts_rfc3339() {
+        let req: CreateTodoReq =
+            serde_json::from_str(r#"{"title":"A","dueDate":"2026-06-21T08:30:00Z"}"#).unwrap();
+        assert_eq!(req.due_date.unwrap().to_rfc3339(), "2026-06-21T08:30:00+00:00");
+    }
+
+    #[test]
+    fn create_accepts_null_and_absent() {
+        let a: CreateTodoReq = serde_json::from_str(r#"{"title":"A","dueDate":null}"#).unwrap();
+        assert!(a.due_date.is_none());
+        let b: CreateTodoReq = serde_json::from_str(r#"{"title":"A"}"#).unwrap();
+        assert!(b.due_date.is_none());
+    }
+
+    #[test]
+    fn update_distinguishes_absent_null_and_value() {
+        // absent → outer None (leave untouched)
+        let absent: UpdateTodoReq = serde_json::from_str(r#"{}"#).unwrap();
+        assert!(absent.due_date.is_none());
+        // null → Some(None) (clear)
+        let null: UpdateTodoReq = serde_json::from_str(r#"{"dueDate":null}"#).unwrap();
+        assert_eq!(null.due_date, Some(None));
+        // date-only value → Some(Some(midnight))
+        let val: UpdateTodoReq = serde_json::from_str(r#"{"dueDate":"2026-12-25"}"#).unwrap();
+        assert_eq!(
+            val.due_date.unwrap().unwrap().to_rfc3339(),
+            "2026-12-25T00:00:00+00:00"
+        );
+    }
 }

@@ -47,7 +47,7 @@ builder:
 #
 env:
   clear:
-    ENV: production
+    APP_ENV: production
     PORT: 3000
   secret:
     - DATABASE_URL
