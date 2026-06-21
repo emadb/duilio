@@ -1,7 +1,11 @@
+use std::sync::Arc;
+use std::time::Duration;
+
 use axum::{Json, Router, extract::State, http::StatusCode, routing::post};
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
+use tower_governor::{GovernorLayer, governor::GovernorConfigBuilder, key_extractor::SmartIpKeyExtractor};
 
 use crate::modules::{
     EntityId, ErrorResponse, RequestResult,
@@ -95,7 +99,33 @@ async fn register(
 }
 
 pub fn build_routes() -> Router<PgPool> {
+    // Throttle the auth endpoints to curb brute-force / credential-stuffing,
+    // mirroring the old TS backend's 10-requests-per-minute limit. The GCRA
+    // bucket allows a burst of 10 then replenishes one slot every 6 seconds
+    // (≈10/min sustained). Keyed by client IP, reading the proxy's
+    // X-Forwarded-For header (the app runs behind kamal-proxy) and falling back
+    // to the peer IP.
+    let governor_conf = Arc::new(
+        GovernorConfigBuilder::default()
+            .period(Duration::from_secs(6))
+            .burst_size(10)
+            .key_extractor(SmartIpKeyExtractor)
+            .finish()
+            .expect("invalid rate-limit configuration"),
+    );
+
+    // Periodically evict stale per-IP entries so the limiter's memory doesn't
+    // grow unbounded with distinct client IPs.
+    let limiter = governor_conf.limiter().clone();
+    std::thread::spawn(move || {
+        loop {
+            std::thread::sleep(Duration::from_secs(120));
+            limiter.retain_recent();
+        }
+    });
+
     Router::new()
         .route("/api/auth/login", post(login))
         .route("/api/auth/register", post(register))
+        .layer(GovernorLayer::new(governor_conf))
 }

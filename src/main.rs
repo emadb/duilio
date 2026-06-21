@@ -2,6 +2,7 @@ mod config;
 mod modules;
 mod auth_middleware;
 
+use std::net::SocketAddr;
 use std::time::Duration;
 use axum::Router;
 use sqlx::postgres::PgPoolOptions;
@@ -44,5 +45,12 @@ async fn main() {
 
 
     let listener = tokio::net::TcpListener::bind(host_and_port).await.unwrap();
-    axum::serve(listener, app).await.unwrap();
+    // `into_make_service_with_connect_info` exposes the peer IP so the auth
+    // rate-limiter can fall back to it when no proxy header is present.
+    axum::serve(
+        listener,
+        app.into_make_service_with_connect_info::<SocketAddr>(),
+    )
+    .await
+    .unwrap();
 }

@@ -22,10 +22,6 @@ Severity legend: 🔴 high (do first) · 🟡 medium · 🟢 low / nice-to-have.
 
 ## 🔴 Top priorities (security & correctness)
 
-### 1. Frontend build does no type-checking
-There is **no `tsconfig.json`** in `front-end/`; `vite build` uses esbuild, which strips types without checking them. Type errors ship silently.
-- **Action:** add a `tsconfig.json` and run `tsc --noEmit` as part of `build` / CI.
-
 ### 2. No rate limiting on auth endpoints
 `/api/auth/login` and `/api/auth/register` are unthrottled → brute-force and credential-stuffing exposure. The previous TS backend limited these to 10/min.
 - **Action:** add rate limiting (e.g. `tower_governor`) on the auth routes, keyed by IP.
