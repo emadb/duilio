@@ -48,17 +48,24 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
+# Run as an unprivileged system user rather than root. The app only reads the
+# files copied below (it writes nothing to disk), so they are owned by this user.
+RUN groupadd --system --gid 10001 app \
+    && useradd --system --uid 10001 --gid app --no-create-home app
+
 WORKDIR /app
 
 # The compiled API server (migrations are embedded at build time and run on boot).
-COPY --from=backend /app/target/release/duilio /app/duilio
+COPY --from=backend --chown=app:app /app/target/release/duilio /app/duilio
 
 # The built front-end, served by the API as static files / SPA fallback.
 # Vite's outDir (../static-assets) resolves to /app/static-assets in this stage.
-COPY --from=frontend /app/static-assets /app/static-assets
+COPY --from=frontend --chown=app:app /app/static-assets /app/static-assets
 
 ENV STATIC_DIR=/app/static-assets
 ENV PORT=3000
+
+USER app
 
 EXPOSE 3000
 CMD ["/app/duilio"]
