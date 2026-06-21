@@ -23,7 +23,7 @@ impl From<Uuid> for EntityId {
     }
 }
 
-pub fn internal_server_error<T>(msg: String) -> RequestResult<T> {
+pub(crate) fn internal_server_error<T>(msg: String) -> RequestResult<T> {
     RequestResult::Error((
         StatusCode::INTERNAL_SERVER_ERROR,
         ErrorResponse::new(msg),
@@ -44,16 +44,6 @@ impl TryFrom<String> for EntityId {
     }
 }
 
-impl From<Option<Uuid>> for EntityId {
-    fn from(value: Option<Uuid>) -> Self {
-        if let Some(v) = value {
-            EntityId(v)
-        } else {
-            EntityId(Uuid::new_v4())
-        }
-    }
-}
-
 impl TryFrom<EntityId> for Uuid {
     type Error = uuid::Error;
 
@@ -69,7 +59,7 @@ impl std::fmt::Display for EntityId {
 }
 
 #[derive(Serialize)]
-struct ErrorResponse {
+pub(crate) struct ErrorResponse {
     message: String
 }
 
@@ -79,7 +69,7 @@ impl ErrorResponse {
     }
 }
 
-enum RequestResult<T> {
+pub(crate) enum RequestResult<T> {
     Success((StatusCode, T)),
     Error((StatusCode, crate::modules::ErrorResponse)),
 }
@@ -92,20 +82,4 @@ impl <T: Serialize>IntoResponse for RequestResult<T> {
         }
     }
 }
-
-// ============================================
-// CORE TRAITS (reusable across application)
-// ============================================
-
-/// Marker trait for commands - commands are just data structures
-pub trait Command: Send + Sync {}
-
-/// Links a command to its result type and defines execution contract
-pub trait CommandHandler<C: Command> {
-    type Result;
-    type Error;
-
-    async fn handle(&self, cmd: C) -> Result<Self::Result, Self::Error>;
-}
-
 

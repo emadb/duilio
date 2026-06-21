@@ -4,7 +4,7 @@ use sqlx::PgPool;
 
 use crate::{
     auth_middleware::{Claims, auth_middleware_admin},
-    modules::{ErrorResponse, RequestResult, internal_server_error, tags::repository::{Tag, TagRepository}},
+    modules::{RequestResult, internal_server_error, tags::repository::{Tag, TagRepository}},
 };
 
 #[derive(Deserialize)]

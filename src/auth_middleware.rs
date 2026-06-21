@@ -3,13 +3,11 @@ use axum::{extract::Request, http::{HeaderMap, StatusCode, header}, middleware::
 use jsonwebtoken::{DecodingKey, EncodingKey, Header, Validation, decode, encode};
 use serde::{Deserialize, Serialize};
 
+use crate::config::Config;
 use crate::modules::EntityId;
 
-// Mirrors the TypeScript backend's config: read JWT_SECRET from the environment,
-// falling back to the same dev-only default so tokens are interchangeable between
-// the two backends running against the same database.
-fn jwt_secret() -> String {
-    std::env::var("JWT_SECRET").unwrap_or_else(|_| "dev-only-insecure-secret".to_string())
+fn jwt_secret() -> &'static str {
+    &Config::get().jwt_secret
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

@@ -68,13 +68,7 @@ This is the single biggest risk for evolving safely.
 ## 🟡 Backend code quality & architecture
 
 - **No logging / observability.** The server is silent (the old TS app had a request logger). **Action:** add `tracing` + `tracing-subscriber` and `tower_http::trace::TraceLayer`.
-- **Centralize configuration.** Env vars are read ad-hoc in `main.rs` and `auth_middleware.rs`. **Action:** a single `Config` struct loaded at startup that validates required vars and fails fast (port them like the old `config.ts`).
 - **`createTag` TOCTOU.** Existence check then insert; a race hits the unique constraint and returns 500 instead of a clean 409. **Action:** rely on the unique constraint and map the unique-violation error to 409 (keep the pre-check only as an optimization).
-- **Remove dead code** (current `cargo check` warnings):
-  - `Command` / `CommandHandler` traits in `modules/mod.rs` (never used).
-  - `TodoError::DatabaseError` variant (never constructed).
-  - `EntityId: From<Option<Uuid>>` — silently generates a *random* UUID on `None`; a footgun, remove it.
-  - unused `e` in `health/router.rs`.
 - **No graceful shutdown / global timeout.** `axum::serve` runs without a shutdown signal or request timeout, and the pool is never closed. **Action:** add `with_graceful_shutdown` and a `TimeoutLayer`.
 - **No `.env` auto-loading** for local dev (no `dotenvy`) — devs must `export` manually. Minor convenience add.
 
@@ -82,9 +76,7 @@ This is the single biggest risk for evolving safely.
 
 ## 🟡 Frontend
 
-- **Dependency bloat.** Several heavy deps appear unused: `@mui/material` + `@emotion/*` (0 imports), `react-slick` (0 imports). ~50 shadcn `ui/*` components are mostly unused, dragging in `recharts`, `embla-carousel`, `vaul`, `cmdk`, etc. (each used by exactly one — itself unused — wrapper). Current bundle ≈ 341 KB JS. **Action:** prune unused dependencies and `ui/*` files; re-measure the bundle.
 - **Auto-logout on expired token is broken.** The auth middleware returns `401` with an **empty body**, so `api.ts` produces the message `"Request failed (401)"`, and `App.tsx` checks `err.message.includes('Unauthorized')` — which never matches. **Action:** return a JSON body on 401 from the middleware, and/or handle 401 centrally in `api.ts` (it already clears the token) by redirecting to login instead of string-matching.
-- **Leftover Figma scaffolding:** `components/figma/ImageWithFallback.tsx`, the `figmaAssetResolver` plugin in `vite.config.ts`, and the `guidelines/` folder. Remove if unused.
 - **No error boundary**; error handling relies on toast + fragile string matching.
 - **No shared FE/BE types.** `types.ts` hand-mirrors the backend DTOs. Consider generating types from an OpenAPI spec later to prevent drift.
 - Filtering & (lack of) pagination are client-side only — fine at current scale, revisit as data grows.
