@@ -15,7 +15,7 @@ pub fn build_routes() -> Router<PgPool> {
             .await;
         match res {
             Ok(value) => (StatusCode::OK, Json(HealthCheck{message: "ok".to_string(), value})),
-            Err(e) => (StatusCode::SERVICE_UNAVAILABLE, Json(HealthCheck{message: "Database not available".to_string(), value: 0})),
+            Err(_) => (StatusCode::SERVICE_UNAVAILABLE, Json(HealthCheck{message: "Database not available".to_string(), value: 0})),
 
         }
     }

@@ -4,7 +4,7 @@ use sqlx::PgPool;
 
 use crate::{
     auth_middleware::{Claims, auth_middleware_admin},
-    modules::{ErrorResponse, RequestResult, tags::repository::{Tag, TagRepository}},
+    modules::{ErrorResponse, RequestResult, internal_server_error, tags::repository::{Tag, TagRepository}},
 };
 
 #[derive(Deserialize)]
@@ -20,10 +20,7 @@ async fn list_tags(
     let repo = TagRepository::new(pool);
     match repo.list_by_user(claims.user_id).await {
         Ok(tags) => RequestResult::Success((StatusCode::OK, tags)),
-        Err(e) => RequestResult::Error((
-            StatusCode::INTERNAL_SERVER_ERROR,
-            ErrorResponse::new(e.to_string()),
-        )),
+        Err(e) => internal_server_error(e.to_string()),
     }
 }
 
@@ -36,14 +33,8 @@ async fn create_tag(
     let name = payload.name.clone();
     match repo.create(claims.user_id, payload.name, payload.color).await {
         Ok(Some(tag)) => RequestResult::Success((StatusCode::CREATED, tag)),
-        Ok(None) => RequestResult::Error((
-            StatusCode::CONFLICT,
-            ErrorResponse::new(format!("Tag \"{}\" already exists", name)),
-        )),
-        Err(e) => RequestResult::Error((
-            StatusCode::INTERNAL_SERVER_ERROR,
-            ErrorResponse::new(e.to_string()),
-        )),
+        Ok(None) => internal_server_error(format!("Tag \"{}\" already exists", name)),
+        Err(e) => internal_server_error(e.to_string()),
     }
 }
 

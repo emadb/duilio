@@ -5,7 +5,7 @@ use sqlx::PgPool;
 
 use crate::modules::{
     EntityId, ErrorResponse, RequestResult,
-    auth::repository::{AuthRepository, User},
+    auth::repository::{AuthRepository, User}, internal_server_error,
 };
 
 #[derive(Deserialize)]
@@ -57,10 +57,7 @@ async fn login(State(pool): State<PgPool>, Json(payload): Json<LoginReq>) -> Req
             StatusCode::UNAUTHORIZED,
             ErrorResponse::new("Invalid credentials".to_string()),
         )),
-        Err(e) => RequestResult::Error((
-            StatusCode::INTERNAL_SERVER_ERROR,
-            ErrorResponse::new(e.to_string()),
-        )),
+        Err(e) => internal_server_error(e.to_string()),
     }
 }
 
@@ -79,10 +76,7 @@ async fn register(
         }
         Ok(None) => {}
         Err(e) => {
-            return RequestResult::Error((
-                StatusCode::INTERNAL_SERVER_ERROR,
-                ErrorResponse::new(e.to_string()),
-            ));
+            return internal_server_error(e.to_string());
         }
     }
 
@@ -96,10 +90,7 @@ async fn register(
                 created_at: user.created_at,
             },
         )),
-        Err(e) => RequestResult::Error((
-            StatusCode::INTERNAL_SERVER_ERROR,
-            ErrorResponse::new(e.to_string()),
-        )),
+        Err(e) => internal_server_error(e.to_string()),
     }
 }
 

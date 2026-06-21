@@ -14,8 +14,7 @@ use sqlx::types::Uuid;
 use crate::{
     auth_middleware::{Claims, auth_middleware_admin},
     modules::{
-        EntityId, ErrorResponse, RequestResult,
-        todos::repository::{Todo, TodoRepository, TodoStatus},
+        EntityId, ErrorResponse, RequestResult, internal_server_error, todos::repository::{Todo, TodoRepository, TodoStatus}
     },
 };
 
@@ -65,10 +64,7 @@ async fn list_todos(
     let repo = TodoRepository::new(pool);
     match repo.list_by_user(claims.user_id).await {
         Ok(todos) => RequestResult::Success((StatusCode::OK, todos)),
-        Err(e) => RequestResult::Error((
-            StatusCode::INTERNAL_SERVER_ERROR,
-            ErrorResponse::new(e.to_string()),
-        )),
+        Err(e) => internal_server_error(e.to_string()),
     }
 }
 
@@ -91,10 +87,7 @@ async fn create_todo(
         .await
     {
         Ok(todo) => RequestResult::Success((StatusCode::CREATED, todo)),
-        Err(e) => RequestResult::Error((
-            StatusCode::INTERNAL_SERVER_ERROR,
-            ErrorResponse::new(e.to_string()),
-        )),
+        Err(e) => internal_server_error(e.to_string()),
     }
 }
 
@@ -122,10 +115,7 @@ async fn update_todo(
             StatusCode::NOT_FOUND,
             ErrorResponse::new(format!("Todo {} not found", id)),
         )),
-        Err(e) => RequestResult::Error((
-            StatusCode::INTERNAL_SERVER_ERROR,
-            ErrorResponse::new(e.to_string()),
-        )),
+        Err(e) => internal_server_error(e.to_string()),
     }
 }
 
@@ -153,13 +143,11 @@ async fn update_todo_status(
             StatusCode::NOT_FOUND,
             ErrorResponse::new(format!("Todo {} not found", id)),
         )),
-        Err(e) => RequestResult::Error((
-            StatusCode::INTERNAL_SERVER_ERROR,
-            ErrorResponse::new(e.to_string()),
-        )),
+        Err(e) => internal_server_error(e.to_string()),
     }
 }
 
+// TODO: return RequestResult<()>
 async fn delete_todo(
     State(pool): State<PgPool>,
     Extension(claims): Extension<Claims>,

@@ -23,6 +23,13 @@ impl From<Uuid> for EntityId {
     }
 }
 
+pub fn internal_server_error<T>(msg: String) -> RequestResult<T> {
+    RequestResult::Error((
+        StatusCode::INTERNAL_SERVER_ERROR,
+        ErrorResponse::new(msg),
+    ))
+}
+
 #[derive(Debug)]
 pub struct FormatError;
 
