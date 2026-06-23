@@ -49,7 +49,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onEdit, onDelete, tagC
             onClick={() => onEdit(task)}
             style={{
               flex: 1,
-              fontSize: 14,
+              fontSize: 20,
               fontWeight: 600,
               lineHeight: 1.45,
               color: done ? 'var(--eui-text-subdued)' : 'var(--eui-title-color)',
