@@ -2,6 +2,13 @@ import type { Task, TagColorMap } from '../types/task';
 import { TAG_COLORS } from '../constants';
 import { autoColorIndex } from '../utils/helpers';
 
+export class ApiError extends Error {
+  constructor(message: string, public readonly status: number) {
+    super(message);
+    this.name = 'ApiError';
+  }
+}
+
 // ── Auth state ────────────────────────────────────────────────────────────────
 
 let _authToken: string | null = localStorage.getItem('auth_token');
@@ -52,7 +59,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
       const body = await res.json();
       if (body?.message) msg = body.message;
     } catch { /* non-JSON body */ }
-    throw new Error(msg);
+    throw new ApiError(msg, res.status);
   }
 
   if (res.status === 204) return undefined as T;

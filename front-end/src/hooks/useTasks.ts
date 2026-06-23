@@ -7,6 +7,7 @@ import {
   deleteTask,
   fetchTagColors,
   saveTagColors,
+  ApiError,
 } from '../services/api';
 
 interface UseTasksReturn {
@@ -41,8 +42,7 @@ export function useTasks(onUnauthorized?: () => void): UseTasksReturn {
         }
       } catch (e) {
         if (!cancelled) {
-          const msg = (e as Error).message;
-          if (msg.includes('401') && onUnauthorizedRef.current) {
+          if (e instanceof ApiError && e.status === 401 && onUnauthorizedRef.current) {
             onUnauthorizedRef.current();
           } else {
             setError('Failed to load tasks.');
