@@ -70,7 +70,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
             letterSpacing: '-0.01em',
           }}
         >
-          Task Manager
+          Duilio
         </span>
       </div>
 
@@ -228,35 +228,38 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
           </svg>
           {!isMobile && 'Create task'}
         </button>
-
-        <button
-          onClick={onLogout}
-          title="Log out"
-          aria-label="Log out"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: 32,
-            height: 32,
-            border: '1px solid var(--eui-border-color)',
-            borderRadius: 6,
-            background: 'transparent',
-            cursor: 'pointer',
-            color: 'var(--eui-text-subdued)',
-            transition: 'background 0.1s ease',
-          }}
-          onMouseEnter={(e) =>
-            ((e.currentTarget as HTMLElement).style.background =
-              'var(--eui-bg-interactive-hover)')
-          }
-          onMouseLeave={(e) =>
-            ((e.currentTarget as HTMLElement).style.background = 'transparent')
-          }
-        >
-          <LogoutIcon />
-        </button>
       </div>
+
+      {/* Logout — last item on the bar */}
+      <button
+        onClick={onLogout}
+        title="Log out"
+        aria-label="Log out"
+        style={{
+          order: isMobile ? 2 : 5,
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: 32,
+          height: 32,
+          border: '1px solid var(--eui-border-color)',
+          borderRadius: 6,
+          background: 'transparent',
+          cursor: 'pointer',
+          color: 'var(--eui-text-subdued)',
+          transition: 'background 0.1s ease',
+          flexShrink: 0,
+        }}
+        onMouseEnter={(e) =>
+          ((e.currentTarget as HTMLElement).style.background =
+            'var(--eui-bg-interactive-hover)')
+        }
+        onMouseLeave={(e) =>
+          ((e.currentTarget as HTMLElement).style.background = 'transparent')
+        }
+      >
+        <LogoutIcon />
+      </button>
     </header>
   );
 };

@@ -39,11 +39,9 @@ const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
     useTasks(onLogout); // onLogout doubles as onUnauthorized handler
 
   const [search, setSearch] = useState('');
-  const [activeStatuses, setActiveStatuses] = useState<TaskStatus[]>([
-    'todo',
-    'in-progress',
-    'done',
-  ]);
+  const [activeStatuses, setActiveStatuses] = useState<TaskStatus[]>(
+    STATUSES.map((s) => s.value),
+  );
   const [layout, setLayout] = useState<Layout>('grid');
   const [columns] = useState(DEFAULT_COLUMNS);
   const [modalTask, setModalTask] = useState<Partial<Task> | null>(null);
