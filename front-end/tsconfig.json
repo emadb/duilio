@@ -1,29 +1,20 @@
 {
   "compilerOptions": {
-    /* Language & environment */
-    "target": "ES2022",
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "jsx": "react-jsx",
+    "target": "ES2020",
     "useDefineForClassFields": true,
-
-    /* Modules — Vite bundles, so use bundler resolution and let imports keep
-       their .tsx extensions. */
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "module": "ESNext",
+    "skipLibCheck": true,
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "moduleDetection": "force",
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["./src/*"]
-    },
-
-    /* Type checking only — Vite/esbuild does the actual transpilation. */
     "noEmit": true,
+    "jsx": "react-jsx",
     "strict": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true
   },
   "include": ["src"]
 }
