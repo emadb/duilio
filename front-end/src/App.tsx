@@ -1,21 +1,42 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AppHeader } from './components/AppHeader/AppHeader';
 import { SummaryBar } from './components/SummaryBar/SummaryBar';
 import { StatusSection } from './components/StatusSection/StatusSection';
 import { TaskModal } from './components/TaskModal/TaskModal';
 import { ConfirmDelete } from './components/ConfirmDelete/ConfirmDelete';
+import { AuthModal } from './components/AuthModal/AuthModal';
 import { useTasks } from './hooks/useTasks';
+import { logout } from './services/api';
 import { STATUSES } from './constants';
 import type { Task, TaskStatus } from './types/task';
 
 type Layout = 'grid' | 'list';
-
-/** Number of grid columns (user-configurable, could also be a user preference) */
 const DEFAULT_COLUMNS = 3;
 
+// ── Auth gate ─────────────────────────────────────────────────────────────────
+
 export const App: React.FC = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(
+    () => !!localStorage.getItem('auth_token'),
+  );
+
+  const handleLogout = () => {
+    logout();
+    setIsLoggedIn(false);
+  };
+
+  if (!isLoggedIn) {
+    return <AuthModal onSuccess={() => setIsLoggedIn(true)} />;
+  }
+
+  return <TaskApp onLogout={handleLogout} />;
+};
+
+// ── Main app (rendered only when authenticated) ───────────────────────────────
+
+const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
   const { tasks, tagColorMap, loading, error, addTask, editTask, removeTask, assignTagColor } =
-    useTasks();
+    useTasks(onLogout); // onLogout doubles as onUnauthorized handler
 
   const [search, setSearch] = useState('');
   const [activeStatuses, setActiveStatuses] = useState<TaskStatus[]>([
@@ -25,19 +46,22 @@ export const App: React.FC = () => {
   ]);
   const [layout, setLayout] = useState<Layout>('grid');
   const [columns] = useState(DEFAULT_COLUMNS);
-
-  // Modal state — null = closed, Partial<Task> = open (empty = create, with id = edit)
   const [modalTask, setModalTask] = useState<Partial<Task> | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Task | null>(null);
 
-  // ── Handlers ────────────────────────────────────────────────────────────────
+  // Auto-logout when a 401 clears the token while already on the tasks screen
+  useEffect(() => {
+    if (error && !localStorage.getItem('auth_token')) {
+      onLogout();
+    }
+  }, [error, onLogout]);
 
   function toggleStatus(value: TaskStatus) {
     setActiveStatuses((prev) =>
       prev.includes(value)
         ? prev.length > 1
           ? prev.filter((s) => s !== value)
-          : prev // keep at least one
+          : prev
         : [...prev, value],
     );
   }
@@ -65,8 +89,6 @@ export const App: React.FC = () => {
     setDeleteTarget(null);
   }
 
-  // ── Filtering ────────────────────────────────────────────────────────────────
-
   const q = search.trim().toLowerCase();
   const filtered = q
     ? tasks.filter(
@@ -82,8 +104,6 @@ export const App: React.FC = () => {
   ) as Record<TaskStatus, Task[]>;
 
   const noResults = q.length > 0 && filtered.length === 0;
-
-  // ── Render ───────────────────────────────────────────────────────────────────
 
   if (loading) {
     return (
@@ -113,6 +133,7 @@ export const App: React.FC = () => {
         layout={layout}
         onToggleLayout={() => setLayout((l) => (l === 'grid' ? 'list' : 'grid'))}
         onCreateTask={() => openCreate()}
+        onLogout={onLogout}
       />
 
       <main
@@ -168,7 +189,6 @@ export const App: React.FC = () => {
         )}
       </main>
 
-      {/* Modals */}
       {modalTask !== null && (
         <TaskModal
           task={modalTask}
@@ -188,8 +208,6 @@ export const App: React.FC = () => {
     </div>
   );
 };
-
-// ── Tiny inline helpers ───────────────────────────────────────────────────────
 
 const centeredStyle: React.CSSProperties = {
   minHeight: '100vh',

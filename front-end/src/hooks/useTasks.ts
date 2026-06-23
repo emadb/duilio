@@ -20,7 +20,7 @@ interface UseTasksReturn {
   assignTagColor: (tag: string, colorIndex: number) => void;
 }
 
-export function useTasks(): UseTasksReturn {
+export function useTasks(onUnauthorized?: () => void): UseTasksReturn {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [tagColorMap, setTagColorMap] = useState<TagColorMap>({});
   const [loading, setLoading] = useState(true);
@@ -37,7 +37,14 @@ export function useTasks(): UseTasksReturn {
           setTagColorMap(c);
         }
       } catch (e) {
-        if (!cancelled) setError('Failed to load tasks.');
+        if (!cancelled) {
+          const msg = (e as Error).message;
+          if (msg.includes('401') && onUnauthorized) {
+            onUnauthorized();
+          } else {
+            setError('Failed to load tasks.');
+          }
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
