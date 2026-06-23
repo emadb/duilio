@@ -17,6 +17,7 @@ interface TaskModalProps {
   task: Partial<Task> | null;
   onSave: (data: Omit<Task, 'id' | 'createdAt'>) => void;
   onClose: () => void;
+  onDelete?: () => void;
   tagColorMap: TagColorMap;
   onColorAssign: (tag: string, colorIndex: number) => void;
 }
@@ -25,6 +26,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
   task,
   onSave,
   onClose,
+  onDelete,
   tagColorMap,
   onColorAssign,
 }) => {
@@ -206,16 +208,24 @@ export const TaskModal: React.FC<TaskModalProps> = ({
         <div
           style={{
             display: 'flex',
-            justifyContent: 'flex-end',
+            justifyContent: 'space-between',
+            alignItems: 'center',
             gap: 8,
             padding: '14px 24px',
             borderTop: '1px solid var(--eui-border-color)',
           }}
         >
-          <ModalBtn onClick={onClose} variant="ghost">Cancel</ModalBtn>
-          <ModalBtn onClick={handleSave} variant="primary">
-            {isEdit ? 'Save changes' : 'Create task'}
-          </ModalBtn>
+          <div>
+            {isEdit && onDelete && (
+              <ModalBtn onClick={onDelete} variant="danger">Delete</ModalBtn>
+            )}
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <ModalBtn onClick={onClose} variant="ghost">Cancel</ModalBtn>
+            <ModalBtn onClick={handleSave} variant="primary">
+              {isEdit ? 'Save changes' : 'Create task'}
+            </ModalBtn>
+          </div>
         </div>
       </div>
     </div>
@@ -267,7 +277,7 @@ const FieldLabel: React.FC<{
 
 const ModalBtn: React.FC<{
   onClick: () => void;
-  variant: 'ghost' | 'primary';
+  variant: 'ghost' | 'primary' | 'danger';
   children: React.ReactNode;
 }> = ({ onClick, variant, children }) => (
   <button
@@ -277,8 +287,11 @@ const ModalBtn: React.FC<{
       padding: '0 16px',
       borderRadius: 6,
       border: variant === 'ghost' ? '1px solid var(--eui-border-color)' : 'none',
-      background: variant === 'primary' ? 'var(--eui-color-primary)' : 'transparent',
-      color: variant === 'primary' ? '#fff' : 'var(--eui-text-color)',
+      background:
+        variant === 'primary' ? 'var(--eui-color-primary)'
+        : variant === 'danger' ? 'var(--eui-color-danger)'
+        : 'transparent',
+      color: variant === 'ghost' ? 'var(--eui-text-color)' : '#fff',
       fontFamily: 'var(--eui-font-family)',
       fontSize: 14,
       fontWeight: 500,

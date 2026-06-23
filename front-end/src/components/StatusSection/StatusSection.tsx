@@ -6,7 +6,6 @@ interface StatusSectionProps {
   status: StatusMeta;
   tasks: Task[];
   onEdit: (task: Task) => void;
-  onDelete: (task: Task) => void;
   onAdd: (status: string) => void;
   layout: 'grid' | 'list';
   columns: number;
@@ -34,7 +33,6 @@ export const StatusSection: React.FC<StatusSectionProps> = ({
   status,
   tasks,
   onEdit,
-  onDelete,
   onAdd,
   layout,
   columns,
@@ -203,7 +201,6 @@ export const StatusSection: React.FC<StatusSectionProps> = ({
                 key={t.id}
                 task={t}
                 onEdit={onEdit}
-                onDelete={onDelete}
                 tagColorMap={tagColorMap}
               />
             ))

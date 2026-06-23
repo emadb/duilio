@@ -176,7 +176,6 @@ const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
                 status={s}
                 tasks={byStatus[s.value] ?? []}
                 onEdit={openEdit}
-                onDelete={setDeleteTarget}
                 onAdd={openCreate}
                 layout={layout}
                 columns={columns}
@@ -192,6 +191,7 @@ const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
           task={modalTask}
           onSave={handleSave}
           onClose={() => setModalTask(null)}
+          onDelete={modalTask.id ? () => { setDeleteTarget(modalTask as Task); setModalTask(null); } : undefined}
           tagColorMap={tagColorMap}
           onColorAssign={assignTagColor}
         />
