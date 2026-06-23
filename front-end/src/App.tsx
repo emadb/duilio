@@ -11,7 +11,7 @@ import { STATUSES } from './constants';
 import type { Task, TaskStatus } from './types/task';
 
 type Layout = 'grid' | 'list';
-const DEFAULT_COLUMNS = 3;
+const DEFAULT_COLUMNS = 4;
 
 // ── Auth gate ─────────────────────────────────────────────────────────────────
 
