@@ -15,6 +15,8 @@ pub enum TodoStatus {
     Todo,
     #[sqlx(rename = "in-progress")]
     InProgress,
+    #[sqlx(rename = "blocked")]
+    Blocked,
     #[sqlx(rename = "done")]
     Done,
 }

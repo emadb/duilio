@@ -16,6 +16,13 @@ export const STATUSES: StatusMeta[] = [
     countFg: 'var(--eui-text-warning)',
   },
   {
+    value: 'blocked',
+    label: 'Blocked',
+    dot: '#EF4444',
+    countBg: 'var(--eui-bg-base-danger)',
+    countFg: 'var(--eui-text-danger)',
+  },
+  {
     value: 'done',
     label: 'Done',
     dot: '#24C292',

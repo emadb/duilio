@@ -1,6 +1,6 @@
 // ─── Task types ───────────────────────────────────────────────────────────────
 
-export type TaskStatus = 'todo' | 'in-progress' | 'done';
+export type TaskStatus = 'todo' | 'in-progress' | 'blocked' | 'done';
 
 export interface Task {
   id: string;
