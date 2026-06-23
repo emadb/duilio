@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import type { Task, TagColorMap } from '../types/task';
 import {
   fetchTasks,
@@ -26,6 +26,9 @@ export function useTasks(onUnauthorized?: () => void): UseTasksReturn {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const onUnauthorizedRef = useRef(onUnauthorized);
+  onUnauthorizedRef.current = onUnauthorized;
+
   // Initial load
   useEffect(() => {
     let cancelled = false;
@@ -39,8 +42,8 @@ export function useTasks(onUnauthorized?: () => void): UseTasksReturn {
       } catch (e) {
         if (!cancelled) {
           const msg = (e as Error).message;
-          if (msg.includes('401') && onUnauthorized) {
-            onUnauthorized();
+          if (msg.includes('401') && onUnauthorizedRef.current) {
+            onUnauthorizedRef.current();
           } else {
             setError('Failed to load tasks.');
           }

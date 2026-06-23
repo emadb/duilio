@@ -49,7 +49,7 @@ const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
   const [modalTask, setModalTask] = useState<Partial<Task> | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Task | null>(null);
 
-  // Auto-logout when a 401 clears the token while already on the tasks screen
+  // Fallback: if useTasks sets an error and the token is gone, redirect to auth
   useEffect(() => {
     if (error && !localStorage.getItem('auth_token')) {
       onLogout();
