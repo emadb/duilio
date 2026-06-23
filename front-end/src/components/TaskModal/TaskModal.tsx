@@ -3,6 +3,16 @@ import type { Task, TaskStatus, TagColorMap } from '../../types/task';
 import { STATUSES } from '../../constants';
 import { TagInput } from '../common/TagInput';
 
+function useIsMobile() {
+  const [v, setV] = useState(typeof window !== 'undefined' ? window.innerWidth < 640 : false);
+  useEffect(() => {
+    const h = () => setV(window.innerWidth < 640);
+    window.addEventListener('resize', h);
+    return () => window.removeEventListener('resize', h);
+  }, []);
+  return v;
+}
+
 interface TaskModalProps {
   task: Partial<Task> | null;
   onSave: (data: Omit<Task, 'id' | 'createdAt'>) => void;
@@ -18,6 +28,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
   tagColorMap,
   onColorAssign,
 }) => {
+  const isMobile = useIsMobile();
   const isEdit = !!task?.id;
 
   const [title, setTitle] = useState(task?.title ?? '');
@@ -55,7 +66,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 1000,
-        padding: 24,
+        padding: isMobile ? 8 : 24,
         animation: 'tmFadeIn 0.15s ease',
       }}
     >
@@ -152,7 +163,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
           </div>
 
           {/* Status + Due date */}
-          <div style={{ display: 'flex', gap: 16 }}>
+          <div style={{ display: 'flex', gap: 16, flexDirection: isMobile ? 'column' : 'row' }}>
             <div style={{ flex: 1 }}>
               <FieldLabel>Status</FieldLabel>
               <select

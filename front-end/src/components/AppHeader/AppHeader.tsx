@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { STATUSES } from '../../constants';
 import type { Task, TaskStatus } from '../../types/task';
 
@@ -25,23 +25,33 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
   onCreateTask,
   onLogout,
 }) => {
+  const [isMobile, setIsMobile] = useState(
+    typeof window !== 'undefined' ? window.innerWidth < 640 : false,
+  );
+  useEffect(() => {
+    const h = () => setIsMobile(window.innerWidth < 640);
+    window.addEventListener('resize', h);
+    return () => window.removeEventListener('resize', h);
+  }, []);
+
   return (
     <header
       style={{
         background: 'var(--eui-header-background)',
         borderBottom: '1px solid var(--eui-header-border-color)',
-        height: 48,
+        minHeight: 48,
         display: 'flex',
-        alignItems: 'center',
-        padding: '0 24px',
-        gap: 16,
+        alignItems: isMobile ? 'flex-start' : 'center',
+        padding: isMobile ? '8px 12px' : '0 24px',
+        gap: isMobile ? 8 : 16,
         position: 'sticky',
         top: 0,
         zIndex: 100,
+        flexWrap: isMobile ? 'wrap' : 'nowrap',
       }}
     >
       {/* Logo / App name */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0, order: 1, flex: isMobile ? 1 : undefined }}>
         <svg
           width={16}
           height={16}
@@ -65,7 +75,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
       </div>
 
       {/* Search */}
-      <div style={{ flex: 1, maxWidth: 300 }}>
+      <div style={{ flex: isMobile ? '0 0 100%' : 1, maxWidth: isMobile ? '100%' : 300, order: isMobile ? 3 : 2 }}>
         <div style={{ position: 'relative' }}>
           <svg
             width={14}
@@ -105,7 +115,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
       </div>
 
       {/* Status filter toggles */}
-      <div style={{ display: 'flex', gap: 4 }}>
+      <div style={{ display: 'flex', gap: 4, order: isMobile ? 4 : 3, flex: isMobile ? '0 0 100%' : undefined, overflowX: isMobile ? 'auto' : undefined, paddingBottom: isMobile ? 2 : 0 }}>
         {STATUSES.map((s) => {
           const active = activeStatuses.includes(s.value);
           const count = tasks.filter((t) => t.status === s.value).length;
@@ -163,13 +173,13 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
       </div>
 
       {/* Layout toggle + Create */}
-      <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginLeft: 'auto' }}>
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginLeft: 'auto', order: 2, flexShrink: 0 }}>
         <button
           onClick={onToggleLayout}
           title={layout === 'grid' ? 'Switch to list' : 'Switch to grid'}
           aria-label={layout === 'grid' ? 'Switch to list view' : 'Switch to grid view'}
           style={{
-            display: 'inline-flex',
+            display: isMobile ? 'none' : 'inline-flex',
             alignItems: 'center',
             justifyContent: 'center',
             width: 32,
@@ -216,7 +226,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
           <svg width={12} height={12} viewBox="0 0 16 16" fill="currentColor">
             <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z" />
           </svg>
-          Create task
+          {!isMobile && 'Create task'}
         </button>
 
         <button
