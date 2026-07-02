@@ -10,9 +10,6 @@ import { logout } from './services/api';
 import { STATUSES } from './constants';
 import type { Task, TaskStatus } from './types/task';
 
-type Layout = 'grid' | 'list';
-const DEFAULT_COLUMNS = 4;
-
 // ── Auth gate ─────────────────────────────────────────────────────────────────
 
 export const App: React.FC = () => {
@@ -42,8 +39,6 @@ const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
   const [activeStatuses, setActiveStatuses] = useState<TaskStatus[]>(
     STATUSES.map((s) => s.value),
   );
-  const [layout, setLayout] = useState<Layout>('grid');
-  const [columns] = useState(DEFAULT_COLUMNS);
   const [modalTask, setModalTask] = useState<Partial<Task> | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Task | null>(null);
 
@@ -101,6 +96,7 @@ const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
     STATUSES.map((s) => [s.value, filtered.filter((t) => t.status === s.value)]),
   ) as Record<TaskStatus, Task[]>;
 
+  const visibleStatuses = STATUSES.filter((s) => activeStatuses.includes(s.value));
   const noResults = q.length > 0 && filtered.length === 0;
 
   if (loading) {
@@ -128,18 +124,15 @@ const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
         onSearch={setSearch}
         activeStatuses={activeStatuses}
         onToggleStatus={toggleStatus}
-        layout={layout}
-        onToggleLayout={() => setLayout((l) => (l === 'grid' ? 'list' : 'grid'))}
         onCreateTask={() => openCreate()}
         onLogout={onLogout}
       />
 
       <main
         style={{
-          maxWidth: layout === 'grid' ? 1400 : 740,
+          maxWidth: 1600,
           margin: '0 auto',
           padding: '28px 24px 60px',
-          transition: 'max-width 0.2s ease',
         }}
       >
         <SummaryBar tasks={tasks} />
@@ -169,16 +162,23 @@ const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
             </p>
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-            {STATUSES.filter((s) => activeStatuses.includes(s.value)).map((s) => (
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'stretch',
+              gap: 16,
+              overflowX: 'auto',
+              padding: '4px 4px 16px',
+              margin: '0 -4px',
+            }}
+          >
+            {visibleStatuses.map((s) => (
               <StatusSection
                 key={s.value}
                 status={s}
                 tasks={byStatus[s.value] ?? []}
                 onEdit={openEdit}
                 onAdd={openCreate}
-                layout={layout}
-                columns={columns}
                 tagColorMap={tagColorMap}
               />
             ))}

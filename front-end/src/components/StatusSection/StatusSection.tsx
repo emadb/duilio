@@ -7,26 +7,7 @@ interface StatusSectionProps {
   tasks: Task[];
   onEdit: (task: Task) => void;
   onAdd: (status: string) => void;
-  layout: 'grid' | 'list';
-  columns: number;
   tagColorMap: TagColorMap;
-}
-
-/** Clamp grid columns based on viewport width */
-function useEffectiveCols(maxCols: number): number {
-  const [width, setWidth] = useState(
-    typeof window !== 'undefined' ? window.innerWidth : 1280,
-  );
-  React.useEffect(() => {
-    const h = () => setWidth(window.innerWidth);
-    window.addEventListener('resize', h);
-    return () => window.removeEventListener('resize', h);
-  }, []);
-
-  if (width < 480) return 1;
-  if (width < 768) return Math.min(2, maxCols);
-  if (width < 1100) return Math.min(3, maxCols);
-  return maxCols;
 }
 
 export const StatusSection: React.FC<StatusSectionProps> = ({
@@ -34,20 +15,25 @@ export const StatusSection: React.FC<StatusSectionProps> = ({
   tasks,
   onEdit,
   onAdd,
-  layout,
-  columns,
   tagColorMap,
 }) => {
   const [collapsed, setCollapsed] = useState(false);
-  const effectiveCols = useEffectiveCols(columns);
-  const isGrid = layout === 'grid';
-
-  const cardContainerStyle: React.CSSProperties = isGrid
-    ? { display: 'grid', gridTemplateColumns: `repeat(${effectiveCols}, 1fr)`, gap: 8 }
-    : { display: 'flex', flexDirection: 'column', gap: 8 };
 
   return (
-    <div>
+    <div
+      style={{
+        background: 'var(--eui-bg-subdued)',
+        border: '1px solid var(--eui-border-color)',
+        borderRadius: 10,
+        padding: 10,
+        display: 'flex',
+        flexDirection: 'column',
+        flex: '1 0 280px',
+        minWidth: 280,
+        maxWidth: 360,
+        minHeight: 220,
+      }}
+    >
       {/* Section header */}
       <div
         style={{
@@ -163,9 +149,9 @@ export const StatusSection: React.FC<StatusSectionProps> = ({
         </button>
       </div>
 
-      {/* Card grid/list */}
+      {/* Card stack */}
       {!collapsed && (
-        <div style={cardContainerStyle}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minHeight: 64 }}>
           {tasks.length === 0 ? (
             <div
               style={{
@@ -176,7 +162,6 @@ export const StatusSection: React.FC<StatusSectionProps> = ({
                 color: 'var(--eui-text-subdued)',
                 fontSize: 13,
                 fontFamily: 'var(--eui-font-family)',
-                gridColumn: isGrid ? '1 / -1' : undefined,
               }}
             >
               No tasks —{' '}
