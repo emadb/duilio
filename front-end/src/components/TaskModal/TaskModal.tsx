@@ -154,11 +154,11 @@ export const TaskModal: React.FC<TaskModalProps> = ({
 
           {/* Description */}
           <div>
-            <FieldLabel>Description</FieldLabel>
+            <FieldLabel hint="Markdown supported">Description</FieldLabel>
             <textarea
               value={desc}
               onChange={(e) => setDesc(e.target.value)}
-              placeholder="Add a description…"
+              placeholder="Add a description… (Markdown supported)"
               rows={3}
               style={{ ...inputStyle(false), resize: 'vertical', padding: '8px 12px', height: 'auto' }}
             />

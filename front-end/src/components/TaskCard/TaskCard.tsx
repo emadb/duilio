@@ -1,4 +1,6 @@
 import React from 'react';
+import ReactMarkdown, { type Components } from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import type { Task } from '../../types/task';
 import type { TagColorMap } from '../../types/task';
 import { TagPill } from '../common/TagPill';
@@ -68,21 +70,21 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onEdit, tagColorMap })
         </div>
 
         {task.description && (
-          <p
+          <div
+            className="task-card-description"
             style={{
-              margin: 0,
               fontSize: 13,
               color: 'var(--eui-text-subdued)',
               fontFamily: 'var(--eui-font-family)',
               lineHeight: 1.5,
-              display: '-webkit-box',
-              WebkitLineClamp: 3,
-              WebkitBoxOrient: 'vertical',
+              maxHeight: '4.5em',
               overflow: 'hidden',
             }}
           >
-            {task.description}
-          </p>
+            <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+              {task.description}
+            </ReactMarkdown>
+          </div>
         )}
       </div>
 
@@ -108,6 +110,41 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onEdit, tagColorMap })
 };
 
 // ── Small helpers ─────────────────────────────────────────────────────────────
+
+// Compact overrides so headings/lists don't blow up the card's small footprint.
+const markdownComponents: Components = {
+  p: ({ children }) => <p style={{ margin: '0 0 4px' }}>{children}</p>,
+  ul: ({ children }) => <ul style={{ margin: 0, paddingLeft: 18 }}>{children}</ul>,
+  ol: ({ children }) => <ol style={{ margin: 0, paddingLeft: 18 }}>{children}</ol>,
+  li: ({ children }) => <li style={{ marginBottom: 2 }}>{children}</li>,
+  a: ({ children, href }) => (
+    <a
+      href={href}
+      target="_blank"
+      rel="noreferrer"
+      onClick={(e) => e.stopPropagation()}
+      style={{ color: 'var(--eui-color-primary)' }}
+    >
+      {children}
+    </a>
+  ),
+  code: ({ children }) => (
+    <code
+      style={{
+        background: 'var(--eui-bg-base-subdued)',
+        borderRadius: 3,
+        padding: '1px 4px',
+        fontSize: 12,
+        fontFamily: 'monospace',
+      }}
+    >
+      {children}
+    </code>
+  ),
+  h1: ({ children }) => <p style={{ margin: '0 0 4px', fontWeight: 600 }}>{children}</p>,
+  h2: ({ children }) => <p style={{ margin: '0 0 4px', fontWeight: 600 }}>{children}</p>,
+  h3: ({ children }) => <p style={{ margin: '0 0 4px', fontWeight: 600 }}>{children}</p>,
+};
 
 interface ActionBtnProps {
   onClick: () => void;
