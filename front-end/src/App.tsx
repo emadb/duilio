@@ -32,7 +32,7 @@ export const App: React.FC = () => {
 // ── Main app (rendered only when authenticated) ───────────────────────────────
 
 const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
-  const { tasks, tagColorMap, loading, error, addTask, editTask, removeTask, assignTagColor } =
+  const { tasks, tagColorMap, loading, error, addTask, editTask, moveTask, removeTask, assignTagColor } =
     useTasks(onLogout); // onLogout doubles as onUnauthorized handler
 
   const [search, setSearch] = useState('');
@@ -74,6 +74,10 @@ const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
       await addTask(data);
     }
     setModalTask(null);
+  }
+
+  function handleDropTask(taskId: string, status: TaskStatus) {
+    moveTask(taskId, status).catch(console.error); // moveTask already reverts on failure
   }
 
   async function handleDelete() {
@@ -179,6 +183,7 @@ const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
                 tasks={byStatus[s.value] ?? []}
                 onEdit={openEdit}
                 onAdd={openCreate}
+                onDropTask={handleDropTask}
                 tagColorMap={tagColorMap}
               />
             ))}

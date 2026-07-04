@@ -13,11 +13,19 @@ interface TaskCardProps {
 }
 
 export const TaskCard: React.FC<TaskCardProps> = ({ task, onEdit, tagColorMap }) => {
+  const [dragging, setDragging] = React.useState(false);
   const done = task.status === 'done';
   const hasFooter = !!task.dueDate || task.tags.length > 0;
 
   return (
     <div
+      draggable
+      onDragStart={(e) => {
+        e.dataTransfer.setData('text/task-id', task.id);
+        e.dataTransfer.effectAllowed = 'move';
+        setDragging(true);
+      }}
+      onDragEnd={() => setDragging(false)}
       style={{
         background: 'var(--eui-bg-plain)',
         border: '1px solid var(--eui-border-color)',
@@ -27,6 +35,8 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onEdit, tagColorMap })
         transition: 'box-shadow 0.15s ease',
         display: 'flex',
         flexDirection: 'column',
+        cursor: 'grab',
+        opacity: dragging ? 0.4 : 1,
       }}
       onMouseEnter={(e) =>
         ((e.currentTarget as HTMLElement).style.boxShadow = 'var(--eui-shadow-m)')

@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { TaskCard } from '../TaskCard/TaskCard';
-import type { Task, StatusMeta, TagColorMap } from '../../types/task';
+import type { Task, StatusMeta, TagColorMap, TaskStatus } from '../../types/task';
 
 interface StatusSectionProps {
   status: StatusMeta;
   tasks: Task[];
   onEdit: (task: Task) => void;
   onAdd: (status: string) => void;
+  onDropTask: (taskId: string, status: TaskStatus) => void;
   tagColorMap: TagColorMap;
 }
 
@@ -15,15 +16,42 @@ export const StatusSection: React.FC<StatusSectionProps> = ({
   tasks,
   onEdit,
   onAdd,
+  onDropTask,
   tagColorMap,
 }) => {
   const [collapsed, setCollapsed] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
+  // dragenter/dragleave fire on every child; count them to know when we truly leave
+  const dragDepth = useRef(0);
 
   return (
     <div
+      onDragEnter={(e) => {
+        if (!e.dataTransfer.types.includes('text/task-id')) return;
+        dragDepth.current += 1;
+        setDragOver(true);
+      }}
+      onDragLeave={() => {
+        dragDepth.current = Math.max(0, dragDepth.current - 1);
+        if (dragDepth.current === 0) setDragOver(false);
+      }}
+      onDragOver={(e) => {
+        if (!e.dataTransfer.types.includes('text/task-id')) return;
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+      }}
+      onDrop={(e) => {
+        e.preventDefault();
+        dragDepth.current = 0;
+        setDragOver(false);
+        const taskId = e.dataTransfer.getData('text/task-id');
+        if (taskId) onDropTask(taskId, status.value);
+      }}
       style={{
-        background: 'var(--eui-bg-subdued)',
-        border: '1px solid var(--eui-border-color)',
+        background: dragOver ? 'var(--eui-bg-base-primary)' : 'var(--eui-bg-subdued)',
+        border: dragOver
+          ? '1px dashed var(--eui-color-primary)'
+          : '1px solid var(--eui-border-color)',
         borderRadius: 10,
         padding: 10,
         display: 'flex',
@@ -32,6 +60,7 @@ export const StatusSection: React.FC<StatusSectionProps> = ({
         minWidth: 280,
         maxWidth: 360,
         minHeight: 220,
+        transition: 'background 0.15s ease, border-color 0.15s ease',
       }}
     >
       {/* Section header */}

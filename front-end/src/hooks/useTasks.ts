@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import type { Task, TagColorMap } from '../types/task';
+import type { Task, TaskStatus, TagColorMap } from '../types/task';
 import {
   fetchTasks,
   createTask,
@@ -17,6 +17,7 @@ interface UseTasksReturn {
   error: string | null;
   addTask: (data: Omit<Task, 'id' | 'createdAt'>) => Promise<void>;
   editTask: (id: string, data: Partial<Omit<Task, 'id' | 'createdAt'>>) => Promise<void>;
+  moveTask: (id: string, status: TaskStatus) => Promise<void>;
   removeTask: (id: string) => Promise<void>;
   assignTagColor: (tag: string, colorIndex: number) => void;
 }
@@ -68,6 +69,26 @@ export function useTasks(onUnauthorized?: () => void): UseTasksReturn {
     [],
   );
 
+  // Optimistic status change (drag & drop): move the card immediately, revert on failure
+  const moveTask = useCallback(async (id: string, status: TaskStatus) => {
+    let previous: TaskStatus | undefined;
+    setTasks((prev) =>
+      prev.map((t) => {
+        if (t.id !== id) return t;
+        previous = t.status;
+        return { ...t, status };
+      }),
+    );
+    if (previous === undefined || previous === status) return;
+    try {
+      await updateTask(id, { status });
+    } catch (e) {
+      const revert = previous;
+      setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, status: revert } : t)));
+      throw e;
+    }
+  }, []);
+
   const removeTask = useCallback(async (id: string) => {
     await deleteTask(id);
     setTasks((prev) => prev.filter((t) => t.id !== id));
@@ -85,5 +106,5 @@ export function useTasks(onUnauthorized?: () => void): UseTasksReturn {
     [],
   );
 
-  return { tasks, tagColorMap, loading, error, addTask, editTask, removeTask, assignTagColor };
+  return { tasks, tagColorMap, loading, error, addTask, editTask, moveTask, removeTask, assignTagColor };
 }
