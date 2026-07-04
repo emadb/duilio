@@ -29,6 +29,7 @@ pub struct Todo {
     pub description: String,
     pub due_date: Option<DateTime<Utc>>,
     pub status: TodoStatus,
+    pub important: bool,
     pub tags: Vec<Tag>,
 }
 
@@ -39,6 +40,7 @@ struct TodoRow {
     description: String,
     due_date: Option<DateTime<Utc>>,
     status: TodoStatus,
+    important: bool,
 }
 
 impl TodoRow {
@@ -49,6 +51,7 @@ impl TodoRow {
             description: self.description,
             due_date: self.due_date,
             status: self.status,
+            important: self.important,
             tags,
         }
     }
@@ -72,7 +75,8 @@ impl TodoRepository {
                 title,
                 description,
                 due_date,
-                status as "status: TodoStatus"
+                status as "status: TodoStatus",
+                important
             FROM todos
             WHERE user_id = $1
             ORDER BY created_at DESC
@@ -94,6 +98,7 @@ impl TodoRepository {
             .collect())
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub async fn create(
         &self,
         user_id: EntityId,
@@ -101,25 +106,28 @@ impl TodoRepository {
         description: String,
         due_date: Option<DateTime<Utc>>,
         status: TodoStatus,
+        important: bool,
         tag_ids: &[String],
     ) -> Result<Todo, Error> {
         let row = sqlx::query_as!(
             TodoRow,
             r#"
-            INSERT INTO todos (user_id, title, description, due_date, status)
-            VALUES ($1, $2, $3, $4, $5)
+            INSERT INTO todos (user_id, title, description, due_date, status, important)
+            VALUES ($1, $2, $3, $4, $5, $6)
             RETURNING
                 id,
                 title,
                 description,
                 due_date,
-                status as "status: TodoStatus"
+                status as "status: TodoStatus",
+                important
             "#,
             user_id.0,
             title,
             description,
             due_date,
-            status as TodoStatus
+            status as TodoStatus,
+            important
         )
         .fetch_one(&self.pool)
         .await?;
@@ -136,6 +144,7 @@ impl TodoRepository {
     /// current value; for `due_date`, `Some(None)` clears the value while a plain
     /// `None` leaves it untouched. Returns `None` when the todo doesn't exist for
     /// this user.
+    #[allow(clippy::too_many_arguments)]
     pub async fn update(
         &self,
         id: EntityId,
@@ -144,6 +153,7 @@ impl TodoRepository {
         description: Option<String>,
         due_date: Option<Option<DateTime<Utc>>>,
         status: Option<TodoStatus>,
+        important: Option<bool>,
         tag_ids: Option<Vec<String>>,
     ) -> Result<Option<Todo>, Error> {
         let existing = sqlx::query_as!(
@@ -154,7 +164,8 @@ impl TodoRepository {
                 title,
                 description,
                 due_date,
-                status as "status: TodoStatus"
+                status as "status: TodoStatus",
+                important
             FROM todos
             WHERE id = $1 AND user_id = $2
             "#,
@@ -175,6 +186,7 @@ impl TodoRepository {
             None => existing.due_date,
         };
         let new_status = status.unwrap_or(existing.status);
+        let new_important = important.unwrap_or(existing.important);
 
         let row = sqlx::query_as!(
             TodoRow,
@@ -184,6 +196,7 @@ impl TodoRepository {
                 description = $4,
                 due_date = $5,
                 status = $6,
+                important = $7,
                 updated_at = now()
             WHERE id = $1 AND user_id = $2
             RETURNING
@@ -191,14 +204,16 @@ impl TodoRepository {
                 title,
                 description,
                 due_date,
-                status as "status: TodoStatus"
+                status as "status: TodoStatus",
+                important
             "#,
             id.0,
             user_id.0,
             new_title,
             new_description,
             new_due_date,
-            new_status as TodoStatus
+            new_status as TodoStatus,
+            new_important
         )
         .fetch_one(&self.pool)
         .await?;

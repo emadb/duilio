@@ -1,5 +1,9 @@
-
-use axum::{extract::Request, http::{HeaderMap, StatusCode, header}, middleware::Next, response::Response};
+use axum::{
+    extract::Request,
+    http::{HeaderMap, StatusCode, header},
+    middleware::Next,
+    response::Response,
+};
 use jsonwebtoken::{DecodingKey, EncodingKey, Header, Validation, decode, encode};
 use serde::{Deserialize, Serialize};
 

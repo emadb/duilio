@@ -18,6 +18,7 @@ interface UseTasksReturn {
   addTask: (data: Omit<Task, 'id' | 'createdAt'>) => Promise<void>;
   editTask: (id: string, data: Partial<Omit<Task, 'id' | 'createdAt'>>) => Promise<void>;
   moveTask: (id: string, status: TaskStatus) => Promise<void>;
+  toggleImportant: (id: string) => Promise<void>;
   removeTask: (id: string) => Promise<void>;
   assignTagColor: (tag: string, colorIndex: number) => void;
 }
@@ -89,6 +90,20 @@ export function useTasks(onUnauthorized?: () => void): UseTasksReturn {
     }
   }, []);
 
+  // Optimistic important toggle: flip immediately, revert on failure
+  const toggleImportant = useCallback(async (id: string) => {
+    const current = tasks.find((t) => t.id === id);
+    if (!current) return;
+    const next = !current.important;
+    setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, important: next } : t)));
+    try {
+      await updateTask(id, { important: next });
+    } catch (e) {
+      setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, important: !next } : t)));
+      throw e;
+    }
+  }, [tasks]);
+
   const removeTask = useCallback(async (id: string) => {
     await deleteTask(id);
     setTasks((prev) => prev.filter((t) => t.id !== id));
@@ -106,5 +121,5 @@ export function useTasks(onUnauthorized?: () => void): UseTasksReturn {
     [],
   );
 
-  return { tasks, tagColorMap, loading, error, addTask, editTask, moveTask, removeTask, assignTagColor };
+  return { tasks, tagColorMap, loading, error, addTask, editTask, moveTask, toggleImportant, removeTask, assignTagColor };
 }

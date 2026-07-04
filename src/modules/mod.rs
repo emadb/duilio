@@ -1,11 +1,10 @@
 use axum::{Json, http::StatusCode, response::IntoResponse};
+use serde::{Deserialize, Serialize};
 use sqlx::{Type, types::Uuid};
-use serde::{Serialize, Deserialize};
-pub mod health;
 pub mod auth;
-pub mod todos;
+pub mod health;
 pub mod tags;
-
+pub mod todos;
 
 #[derive(Debug, Serialize, Deserialize, Clone, Type)]
 #[sqlx(transparent)]
@@ -24,10 +23,7 @@ impl From<Uuid> for EntityId {
 }
 
 pub(crate) fn internal_server_error<T>(msg: String) -> RequestResult<T> {
-    RequestResult::Error((
-        StatusCode::INTERNAL_SERVER_ERROR,
-        ErrorResponse::new(msg),
-    ))
+    RequestResult::Error((StatusCode::INTERNAL_SERVER_ERROR, ErrorResponse::new(msg)))
 }
 
 #[derive(Debug)]
@@ -60,12 +56,12 @@ impl std::fmt::Display for EntityId {
 
 #[derive(Serialize)]
 pub(crate) struct ErrorResponse {
-    message: String
+    message: String,
 }
 
 impl ErrorResponse {
     pub fn new(message: String) -> Self {
-        Self{message}
+        Self { message }
     }
 }
 
@@ -74,7 +70,7 @@ pub(crate) enum RequestResult<T> {
     Error((StatusCode, crate::modules::ErrorResponse)),
 }
 
-impl <T: Serialize>IntoResponse for RequestResult<T> {
+impl<T: Serialize> IntoResponse for RequestResult<T> {
     fn into_response(self) -> axum::response::Response {
         match self {
             RequestResult::Success((status, body)) => (status, Json(body)).into_response(),
@@ -82,4 +78,3 @@ impl <T: Serialize>IntoResponse for RequestResult<T> {
         }
     }
 }
-

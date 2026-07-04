@@ -8,6 +8,7 @@ interface StatusSectionProps {
   onEdit: (task: Task) => void;
   onAdd: (status: string) => void;
   onDropTask: (taskId: string, status: TaskStatus) => void;
+  onToggleImportant: (id: string) => void;
   tagColorMap: TagColorMap;
 }
 
@@ -17,6 +18,7 @@ export const StatusSection: React.FC<StatusSectionProps> = ({
   onEdit,
   onAdd,
   onDropTask,
+  onToggleImportant,
   tagColorMap,
 }) => {
   const [collapsed, setCollapsed] = useState(false);
@@ -215,6 +217,7 @@ export const StatusSection: React.FC<StatusSectionProps> = ({
                 key={t.id}
                 task={t}
                 onEdit={onEdit}
+                onToggleImportant={onToggleImportant}
                 tagColorMap={tagColorMap}
               />
             ))

@@ -41,9 +41,12 @@ impl Config {
     }
 
     fn load() -> Config {
-        let is_production = env::var("APP_ENV").map(|v| v == "production").unwrap_or(false);
+        let is_production = env::var("APP_ENV")
+            .map(|v| v == "production")
+            .unwrap_or(false);
 
-        let database_url = env::var("DATABASE_URL").unwrap_or_else(|_| "postgres://postgres:postgres@localhost:5432/duilio".to_string());
+        let database_url = env::var("DATABASE_URL")
+            .unwrap_or_else(|_| "postgres://postgres:postgres@localhost:5432/duilio".to_string());
 
         let port = env::var("PORT")
             .ok()

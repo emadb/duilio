@@ -38,6 +38,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
   const [status, setStatus] = useState<TaskStatus>(task?.status ?? 'todo');
   const [due, setDue] = useState(task?.dueDate ?? '');
   const [tags, setTags] = useState<string[]>(task?.tags ?? []);
+  const [important, setImportant] = useState(task?.important ?? false);
   const [titleError, setTitleError] = useState('');
 
   // Close on Escape
@@ -52,7 +53,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
       setTitleError('Title is required.');
       return;
     }
-    onSave({ title: title.trim(), description: desc, status, dueDate: due, tags });
+    onSave({ title: title.trim(), description: desc, status, dueDate: due, tags, important });
   }
 
   const statusOptions = STATUSES.map((s) => ({ value: s.value, label: s.label }));
@@ -188,6 +189,32 @@ export const TaskModal: React.FC<TaskModalProps> = ({
               />
             </div>
           </div>
+
+          {/* Important flag */}
+          <label
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              cursor: 'pointer',
+              fontSize: 13,
+              fontWeight: 500,
+              color: important ? 'var(--eui-color-danger)' : 'var(--eui-title-color)',
+              fontFamily: 'var(--eui-font-family)',
+              userSelect: 'none',
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={important}
+              onChange={(e) => setImportant(e.target.checked)}
+              style={{ accentColor: 'var(--eui-color-danger)', width: 15, height: 15, cursor: 'pointer' }}
+            />
+            🚩 Important
+            <span style={{ fontSize: 11, fontWeight: 400, color: 'var(--eui-text-subdued)' }}>
+              (shown at the top of its column)
+            </span>
+          </label>
 
           {/* Tags */}
           <div>

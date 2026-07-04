@@ -14,7 +14,8 @@ use sqlx::types::Uuid;
 use crate::{
     auth_middleware::{Claims, auth_middleware_admin},
     modules::{
-        EntityId, ErrorResponse, RequestResult, internal_server_error, todos::repository::{Todo, TodoRepository, TodoStatus}
+        EntityId, ErrorResponse, RequestResult, internal_server_error,
+        todos::repository::{Todo, TodoRepository, TodoStatus},
     },
 };
 
@@ -66,6 +67,8 @@ struct CreateTodoReq {
     due_date: Option<DateTime<Utc>>,
     status: Option<TodoStatus>,
     #[serde(default)]
+    important: bool,
+    #[serde(default)]
     tag_ids: Vec<String>,
 }
 
@@ -77,6 +80,7 @@ struct UpdateTodoReq {
     #[serde(default, deserialize_with = "double_opt_due_date")]
     due_date: Option<Option<DateTime<Utc>>>,
     status: Option<TodoStatus>,
+    important: Option<bool>,
     tag_ids: Option<Vec<String>>,
 }
 
@@ -110,6 +114,7 @@ async fn create_todo(
             payload.description,
             payload.due_date,
             status,
+            payload.important,
             &payload.tag_ids,
         )
         .await
@@ -134,6 +139,7 @@ async fn update_todo(
             payload.description,
             payload.due_date,
             payload.status,
+            payload.important,
             payload.tag_ids,
         )
         .await
@@ -162,6 +168,7 @@ async fn update_todo_status(
             None,
             None,
             Some(payload.status),
+            None,
             None,
         )
         .await
@@ -223,7 +230,10 @@ mod tests {
     fn create_accepts_rfc3339() {
         let req: CreateTodoReq =
             serde_json::from_str(r#"{"title":"A","dueDate":"2026-06-21T08:30:00Z"}"#).unwrap();
-        assert_eq!(req.due_date.unwrap().to_rfc3339(), "2026-06-21T08:30:00+00:00");
+        assert_eq!(
+            req.due_date.unwrap().to_rfc3339(),
+            "2026-06-21T08:30:00+00:00"
+        );
     }
 
     #[test]

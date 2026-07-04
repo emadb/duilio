@@ -32,7 +32,7 @@ export const App: React.FC = () => {
 // ── Main app (rendered only when authenticated) ───────────────────────────────
 
 const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
-  const { tasks, tagColorMap, loading, error, addTask, editTask, moveTask, removeTask, assignTagColor } =
+  const { tasks, tagColorMap, loading, error, addTask, editTask, moveTask, toggleImportant, removeTask, assignTagColor } =
     useTasks(onLogout); // onLogout doubles as onUnauthorized handler
 
   const [search, setSearch] = useState('');
@@ -96,8 +96,15 @@ const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
       )
     : tasks;
 
+  // Important tasks float to the top of their column (sort is stable, so the
+  // original order is preserved within each group)
   const byStatus = Object.fromEntries(
-    STATUSES.map((s) => [s.value, filtered.filter((t) => t.status === s.value)]),
+    STATUSES.map((s) => [
+      s.value,
+      filtered
+        .filter((t) => t.status === s.value)
+        .sort((a, b) => Number(b.important) - Number(a.important)),
+    ]),
   ) as Record<TaskStatus, Task[]>;
 
   const visibleStatuses = STATUSES.filter((s) => activeStatuses.includes(s.value));
@@ -184,6 +191,7 @@ const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
                 onEdit={openEdit}
                 onAdd={openCreate}
                 onDropTask={handleDropTask}
+                onToggleImportant={(id) => { toggleImportant(id).catch(console.error); }}
                 tagColorMap={tagColorMap}
               />
             ))}

@@ -40,6 +40,7 @@ interface BackendTodo {
   description: string;
   dueDate: string | null;
   status: 'todo' | 'in-progress' | 'done';
+  important: boolean;
   tags: BackendTag[];
 }
 
@@ -81,6 +82,7 @@ function todoToTask(todo: BackendTodo, index: number): Task {
     status: todo.status,
     dueDate: extractDate(todo.dueDate),
     tags: todo.tags.map((t) => t.name),
+    important: todo.important,
     createdAt: Date.now() - index, // preserve backend DESC order
   };
 }
@@ -129,6 +131,7 @@ export async function createTask(
       description: data.description,
       dueDate: data.dueDate || null,
       status: data.status,
+      important: data.important,
       tagIds,
     }),
   });
@@ -143,6 +146,7 @@ export async function updateTask(
   if (data.title !== undefined) body.title = data.title;
   if (data.description !== undefined) body.description = data.description;
   if (data.status !== undefined) body.status = data.status;
+  if (data.important !== undefined) body.important = data.important;
   if (data.dueDate !== undefined) body.dueDate = data.dueDate || null;
   if (data.tags !== undefined) {
     body.tagIds = await Promise.all(data.tags.map((name) => ensureTag(name, 0)));

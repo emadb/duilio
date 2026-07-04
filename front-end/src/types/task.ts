@@ -9,6 +9,7 @@ export interface Task {
   status: TaskStatus;
   dueDate: string;   // ISO date string "YYYY-MM-DD" or ""
   tags: string[];
+  important: boolean;
   createdAt: number; // epoch ms
 }
 

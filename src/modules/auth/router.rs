@@ -5,11 +5,14 @@ use axum::{Json, Router, extract::State, http::StatusCode, routing::post};
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
-use tower_governor::{GovernorLayer, governor::GovernorConfigBuilder, key_extractor::SmartIpKeyExtractor};
+use tower_governor::{
+    GovernorLayer, governor::GovernorConfigBuilder, key_extractor::SmartIpKeyExtractor,
+};
 
 use crate::modules::{
     EntityId, ErrorResponse, RequestResult,
-    auth::repository::{AuthRepository, User}, internal_server_error,
+    auth::repository::{AuthRepository, User},
+    internal_server_error,
 };
 
 #[derive(Deserialize)]
@@ -44,7 +47,10 @@ struct RegisterRes {
     created_at: DateTime<Utc>,
 }
 
-async fn login(State(pool): State<PgPool>, Json(payload): Json<LoginReq>) -> RequestResult<LoginRes> {
+async fn login(
+    State(pool): State<PgPool>,
+    Json(payload): Json<LoginReq>,
+) -> RequestResult<LoginRes> {
     let repo = AuthRepository::new(pool);
     match repo.get_by_email(payload.email).await {
         Ok(Some(user)) if user.password_match(payload.password) => {
@@ -53,7 +59,10 @@ async fn login(State(pool): State<PgPool>, Json(payload): Json<LoginReq>) -> Req
                 StatusCode::OK,
                 LoginRes {
                     token,
-                    user: LoginUser { id: user.id, email: user.email },
+                    user: LoginUser {
+                        id: user.id,
+                        email: user.email,
+                    },
                 },
             ))
         }

@@ -4,7 +4,10 @@ use sqlx::PgPool;
 
 use crate::{
     auth_middleware::{Claims, auth_middleware_admin},
-    modules::{RequestResult, internal_server_error, tags::repository::{Tag, TagRepository}},
+    modules::{
+        RequestResult, internal_server_error,
+        tags::repository::{Tag, TagRepository},
+    },
 };
 
 #[derive(Deserialize)]
@@ -31,7 +34,10 @@ async fn create_tag(
 ) -> RequestResult<Tag> {
     let repo = TagRepository::new(pool);
     let name = payload.name.clone();
-    match repo.create(claims.user_id, payload.name, payload.color).await {
+    match repo
+        .create(claims.user_id, payload.name, payload.color)
+        .await
+    {
         Ok(Some(tag)) => RequestResult::Success((StatusCode::CREATED, tag)),
         Ok(None) => internal_server_error(format!("Tag \"{}\" already exists", name)),
         Err(e) => internal_server_error(e.to_string()),

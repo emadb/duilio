@@ -5,7 +5,7 @@ use sqlx::PgPool;
 #[derive(Serialize)]
 pub struct HealthCheck {
     message: String,
-    value: i32
+    value: i32,
 }
 
 pub fn build_routes() -> Router<PgPool> {
@@ -14,12 +14,22 @@ pub fn build_routes() -> Router<PgPool> {
             .fetch_one(&pool)
             .await;
         match res {
-            Ok(value) => (StatusCode::OK, Json(HealthCheck{message: "ok".to_string(), value})),
-            Err(_) => (StatusCode::SERVICE_UNAVAILABLE, Json(HealthCheck{message: "Database not available".to_string(), value: 0})),
-
+            Ok(value) => (
+                StatusCode::OK,
+                Json(HealthCheck {
+                    message: "ok".to_string(),
+                    value,
+                }),
+            ),
+            Err(_) => (
+                StatusCode::SERVICE_UNAVAILABLE,
+                Json(HealthCheck {
+                    message: "Database not available".to_string(),
+                    value: 0,
+                }),
+            ),
         }
     }
 
     Router::new().route("/health", get(handler))
-
 }

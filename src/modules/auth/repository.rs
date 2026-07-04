@@ -1,7 +1,7 @@
+use crate::modules::EntityId;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use sqlx::{Error, Pool, Postgres, types::Uuid};
-use crate::modules::EntityId;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct User {

@@ -9,10 +9,11 @@ import { DueBadge } from '../common/DueBadge';
 interface TaskCardProps {
   task: Task;
   onEdit: (task: Task) => void;
+  onToggleImportant: (id: string) => void;
   tagColorMap: TagColorMap;
 }
 
-export const TaskCard: React.FC<TaskCardProps> = ({ task, onEdit, tagColorMap }) => {
+export const TaskCard: React.FC<TaskCardProps> = ({ task, onEdit, onToggleImportant, tagColorMap }) => {
   const [dragging, setDragging] = React.useState(false);
   const done = task.status === 'done';
   const hasFooter = !!task.dueDate || task.tags.length > 0;
@@ -73,6 +74,10 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onEdit, tagColorMap })
 
           {/* Action buttons */}
           <div style={{ display: 'flex', gap: 2, marginTop: -2, flexShrink: 0 }}>
+            <FlagBtn
+              important={task.important}
+              onClick={() => onToggleImportant(task.id)}
+            />
             <ActionBtn onClick={() => onEdit(task)} aria-label="Edit task" color="primary">
               <PencilIcon />
             </ActionBtn>
@@ -191,6 +196,58 @@ const ActionBtn: React.FC<ActionBtnProps> = ({ onClick, color, children, ...rest
   >
     {children}
   </button>
+);
+
+// Flag toggle: filled red when important, subdued outline otherwise.
+const FlagBtn: React.FC<{ important: boolean; onClick: () => void }> = ({
+  important,
+  onClick,
+}) => (
+  <button
+    onClick={onClick}
+    aria-label={important ? 'Unmark as important' : 'Mark as important'}
+    aria-pressed={important}
+    title={important ? 'Unmark as important' : 'Mark as important'}
+    style={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: 28,
+      height: 28,
+      border: 'none',
+      background: 'transparent',
+      borderRadius: 'var(--eui-border-radius-medium)',
+      cursor: 'pointer',
+      color: important ? 'var(--eui-color-danger)' : 'var(--eui-text-subdued)',
+      opacity: important ? 1 : 0.55,
+      transition: 'background 0.1s ease, opacity 0.1s ease, transform 0.1s ease',
+      transform: important ? 'scale(1.1)' : 'none',
+    }}
+    onMouseEnter={(e) => {
+      const el = e.currentTarget as HTMLElement;
+      el.style.background = 'var(--eui-bg-base-danger)';
+      el.style.opacity = '1';
+    }}
+    onMouseLeave={(e) => {
+      const el = e.currentTarget as HTMLElement;
+      el.style.background = 'transparent';
+      el.style.opacity = important ? '1' : '0.55';
+    }}
+  >
+    {important ? <FlagFilledIcon /> : <FlagOutlineIcon />}
+  </button>
+);
+
+const FlagFilledIcon = () => (
+  <svg width={13} height={13} viewBox="0 0 16 16" fill="currentColor">
+    <path d="M14.778.085A.5.5 0 0 1 15 .5V8a.5.5 0 0 1-.314.464L14.5 8l.186.464-.003.001-.006.003-.023.009a12.435 12.435 0 0 1-.397.15c-.264.095-.631.223-1.047.35-.816.252-1.879.523-2.71.523-.847 0-1.548-.28-2.158-.525l-.028-.01C7.68 8.71 7.14 8.5 6.5 8.5c-.7 0-1.638.23-2.437.477A19.626 19.626 0 0 0 3 9.342V15.5a.5.5 0 0 1-1 0V.5a.5.5 0 0 1 1 0v.282c.226-.079.496-.17.79-.26C4.606.272 5.67 0 6.5 0c.84 0 1.524.277 2.121.519l.043.018C9.286.788 9.828 1 10.5 1c.7 0 1.638-.23 2.437-.477a19.587 19.587 0 0 0 1.349-.476l.019-.007.004-.002h.001" />
+  </svg>
+);
+
+const FlagOutlineIcon = () => (
+  <svg width={13} height={13} viewBox="0 0 16 16" fill="currentColor">
+    <path d="M14.778.085A.5.5 0 0 1 15 .5V8a.5.5 0 0 1-.314.464L14.5 8l.186.464-.003.001-.006.003-.023.009a12.435 12.435 0 0 1-.397.15c-.264.095-.631.223-1.047.35-.816.252-1.879.523-2.71.523-.847 0-1.548-.28-2.158-.525l-.028-.01C7.68 8.71 7.14 8.5 6.5 8.5c-.7 0-1.638.23-2.437.477A19.626 19.626 0 0 0 3 9.342V15.5a.5.5 0 0 1-1 0V.5a.5.5 0 0 1 1 0v.282c.226-.079.496-.17.79-.26C4.606.272 5.67 0 6.5 0c.84 0 1.524.277 2.121.519l.043.018C9.286.788 9.828 1 10.5 1c.7 0 1.638-.23 2.437-.477a19.587 19.587 0 0 0 1.349-.476l.019-.007.004-.002h.001A.5.5 0 0 1 14.778.085zM14 1.221c-.22.078-.48.167-.766.255-.81.252-1.872.523-2.734.523-.886 0-1.592-.286-2.203-.534l-.008-.003C7.662 1.21 7.139 1 6.5 1c-.669 0-1.606.229-2.415.478A21.294 21.294 0 0 0 3 1.845v6.433c.22-.078.48-.167.766-.255C4.576 7.77 5.638 7.5 6.5 7.5c.847 0 1.548.28 2.158.525l.028.01c.597.24 1.097.465 1.814.465.669 0 1.606-.229 2.415-.478A21.317 21.317 0 0 0 14 7.655V1.222z" />
+  </svg>
 );
 
 const PencilIcon = () => (

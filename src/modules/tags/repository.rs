@@ -1,6 +1,6 @@
+use crate::modules::EntityId;
 use serde::Serialize;
 use sqlx::{Error, Pool, Postgres};
-use crate::modules::EntityId;
 
 #[derive(Debug, Serialize, Clone)]
 pub struct Tag {
