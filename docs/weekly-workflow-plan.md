@@ -112,7 +112,7 @@ Data flow: app opens → `GET /api/review` → `{ weekStart, needsReview, cards[
 
 ## Step 4 — Trello import (branch `weekly-step4-import`)
 
-### 4.1 Backend: pure mapping — status: todo
+### 4.1 Backend: pure mapping — status: done
 - Goal: `map_trello(json) -> Vec<NewCard>` per the spec table. Archived cards skipped. Checklists appended as `- [ ]` / `- [x]` markdown. Labels become tags. Unknown list names are reported, not guessed. Waiting cards: `waiting_on` stays empty (the spec says so), which conflicts with the 2.1 rule "waiting_on required". Import writes through a dedicated insert, not through `apply_status`.
 - Files: `src/modules/import/{mod,trello}.rs`
 - Acceptance: unit tests with a small JSON fixture (no real user data in the repo).
