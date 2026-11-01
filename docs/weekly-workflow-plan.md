@@ -122,7 +122,7 @@ Data flow: app opens → `GET /api/review` → `{ weekStart, needsReview, cards[
 - Files: `src/modules/import/router.rs`, `src/main.rs`
 - Acceptance: `curl` on a fresh DB with the fixture: counts match; second run doubles the cards (documented behavior).
 
-### 4.3 Front-end: import UI — status: todo
+### 4.3 Front-end: import UI — status: done
 - Goal: file input in the header menu, preview of counts, confirm, result message.
 - Files: `AppHeader.tsx`, new `components/TrelloImport/*`, `services/api.ts`
 - Acceptance: browser check with the fixture.
