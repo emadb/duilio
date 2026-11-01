@@ -11,12 +11,16 @@ use crate::modules::tags::repository::Tag;
 #[sqlx(type_name = "todo_status")]
 #[serde(rename_all = "kebab-case")]
 pub enum TodoStatus {
+    #[sqlx(rename = "idea")]
+    Idea,
     #[sqlx(rename = "todo")]
     Todo,
     #[sqlx(rename = "in-progress")]
     InProgress,
     #[sqlx(rename = "blocked")]
     Blocked,
+    #[sqlx(rename = "paused")]
+    Paused,
     #[sqlx(rename = "done")]
     Done,
 }
