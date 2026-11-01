@@ -3,12 +3,14 @@ use serde::Serialize;
 use sqlx::{Error, Pool, Postgres};
 
 use crate::modules::EntityId;
-use crate::modules::weeks::week::{parse_tz, week_of};
+use crate::modules::weeks::week::{parse_tz, week_of, week_start_instant};
 
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Week {
     pub week_start: NaiveDate,
+    /// The instant the week starts in the user's time zone.
+    pub starts_at: DateTime<Utc>,
     pub reviewed_at: Option<DateTime<Utc>>,
     pub note: String,
 }
@@ -28,7 +30,8 @@ impl WeekRepository {
             sqlx::query_scalar!(r#"SELECT timezone FROM users WHERE id = $1"#, user_id.0)
                 .fetch_one(&self.pool)
                 .await?;
-        let week_start = week_of(Utc::now(), parse_tz(&timezone));
+        let tz = parse_tz(&timezone);
+        let week_start = week_of(Utc::now(), tz);
 
         sqlx::query!(
             r#"
@@ -42,10 +45,9 @@ impl WeekRepository {
         .execute(&self.pool)
         .await?;
 
-        sqlx::query_as!(
-            Week,
+        let row = sqlx::query!(
             r#"
-            SELECT week_start, reviewed_at, note
+            SELECT reviewed_at, note
             FROM weeks
             WHERE user_id = $1 AND week_start = $2
             "#,
@@ -53,6 +55,13 @@ impl WeekRepository {
             week_start
         )
         .fetch_one(&self.pool)
-        .await
+        .await?;
+
+        Ok(Week {
+            week_start,
+            starts_at: week_start_instant(week_start, tz),
+            reviewed_at: row.reviewed_at,
+            note: row.note,
+        })
     }
 }
