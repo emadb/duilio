@@ -39,6 +39,7 @@ async fn main() {
         .merge(crate::modules::auth::router::build_routes())
         .merge(crate::modules::todos::router::build_routes())
         .merge(crate::modules::tags::router::build_routes())
+        .merge(crate::modules::weeks::router::build_routes())
         .fallback_service(static_service)
         .with_state(pool);
 

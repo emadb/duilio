@@ -78,7 +78,7 @@ Data flow: card moves in the UI → `PATCH /api/todos/{id}` with `status` plus o
 - Files: `front-end/src/App.tsx`, `StatusSection.tsx`, `TaskCard.tsx`, `SummaryBar.tsx`, new `common/Badge` helpers in `front-end/src/utils/helpers.ts`.
 - Acceptance: build passes; browser check with screenshots of all columns, the drawer, and each badge.
 
-### 2.5 Backend: current week endpoint — status: todo
+### 2.5 Backend: current week endpoint — status: done
 - Goal: `GET /api/weeks/current` → `{ weekStart, reviewedAt, note }`. Creates the `weeks` row if missing (D1=B). Used by 2.4 and step 3.
 - Files: new module `src/modules/weeks/{mod,router,repository}.rs`, `src/modules/mod.rs`, `src/main.rs`.
 - Goal detail: pure `week_start(now, tz) -> NaiveDate` in `src/modules/weeks/week.rs`; an unknown time zone name falls back to `Europe/Rome`.
