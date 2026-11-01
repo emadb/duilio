@@ -24,19 +24,19 @@ Step 6 (3–4 weeks of use) is not code. It is out of this plan.
 
 ## Decisions needed before step 2
 
-**D1 — Where does the "current week" come from?**
+**D1 — Where does the "current week" come from?** (answered: B)
 It depends on the user's time zone (`users.timezone`). Needed by steps 2 (Done this week), 3 and 5.
 - **A: Postgres.** `date_trunc('week', now() AT TIME ZONE u.timezone)::date`. No new crate. Week logic lives in SQL.
 - **B: `chrono-tz` crate.** Pure Rust functions, easy unit tests. Adds a dependency (your rule: ask first).
 - I recommend A: no dependency, and the time zone database is already in Postgres. Pure helpers still exist for formatting only.
 
-**D2 — Where do status transition rules live?**
+**D2 — Where do status transition rules live?** (answered: A)
 Rules: set `status_changed_at`; set/clear `completed_at`; set `waiting_since` and require `waiting_on`; require `paused_until`; clear the fields of the previous status.
 - **A: A pure function `apply_status(card, new_status, input, now)` in a new `src/modules/todos/transitions.rs`.** `update` calls it. Easy to unit test. Matches "functional core".
 - **B: SQL `CASE` expressions inside the `UPDATE`.** Fewer round trips, but hard to test.
 - I recommend A.
 
-**D3 — Trello import transport.**
+**D3 — Trello import transport.** (answered: A)
 - **A: JSON body.** The front-end reads the file with `FileReader` and posts the JSON text. No new crate or axum feature.
 - **B: multipart upload.** Needs the axum `multipart` feature.
 - I recommend A.
@@ -74,14 +74,15 @@ Data flow: card moves in the UI → `PATCH /api/todos/{id}` with `status` plus o
 - Acceptance: `npx tsc --noEmit` passes.
 
 ### 2.4 Front-end: columns, drawer, badges — status: todo
-- Goal: five board columns; Paused drawer (collapsed by default, count in the header); Done column shows only cards with `completedAt` in the current week (week start computed in the user's time zone, see D1; the API returns `weekStart` — see 2.5); badges per the spec table (days in column, waiting on, return week, rollover, completed on).
+- Goal: five board columns; Paused drawer (collapsed by default, count in the header); Done column shows only cards with `completedAt` in the current week (the API returns `weekStart` from 2.5; the front-end compares `completedAt` against it); badges per the spec table (days in column, waiting on, return week, rollover, completed on).
 - Files: `front-end/src/App.tsx`, `StatusSection.tsx`, `TaskCard.tsx`, `SummaryBar.tsx`, new `common/Badge` helpers in `front-end/src/utils/helpers.ts`.
 - Acceptance: build passes; browser check with screenshots of all columns, the drawer, and each badge.
 
 ### 2.5 Backend: current week endpoint — status: todo
-- Goal: `GET /api/weeks/current` → `{ weekStart, reviewedAt, note }`. Creates the `weeks` row if missing (D1=A). Used by 2.4 and step 3.
+- Goal: `GET /api/weeks/current` → `{ weekStart, reviewedAt, note }`. Creates the `weeks` row if missing (D1=B). Used by 2.4 and step 3.
 - Files: new module `src/modules/weeks/{mod,router,repository}.rs`, `src/modules/mod.rs`, `src/main.rs`.
-- Acceptance: `curl` returns the Monday of the current week in `Europe/Rome`. Setting the user's timezone to `Pacific/Auckland` in the DB changes the answer around the boundary (checked with a fixed `now` in a SQL test query).
+- Goal detail: pure `week_start(now, tz) -> NaiveDate` in `src/modules/weeks/week.rs`; an unknown time zone name falls back to `Europe/Rome`.
+- Acceptance: unit tests for the boundary (Sunday 23:30 vs Monday 00:30 in Rome, DST change week, `Pacific/Auckland`); `curl` returns the Monday of the current week.
 - Order note: do 2.5 before 2.4.
 
 ### 2.6 Front-end: prompts — status: todo
@@ -129,7 +130,7 @@ Data flow: app opens → `GET /api/review` → `{ weekStart, needsReview, cards[
 ## Step 5 — Weekly Done log (branch `weekly-step5-log`)
 
 ### 5.1 Backend: log endpoint — status: todo
-- Goal: `GET /api/log` → weeks newest first: `{ weekStart, count, note, cards[] }`, grouped by `completed_at` in the user's time zone (D1=A). Uses a direct read query (CQRS read side).
+- Goal: `GET /api/log` → weeks newest first: `{ weekStart, count, note, cards[] }`. A direct read query loads completed cards; a pure function groups them with `week_of(completed_at, tz)` (D1=B).
 - Files: `src/modules/weeks/*`
 - Acceptance: `curl` with cards completed at 23:30 Sunday and 00:30 Monday Rome time land in different weeks.
 
@@ -148,4 +149,6 @@ Data flow: app opens → `GET /api/review` → `{ weekStart, needsReview, cards[
 
 ## Decision log
 
-- (empty — filled after D1–D3 are answered)
+- **D1 = B.** Week logic is in pure Rust with the `chrono-tz` crate (new dependency, approved by the user). `week_start(now, tz)` and `week_of(instant, tz)` are pure functions with unit tests. SQL stores and compares plain dates and instants only.
+- **D2 = A.** `apply_status` is a pure function in `src/modules/todos/transitions.rs`.
+- **D3 = A.** The Trello import takes a JSON body.
