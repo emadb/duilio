@@ -121,3 +121,26 @@ export function upcomingWeeks(weekStart: string, count = 12): WeekOption[] {
     return { value, label: `Week ${isoWeekNumber(value)} · ${shortDay(start)} – ${shortDay(end)}` };
   });
 }
+
+/** "Week 45 · 3–9 Nov", or "Week 44 · 26 Oct – 1 Nov" when the week spans two months */
+export function weekLabel(weekStart: string): string {
+  const start = new Date(weekStart + 'T00:00:00Z');
+  const end = new Date(start);
+  end.setUTCDate(end.getUTCDate() + 6);
+  const month = (d: Date) => d.toLocaleDateString('en-GB', { month: 'short', timeZone: 'UTC' });
+  const range =
+    month(start) === month(end)
+      ? `${start.getUTCDate()}–${end.getUTCDate()} ${month(end)}`
+      : `${shortDay(start)} – ${shortDay(end)}`;
+
+  return `Week ${isoWeekNumber(weekStart)} · ${range}`;
+}
+
+/** A week of the log as markdown, for status updates and timesheets */
+export function weekToMarkdown(week: { weekStart: string; note: string; cards: { title: string }[] }): string {
+  const parts = [`## ${weekLabel(week.weekStart)}`];
+  if (week.note.trim()) parts.push(week.note.trim());
+  if (week.cards.length > 0) parts.push(week.cards.map((c) => `- ${c.title}`).join('\n'));
+
+  return parts.join('\n\n') + '\n';
+}

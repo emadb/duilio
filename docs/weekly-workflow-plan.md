@@ -134,7 +134,7 @@ Data flow: app opens → `GET /api/review` → `{ weekStart, needsReview, cards[
 - Files: `src/modules/weeks/*`
 - Acceptance: `curl` with cards completed at 23:30 Sunday and 00:30 Monday Rome time land in different weeks.
 
-### 5.2 Front-end: log page with markdown copy — status: todo
+### 5.2 Front-end: log page with markdown copy — status: done
 - Goal: a "Log" view reachable from the header; each week shows count, note and cards; "Copy as markdown" button copies title line (`Week 45 · 3–9 Nov`), the note and a bullet list.
 - A pure function `weekToMarkdown(week)` in `utils/helpers.ts`.
 - Files: new `components/WeeklyLog/*`, `App.tsx`, `utils/helpers.ts`
