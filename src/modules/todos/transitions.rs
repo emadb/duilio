@@ -38,6 +38,19 @@ impl TransitionError {
     }
 }
 
+/// The state a card starts from before its first status is applied.
+pub fn new_state(now: DateTime<Utc>) -> StatusState {
+    StatusState {
+        status: TodoStatus::Idea,
+        status_changed_at: now,
+        waiting_on: None,
+        waiting_since: None,
+        paused_until: None,
+        completed_at: None,
+        rollover_count: 0,
+    }
+}
+
 /// Moves a todo to `to`. Setting the same status again changes nothing.
 pub fn apply_status(
     state: StatusState,

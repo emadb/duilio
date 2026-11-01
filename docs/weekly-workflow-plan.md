@@ -45,7 +45,7 @@ Rules: set `status_changed_at`; set/clear `completed_at`; set `waiting_since` an
 
 Data flow: card moves in the UI → `PATCH /api/todos/{id}` with `status` plus optional `waitingOn` / `pausedUntil` → `transitions::apply_status` → one `UPDATE` → response includes the new fields → UI badges update.
 
-### 2.1 Backend: transitions (pure) — status: todo
+### 2.1 Backend: transitions (pure) — status: done
 - Goal: implement `apply_status` (D2=A) and unit tests.
 - Rules:
   - same status → no change to any field
@@ -59,7 +59,7 @@ Data flow: card moves in the UI → `PATCH /api/todos/{id}` with `status` plus o
 - Files: `src/modules/todos/transitions.rs`, `src/modules/todos/mod.rs`
 - Acceptance: unit tests cover each rule, plus the error cases. `cargo test` passes.
 
-### 2.2 Backend: repository and API — status: todo
+### 2.2 Backend: repository and API — status: done
 - Goal: `Todo` and `TodoRow` expose the six new fields (camelCase). `update` and `create` use `apply_status`. Default status becomes `idea` (spec rule). Validation errors return 400 with a message.
 - Request additions: `waitingOn`, `pausedUntil` (date string).
 - Response additions: `statusChangedAt`, `waitingOn`, `waitingSince`, `pausedUntil`, `completedAt`, `rolloverCount`.

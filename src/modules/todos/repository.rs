@@ -1,11 +1,14 @@
 use std::collections::HashMap;
 
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, NaiveDate, Utc};
 use serde::{Deserialize, Serialize};
 use sqlx::{Error, Pool, Postgres, types::Uuid};
 
 use crate::modules::EntityId;
 use crate::modules::tags::repository::Tag;
+use crate::modules::todos::transitions::{
+    StatusInput, StatusState, TransitionError, apply_status, new_state,
+};
 
 #[derive(sqlx::Type, Debug, Serialize, Deserialize, Clone, PartialEq)]
 #[sqlx(type_name = "todo_status")]
@@ -34,6 +37,12 @@ pub struct Todo {
     pub due_date: Option<DateTime<Utc>>,
     pub status: TodoStatus,
     pub important: bool,
+    pub status_changed_at: DateTime<Utc>,
+    pub waiting_on: Option<String>,
+    pub waiting_since: Option<DateTime<Utc>>,
+    pub paused_until: Option<NaiveDate>,
+    pub completed_at: Option<DateTime<Utc>>,
+    pub rollover_count: i32,
     pub tags: Vec<Tag>,
 }
 
@@ -45,9 +54,27 @@ struct TodoRow {
     due_date: Option<DateTime<Utc>>,
     status: TodoStatus,
     important: bool,
+    status_changed_at: DateTime<Utc>,
+    waiting_on: Option<String>,
+    waiting_since: Option<DateTime<Utc>>,
+    paused_until: Option<NaiveDate>,
+    completed_at: Option<DateTime<Utc>>,
+    rollover_count: i32,
 }
 
 impl TodoRow {
+    fn state(&self) -> StatusState {
+        StatusState {
+            status: self.status.clone(),
+            status_changed_at: self.status_changed_at,
+            waiting_on: self.waiting_on.clone(),
+            waiting_since: self.waiting_since,
+            paused_until: self.paused_until,
+            completed_at: self.completed_at,
+            rollover_count: self.rollover_count,
+        }
+    }
+
     fn into_todo(self, tags: Vec<Tag>) -> Todo {
         Todo {
             id: self.id,
@@ -56,8 +83,33 @@ impl TodoRow {
             due_date: self.due_date,
             status: self.status,
             important: self.important,
+            status_changed_at: self.status_changed_at,
+            waiting_on: self.waiting_on,
+            waiting_since: self.waiting_since,
+            paused_until: self.paused_until,
+            completed_at: self.completed_at,
+            rollover_count: self.rollover_count,
             tags,
         }
+    }
+}
+
+/// Why a create or update did not happen.
+#[derive(Debug)]
+pub enum SaveError {
+    Invalid(TransitionError),
+    Db(Error),
+}
+
+impl From<Error> for SaveError {
+    fn from(e: Error) -> Self {
+        SaveError::Db(e)
+    }
+}
+
+impl From<TransitionError> for SaveError {
+    fn from(e: TransitionError) -> Self {
+        SaveError::Invalid(e)
     }
 }
 
@@ -80,7 +132,13 @@ impl TodoRepository {
                 description,
                 due_date,
                 status as "status: TodoStatus",
-                important
+                important,
+                status_changed_at,
+                waiting_on,
+                waiting_since,
+                paused_until,
+                completed_at,
+                rollover_count
             FROM todos
             WHERE user_id = $1
             ORDER BY created_at DESC
@@ -110,28 +168,48 @@ impl TodoRepository {
         description: String,
         due_date: Option<DateTime<Utc>>,
         status: TodoStatus,
+        status_input: StatusInput,
         important: bool,
         tag_ids: &[String],
-    ) -> Result<Todo, Error> {
+    ) -> Result<Todo, SaveError> {
+        let now = Utc::now();
+        let state = apply_status(new_state(now), status, status_input, now)?;
+
         let row = sqlx::query_as!(
             TodoRow,
             r#"
-            INSERT INTO todos (user_id, title, description, due_date, status, important)
-            VALUES ($1, $2, $3, $4, $5, $6)
+            INSERT INTO todos (
+                user_id, title, description, due_date, status, important,
+                status_changed_at, waiting_on, waiting_since, paused_until,
+                completed_at, rollover_count
+            )
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
             RETURNING
                 id,
                 title,
                 description,
                 due_date,
                 status as "status: TodoStatus",
-                important
+                important,
+                status_changed_at,
+                waiting_on,
+                waiting_since,
+                paused_until,
+                completed_at,
+                rollover_count
             "#,
             user_id.0,
             title,
             description,
             due_date,
-            status as TodoStatus,
-            important
+            state.status as TodoStatus,
+            important,
+            state.status_changed_at,
+            state.waiting_on,
+            state.waiting_since,
+            state.paused_until,
+            state.completed_at,
+            state.rollover_count
         )
         .fetch_one(&self.pool)
         .await?;
@@ -146,8 +224,9 @@ impl TodoRepository {
 
     /// Partial update mirroring the TS repository: `None` fields keep their
     /// current value; for `due_date`, `Some(None)` clears the value while a plain
-    /// `None` leaves it untouched. Returns `None` when the todo doesn't exist for
-    /// this user.
+    /// `None` leaves it untouched. A status change goes through
+    /// [`apply_status`], which sets or clears the status-dependent fields.
+    /// Returns `None` when the todo doesn't exist for this user.
     #[allow(clippy::too_many_arguments)]
     pub async fn update(
         &self,
@@ -157,9 +236,10 @@ impl TodoRepository {
         description: Option<String>,
         due_date: Option<Option<DateTime<Utc>>>,
         status: Option<TodoStatus>,
+        status_input: StatusInput,
         important: Option<bool>,
         tag_ids: Option<Vec<String>>,
-    ) -> Result<Option<Todo>, Error> {
+    ) -> Result<Option<Todo>, SaveError> {
         let existing = sqlx::query_as!(
             TodoRow,
             r#"
@@ -169,7 +249,13 @@ impl TodoRepository {
                 description,
                 due_date,
                 status as "status: TodoStatus",
-                important
+                important,
+                status_changed_at,
+                waiting_on,
+                waiting_since,
+                paused_until,
+                completed_at,
+                rollover_count
             FROM todos
             WHERE id = $1 AND user_id = $2
             "#,
@@ -183,13 +269,16 @@ impl TodoRepository {
             return Ok(None);
         };
 
+        let state = match status {
+            Some(to) => apply_status(existing.state(), to, status_input, Utc::now())?,
+            None => existing.state(),
+        };
         let new_title = title.unwrap_or(existing.title);
         let new_description = description.unwrap_or(existing.description);
         let new_due_date = match due_date {
             Some(value) => value,
             None => existing.due_date,
         };
-        let new_status = status.unwrap_or(existing.status);
         let new_important = important.unwrap_or(existing.important);
 
         let row = sqlx::query_as!(
@@ -201,6 +290,12 @@ impl TodoRepository {
                 due_date = $5,
                 status = $6,
                 important = $7,
+                status_changed_at = $8,
+                waiting_on = $9,
+                waiting_since = $10,
+                paused_until = $11,
+                completed_at = $12,
+                rollover_count = $13,
                 updated_at = now()
             WHERE id = $1 AND user_id = $2
             RETURNING
@@ -209,15 +304,27 @@ impl TodoRepository {
                 description,
                 due_date,
                 status as "status: TodoStatus",
-                important
+                important,
+                status_changed_at,
+                waiting_on,
+                waiting_since,
+                paused_until,
+                completed_at,
+                rollover_count
             "#,
             id.0,
             user_id.0,
             new_title,
             new_description,
             new_due_date,
-            new_status as TodoStatus,
-            new_important
+            state.status as TodoStatus,
+            new_important,
+            state.status_changed_at,
+            state.waiting_on,
+            state.waiting_since,
+            state.paused_until,
+            state.completed_at,
+            state.rollover_count
         )
         .fetch_one(&self.pool)
         .await?;
