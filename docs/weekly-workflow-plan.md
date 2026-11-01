@@ -94,7 +94,7 @@ Data flow: card moves in the UI → `PATCH /api/todos/{id}` with `status` plus o
 
 Data flow: app opens → `GET /api/review` → `{ weekStart, needsReview, cards[] }` → review screen → `POST /api/review/complete` with one decision per card + optional note → server applies all decisions in one transaction → sets `weeks.reviewed_at` → board.
 
-### 3.1 Backend: review detection and cards — status: todo
+### 3.1 Backend: review detection and cards — status: done
 - Goal: `GET /api/review`. `needsReview` is true when the current week has no `reviewed_at`. Cards: `todo` not done, `in-progress`, `blocked`, and `paused` with `paused_until <= weekStart`. A user with no cards and no past data does not see a review (nothing to decide).
 - If a week was skipped, one review covers all (no per-week loop).
 - Files: `src/modules/weeks/*`

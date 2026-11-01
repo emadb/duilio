@@ -160,6 +160,45 @@ impl TodoRepository {
             .collect())
     }
 
+    /// Cards that are neither ideas nor done, the oldest status change first.
+    pub async fn list_active(&self, user_id: EntityId) -> Result<Vec<Todo>, Error> {
+        let rows = sqlx::query_as!(
+            TodoRow,
+            r#"
+            SELECT
+                id,
+                title,
+                description,
+                due_date,
+                status as "status: TodoStatus",
+                important,
+                status_changed_at,
+                waiting_on,
+                waiting_since,
+                paused_until,
+                completed_at,
+                rollover_count
+            FROM todos
+            WHERE user_id = $1 AND status NOT IN ('idea', 'done')
+            ORDER BY status_changed_at ASC
+            "#,
+            user_id.0
+        )
+        .fetch_all(&self.pool)
+        .await?;
+
+        let todo_ids: Vec<Uuid> = rows.iter().map(|r| r.id.0).collect();
+        let mut tags_map = self.tags_for_todos(&todo_ids).await?;
+
+        Ok(rows
+            .into_iter()
+            .map(|row| {
+                let tags = tags_map.remove(&row.id.0).unwrap_or_default();
+                row.into_todo(tags)
+            })
+            .collect())
+    }
+
     #[allow(clippy::too_many_arguments)]
     pub async fn create(
         &self,
