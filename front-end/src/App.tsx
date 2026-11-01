@@ -8,6 +8,7 @@ import { AuthModal } from './components/AuthModal/AuthModal';
 import { useTasks } from './hooks/useTasks';
 import { logout } from './services/api';
 import { STATUSES } from './constants';
+import { onBoard } from './utils/helpers';
 import type { Task, TaskDraft, TaskStatus } from './types/task';
 
 // ── Auth gate ─────────────────────────────────────────────────────────────────
@@ -32,7 +33,7 @@ export const App: React.FC = () => {
 // ── Main app (rendered only when authenticated) ───────────────────────────────
 
 const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
-  const { tasks, tagColorMap, loading, error, addTask, editTask, moveTask, toggleImportant, removeTask, assignTagColor } =
+  const { tasks, tagColorMap, week, loading, error, addTask, editTask, moveTask, toggleImportant, removeTask, assignTagColor } =
     useTasks(onLogout); // onLogout doubles as onUnauthorized handler
 
   const [search, setSearch] = useState('');
@@ -59,7 +60,7 @@ const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
     );
   }
 
-  function openCreate(defaultStatus: string = 'todo') {
+  function openCreate(defaultStatus: string = 'idea') {
     setModalTask({ status: defaultStatus as TaskStatus, tags: [] });
   }
 
@@ -86,15 +87,18 @@ const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
     setDeleteTarget(null);
   }
 
+  // The Done column only shows cards completed this week; older ones live in the log
+  const boardTasks = week ? tasks.filter((t) => onBoard(t, week.startsAt)) : tasks;
+
   const q = search.trim().toLowerCase();
   const filtered = q
-    ? tasks.filter(
+    ? boardTasks.filter(
         (t) =>
           t.title.toLowerCase().includes(q) ||
           (t.description ?? '').toLowerCase().includes(q) ||
           t.tags.some((tag) => tag.includes(q)),
       )
-    : tasks;
+    : boardTasks;
 
   // Important tasks float to the top of their column (sort is stable, so the
   // original order is preserved within each group)
@@ -107,7 +111,8 @@ const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
     ]),
   ) as Record<TaskStatus, Task[]>;
 
-  const visibleStatuses = STATUSES.filter((s) => activeStatuses.includes(s.value));
+  const visibleStatuses = STATUSES.filter((s) => !s.drawer && activeStatuses.includes(s.value));
+  const drawerStatus = STATUSES.find((s) => s.drawer && activeStatuses.includes(s.value));
   const noResults = q.length > 0 && filtered.length === 0;
 
   if (loading) {
@@ -130,7 +135,7 @@ const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
   return (
     <div style={{ minHeight: '100vh', background: 'var(--eui-page-background)' }}>
       <AppHeader
-        tasks={tasks}
+        tasks={boardTasks}
         search={search}
         onSearch={setSearch}
         activeStatuses={activeStatuses}
@@ -146,7 +151,7 @@ const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
           padding: '28px 24px 60px',
         }}
       >
-        <SummaryBar tasks={tasks} />
+        <SummaryBar tasks={boardTasks} />
 
         {noResults ? (
           <div style={{ textAlign: 'center', padding: '52px 0' }}>
@@ -195,6 +200,22 @@ const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
                 tagColorMap={tagColorMap}
               />
             ))}
+          </div>
+        )}
+
+        {drawerStatus && !noResults && (
+          <div style={{ marginTop: 16, maxWidth: 360 }}>
+            <StatusSection
+              key={drawerStatus.value}
+              status={drawerStatus}
+              tasks={byStatus[drawerStatus.value] ?? []}
+              onEdit={openEdit}
+              onAdd={openCreate}
+              onDropTask={handleDropTask}
+              onToggleImportant={(id) => { toggleImportant(id).catch(console.error); }}
+              tagColorMap={tagColorMap}
+              defaultCollapsed
+            />
           </div>
         )}
       </main>

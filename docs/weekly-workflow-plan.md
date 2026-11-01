@@ -73,8 +73,8 @@ Data flow: card moves in the UI → `PATCH /api/todos/{id}` with `status` plus o
 - Files: `front-end/src/types/task.ts`, `front-end/src/constants/index.ts`, `front-end/src/services/api.ts`
 - Acceptance: `npx tsc --noEmit` passes.
 
-### 2.4 Front-end: columns, drawer, badges — status: todo
-- Goal: five board columns; Paused drawer (collapsed by default, count in the header); Done column shows only cards with `completedAt` in the current week (the API returns `weekStart` from 2.5; the front-end compares `completedAt` against it); badges per the spec table (days in column, waiting on, return week, rollover, completed on).
+### 2.4 Front-end: columns, drawer, badges — status: done
+- Goal: five board columns; Paused drawer (collapsed by default, count in the header); Done column shows only cards with `completedAt` in the current week (the API returns `startsAt` from 2.5, the instant the week starts in the user's time zone; the front-end compares `completedAt` against it); badges per the spec table (days in column, waiting on, return week, rollover, completed on).
 - Files: `front-end/src/App.tsx`, `StatusSection.tsx`, `TaskCard.tsx`, `SummaryBar.tsx`, new `common/Badge` helpers in `front-end/src/utils/helpers.ts`.
 - Acceptance: build passes; browser check with screenshots of all columns, the drawer, and each badge.
 
@@ -149,6 +149,8 @@ Data flow: app opens → `GET /api/review` → `{ weekStart, needsReview, cards[
 
 ## Decision log
 
+- **Browser checks without the Chrome extension.** The extension is not set up in this session. Front-end checks use the Playwright headless Chromium from `~/Library/Caches/ms-playwright`, driven over the DevTools protocol by a script outside the repo. It gives screenshots, page text and console output.
+- **`startsAt` on the week endpoint.** The browser does not know the user's time zone, so the server returns the week start as an instant (added in 2.4).
 - **D1 = B.** Week logic is in pure Rust with the `chrono-tz` crate (new dependency, approved by the user). `week_start(now, tz)` and `week_of(instant, tz)` are pure functions with unit tests. SQL stores and compares plain dates and instants only.
 - **D2 = A.** `apply_status` is a pure function in `src/modules/todos/transitions.rs`.
 - **D3 = A.** The Trello import takes a JSON body.

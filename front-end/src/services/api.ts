@@ -22,6 +22,13 @@ export function setAuthToken(token: string | null): void {
   }
 }
 
+export interface Week {
+  weekStart: string;  // Monday, YYYY-MM-DD
+  startsAt: string;   // ISO instant of Monday 00:00 in the user's time zone
+  reviewedAt: string | null;
+  note: string;
+}
+
 // ── Tag cache (name → BackendTag) ─────────────────────────────────────────────
 
 interface BackendTag {
@@ -175,6 +182,10 @@ export async function updateTask(
 
 export async function deleteTask(id: string): Promise<void> {
   await request<void>(`/todos/${id}`, { method: 'DELETE' });
+}
+
+export function fetchCurrentWeek(): Promise<Week> {
+  return request<Week>('/weeks/current');
 }
 
 // ── Tag color endpoints ───────────────────────────────────────────────────────

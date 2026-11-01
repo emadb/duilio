@@ -5,6 +5,8 @@ import type { Task } from '../../types/task';
 import type { TagColorMap } from '../../types/task';
 import { TagPill } from '../common/TagPill';
 import { DueBadge } from '../common/DueBadge';
+import { Badge } from '../common/Badge';
+import { cardBadges } from '../../utils/helpers';
 
 interface TaskCardProps {
   task: Task;
@@ -16,7 +18,8 @@ interface TaskCardProps {
 export const TaskCard: React.FC<TaskCardProps> = ({ task, onEdit, onToggleImportant, tagColorMap }) => {
   const [dragging, setDragging] = React.useState(false);
   const done = task.status === 'done';
-  const hasFooter = !!task.dueDate || task.tags.length > 0;
+  const badges = cardBadges(task, new Date());
+  const hasFooter = !!task.dueDate || task.tags.length > 0 || badges.length > 0;
 
   return (
     <div
@@ -114,6 +117,9 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onEdit, onToggleImport
             marginTop: 10,
           }}
         >
+          {badges.map((b) => (
+            <Badge key={b} label={b} />
+          ))}
           <DueBadge dueDate={task.dueDate} status={task.status} />
           {task.tags.map((tag) => (
             <TagPill key={tag} tag={tag} tagColorMap={tagColorMap} size="sm" />

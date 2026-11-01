@@ -35,7 +35,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
 
   const [title, setTitle] = useState(task?.title ?? '');
   const [desc, setDesc] = useState(task?.description ?? '');
-  const [status, setStatus] = useState<TaskStatus>(task?.status ?? 'todo');
+  const [status, setStatus] = useState<TaskStatus>(task?.status ?? 'idea');
   const [due, setDue] = useState(task?.dueDate ?? '');
   const [tags, setTags] = useState<string[]>(task?.tags ?? []);
   const [important, setImportant] = useState(task?.important ?? false);

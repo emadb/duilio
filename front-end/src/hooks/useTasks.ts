@@ -6,13 +6,16 @@ import {
   updateTask,
   deleteTask,
   fetchTagColors,
+  fetchCurrentWeek,
   saveTagColors,
   ApiError,
+  type Week,
 } from '../services/api';
 
 interface UseTasksReturn {
   tasks: Task[];
   tagColorMap: TagColorMap;
+  week: Week | null;
   loading: boolean;
   error: string | null;
   addTask: (data: TaskDraft) => Promise<void>;
@@ -26,6 +29,7 @@ interface UseTasksReturn {
 export function useTasks(onUnauthorized?: () => void): UseTasksReturn {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [tagColorMap, setTagColorMap] = useState<TagColorMap>({});
+  const [week, setWeek] = useState<Week | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -37,10 +41,11 @@ export function useTasks(onUnauthorized?: () => void): UseTasksReturn {
     let cancelled = false;
     (async () => {
       try {
-        const [t, c] = await Promise.all([fetchTasks(), fetchTagColors()]);
+        const [t, c, w] = await Promise.all([fetchTasks(), fetchTagColors(), fetchCurrentWeek()]);
         if (!cancelled) {
           setTasks(t);
           setTagColorMap(c);
+          setWeek(w);
         }
       } catch (e) {
         if (!cancelled) {
@@ -121,5 +126,5 @@ export function useTasks(onUnauthorized?: () => void): UseTasksReturn {
     [],
   );
 
-  return { tasks, tagColorMap, loading, error, addTask, editTask, moveTask, toggleImportant, removeTask, assignTagColor };
+  return { tasks, tagColorMap, week, loading, error, addTask, editTask, moveTask, toggleImportant, removeTask, assignTagColor };
 }
