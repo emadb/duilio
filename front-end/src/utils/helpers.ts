@@ -93,3 +93,24 @@ export function onBoard(task: Task, weekStartsAt: string): boolean {
   if (task.status !== 'done' || !task.completedAt) return true;
   return new Date(task.completedAt) >= new Date(weekStartsAt);
 }
+
+export interface WeekOption {
+  value: string; // Monday, YYYY-MM-DD
+  label: string;
+}
+
+const shortDay = (d: Date) =>
+  d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' });
+
+/** The Mondays of the `count` weeks after the week that starts on `weekStart` */
+export function upcomingWeeks(weekStart: string, count = 12): WeekOption[] {
+  return Array.from({ length: count }, (_, i) => {
+    const start = new Date(weekStart + 'T00:00:00Z');
+    start.setUTCDate(start.getUTCDate() + 7 * (i + 1));
+    const end = new Date(start);
+    end.setUTCDate(end.getUTCDate() + 6);
+    const value = start.toISOString().slice(0, 10);
+
+    return { value, label: `Week ${isoWeekNumber(value)} · ${shortDay(start)} – ${shortDay(end)}` };
+  });
+}

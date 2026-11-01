@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import type { Task, TaskDraft, TaskStatus, TagColorMap } from '../types/task';
+import type { StatusExtra } from '../components/StatusPrompt/StatusPrompt';
 import {
   fetchTasks,
   createTask,
@@ -20,7 +21,7 @@ interface UseTasksReturn {
   error: string | null;
   addTask: (data: TaskDraft) => Promise<void>;
   editTask: (id: string, data: Partial<TaskDraft>) => Promise<void>;
-  moveTask: (id: string, status: TaskStatus) => Promise<void>;
+  moveTask: (id: string, status: TaskStatus, extra?: StatusExtra) => Promise<void>;
   toggleImportant: (id: string) => Promise<void>;
   removeTask: (id: string) => Promise<void>;
   assignTagColor: (tag: string, colorIndex: number) => void;
@@ -32,6 +33,9 @@ export function useTasks(onUnauthorized?: () => void): UseTasksReturn {
   const [week, setWeek] = useState<Week | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const tasksRef = useRef(tasks);
+  tasksRef.current = tasks;
 
   const onUnauthorizedRef = useRef(onUnauthorized);
   onUnauthorizedRef.current = onUnauthorized;
@@ -76,21 +80,19 @@ export function useTasks(onUnauthorized?: () => void): UseTasksReturn {
   );
 
   // Optimistic status change (drag & drop): move the card immediately, revert on failure
-  const moveTask = useCallback(async (id: string, status: TaskStatus) => {
-    let previous: TaskStatus | undefined;
-    setTasks((prev) =>
-      prev.map((t) => {
-        if (t.id !== id) return t;
-        previous = t.status;
-        return { ...t, status };
-      }),
-    );
-    if (previous === undefined || previous === status) return;
+  const moveTask = useCallback(async (id: string, status: TaskStatus, extra: StatusExtra = {}) => {
+    // Read the current status from the ref: a setState updater may run later than this line
+    const current = tasksRef.current.find((t) => t.id === id);
+    if (!current || current.status === status) return;
+
+    const previous = current.status;
+    setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, status, ...extra } : t)));
     try {
-      await updateTask(id, { status });
+      // The server sets the status-dependent fields (since, completed, ...): use its answer
+      const saved = await updateTask(id, { status, ...extra });
+      setTasks((prev) => prev.map((t) => (t.id === id ? { ...saved, createdAt: t.createdAt } : t)));
     } catch (e) {
-      const revert = previous;
-      setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, status: revert } : t)));
+      setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, status: previous } : t)));
       throw e;
     }
   }, []);

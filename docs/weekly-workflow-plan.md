@@ -85,7 +85,7 @@ Data flow: card moves in the UI → `PATCH /api/todos/{id}` with `status` plus o
 - Acceptance: unit tests for the boundary (Sunday 23:30 vs Monday 00:30 in Rome, DST change week, `Pacific/Auckland`); `curl` returns the Monday of the current week.
 - Order note: do 2.5 before 2.4.
 
-### 2.6 Front-end: prompts — status: todo
+### 2.6 Front-end: prompts — status: done
 - Goal: dropping a card on Waiting on asks "who?"; on Paused asks for the return week (week picker that only offers Mondays). The same fields appear in `TaskModal` when the status is selected there. Cancel reverts the move.
 - Files: new `components/StatusPrompt/StatusPrompt.tsx`, `TaskModal.tsx`, `useTasks.ts`
 - Acceptance: browser check of drag → prompt → confirm and → cancel; 400 errors show a message.
@@ -150,6 +150,7 @@ Data flow: app opens → `GET /api/review` → `{ weekStart, needsReview, cards[
 ## Decision log
 
 - **Browser checks without the Chrome extension.** The extension is not set up in this session. Front-end checks use the Playwright headless Chromium from `~/Library/Caches/ms-playwright`, driven over the DevTools protocol by a script outside the repo. It gives screenshots, page text and console output.
+- **`moveTask` fix (2.6).** The old `moveTask` read the previous status inside a `setState` updater. React can run the updater later, so the function returned early: the card moved on screen but was never saved. It now reads the status from a ref. The bug existed before this work. A synthetic drag-drop test found it.
 - **`startsAt` on the week endpoint.** The browser does not know the user's time zone, so the server returns the week start as an instant (added in 2.4).
 - **D1 = B.** Week logic is in pure Rust with the `chrono-tz` crate (new dependency, approved by the user). `week_start(now, tz)` and `week_of(instant, tz)` are pure functions with unit tests. SQL stores and compares plain dates and instants only.
 - **D2 = A.** `apply_status` is a pure function in `src/modules/todos/transitions.rs`.

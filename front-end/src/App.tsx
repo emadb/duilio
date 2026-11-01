@@ -8,7 +8,8 @@ import { AuthModal } from './components/AuthModal/AuthModal';
 import { useTasks } from './hooks/useTasks';
 import { logout } from './services/api';
 import { STATUSES } from './constants';
-import { onBoard } from './utils/helpers';
+import { onBoard, upcomingWeeks } from './utils/helpers';
+import { StatusPrompt, type PromptStatus } from './components/StatusPrompt/StatusPrompt';
 import type { Task, TaskDraft, TaskStatus } from './types/task';
 
 // ── Auth gate ─────────────────────────────────────────────────────────────────
@@ -42,6 +43,7 @@ const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
   );
   const [modalTask, setModalTask] = useState<Partial<Task> | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Task | null>(null);
+  const [prompt, setPrompt] = useState<{ task: Task; status: PromptStatus } | null>(null);
 
   // Fallback: if useTasks sets an error and the token is gone, redirect to auth
   useEffect(() => {
@@ -78,6 +80,12 @@ const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
   }
 
   function handleDropTask(taskId: string, status: TaskStatus) {
+    const task = tasks.find((t) => t.id === taskId);
+    // Waiting on and Paused need extra data: ask before moving the card
+    if (task && task.status !== status && (status === 'blocked' || status === 'paused')) {
+      setPrompt({ task, status });
+      return;
+    }
     moveTask(taskId, status).catch(console.error); // moveTask already reverts on failure
   }
 
@@ -89,6 +97,8 @@ const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
 
   // The Done column only shows cards completed this week; older ones live in the log
   const boardTasks = week ? tasks.filter((t) => onBoard(t, week.startsAt)) : tasks;
+
+  const weeks = upcomingWeeks(week?.weekStart ?? new Date().toISOString().slice(0, 10));
 
   const q = search.trim().toLowerCase();
   const filtered = q
@@ -228,6 +238,19 @@ const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
           onDelete={modalTask.id ? () => { setDeleteTarget(modalTask as Task); setModalTask(null); } : undefined}
           tagColorMap={tagColorMap}
           onColorAssign={assignTagColor}
+          weeks={weeks}
+        />
+      )}
+      {prompt !== null && (
+        <StatusPrompt
+          task={prompt.task}
+          status={prompt.status}
+          weeks={weeks}
+          onConfirm={(extra) => {
+            moveTask(prompt.task.id, prompt.status, extra).catch(console.error);
+            setPrompt(null);
+          }}
+          onClose={() => setPrompt(null)}
         />
       )}
       {deleteTarget !== null && (
