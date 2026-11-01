@@ -148,6 +148,40 @@ impl TodoRepository {
         .fetch_all(&self.pool)
         .await?;
 
+        self.attach_tags(rows).await
+    }
+
+    /// Done cards with a completion time, the latest first.
+    pub async fn list_done(&self, user_id: EntityId) -> Result<Vec<Todo>, Error> {
+        let rows = sqlx::query_as!(
+            TodoRow,
+            r#"
+            SELECT
+                id,
+                title,
+                description,
+                due_date,
+                status as "status: TodoStatus",
+                important,
+                status_changed_at,
+                waiting_on,
+                waiting_since,
+                paused_until,
+                completed_at,
+                rollover_count
+            FROM todos
+            WHERE user_id = $1 AND status = 'done' AND completed_at IS NOT NULL
+            ORDER BY completed_at DESC
+            "#,
+            user_id.0
+        )
+        .fetch_all(&self.pool)
+        .await?;
+
+        self.attach_tags(rows).await
+    }
+
+    async fn attach_tags(&self, rows: Vec<TodoRow>) -> Result<Vec<Todo>, Error> {
         let todo_ids: Vec<Uuid> = rows.iter().map(|r| r.id.0).collect();
         let mut tags_map = self.tags_for_todos(&todo_ids).await?;
 
@@ -187,16 +221,7 @@ impl TodoRepository {
         .fetch_all(&self.pool)
         .await?;
 
-        let todo_ids: Vec<Uuid> = rows.iter().map(|r| r.id.0).collect();
-        let mut tags_map = self.tags_for_todos(&todo_ids).await?;
-
-        Ok(rows
-            .into_iter()
-            .map(|row| {
-                let tags = tags_map.remove(&row.id.0).unwrap_or_default();
-                row.into_todo(tags)
-            })
-            .collect())
+        self.attach_tags(rows).await
     }
 
     #[allow(clippy::too_many_arguments)]

@@ -129,7 +129,7 @@ Data flow: app opens → `GET /api/review` → `{ weekStart, needsReview, cards[
 
 ## Step 5 — Weekly Done log (branch `weekly-step5-log`)
 
-### 5.1 Backend: log endpoint — status: todo
+### 5.1 Backend: log endpoint — status: done
 - Goal: `GET /api/log` → weeks newest first: `{ weekStart, count, note, cards[] }`. A direct read query loads completed cards; a pure function groups them with `week_of(completed_at, tz)` (D1=B).
 - Files: `src/modules/weeks/*`
 - Acceptance: `curl` with cards completed at 23:30 Sunday and 00:30 Monday Rome time land in different weeks.
@@ -158,3 +158,4 @@ Data flow: app opens → `GET /api/review` → `{ weekStart, needsReview, cards[
 - **Review rules (3.2).** `still-waiting` does not bump `rollover_count` (the spec lists the bump only for the two keep actions). `pause` needs a Monday after the current week, also for a card whose pause has ended. `apply_decision` handles that case itself because `apply_status` ignores a same-status change. A decision list with a missing, unknown or duplicate card is rejected as a whole (400). An unknown action name is rejected by serde (422). `needsReview` is false when no card needs a decision, so a new user sees no review.
 - **Review screen (3.3).** The bulk buttons fill only the cards that have no decision yet, so "Move all remaining to Ideas" never overwrites a choice. "Keep all as they are" works the same way. A paused card that is due is kept as "Keep in This week". "Review later" drops the decisions made so far: the screen starts again on "Start review". A load error of `GET /api/review` is logged and does not block the board. A 409 on completion is treated as done.
 - **Trello import (4.1, 4.2).** The body of `POST /api/import/trello` is the raw board JSON (not wrapped). `?dryRun=true` returns the counts without writing, for the preview in 4.3. The route accepts up to 20 MB. Archived cards and cards of archived lists count as `archived`. Cards of lists with an unknown name are not imported; their list names come back in `unknownLists`. Done cards get `completed_at` from the card's `dateLastActivity`, so old Done cards land in the right week of the log. Imported tags use the first palette color.
+- **Log note placement (5.1).** The spec says the review note is about *last* week. It is stored on the week where the review happens. `GET /api/log` shows it on the week before. A week that has a note and no card still appears in the log. Only Done cards with a `completed_at` are listed.

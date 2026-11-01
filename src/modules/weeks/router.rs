@@ -15,6 +15,7 @@ use crate::{
         ErrorResponse, RequestResult, internal_server_error,
         todos::repository::{Todo, TodoRepository},
         weeks::{
+            log::LogWeek,
             repository::{CompleteError, Week, WeekRepository},
             review::{Decision, review_cards},
         },
@@ -102,6 +103,16 @@ async fn complete_review(
     }
 }
 
+async fn log(
+    State(pool): State<PgPool>,
+    Extension(claims): Extension<Claims>,
+) -> RequestResult<Vec<LogWeek>> {
+    match WeekRepository::new(pool).log(claims.user_id).await {
+        Ok(weeks) => RequestResult::Success((StatusCode::OK, weeks)),
+        Err(e) => internal_server_error(e.to_string()),
+    }
+}
+
 fn empty(week_start: NaiveDate) -> ReviewResponse {
     ReviewResponse {
         week_start,
@@ -113,6 +124,7 @@ fn empty(week_start: NaiveDate) -> ReviewResponse {
 pub fn build_routes() -> Router<PgPool> {
     Router::new()
         .route("/api/weeks/current", get(current_week))
+        .route("/api/log", get(log))
         .route("/api/review", get(review))
         .route("/api/review/complete", post(complete_review))
         .layer(middleware::from_fn(auth_middleware_admin))
