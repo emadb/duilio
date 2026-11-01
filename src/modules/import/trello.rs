@@ -1,10 +1,7 @@
-// Temporary: the endpoint that uses this module arrives in the next commit.
-#![allow(dead_code)]
-
 use std::collections::HashMap;
 
 use chrono::{DateTime, Utc};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use crate::modules::todos::repository::TodoStatus;
 
@@ -86,6 +83,32 @@ pub struct TrelloImport {
     pub archived: usize,
     /// Names of lists that do not match a Duilio list. Their cards are not imported.
     pub unknown_lists: Vec<String>,
+}
+
+/// How many cards go to each Duilio list.
+#[derive(Debug, PartialEq, Default, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Counts {
+    pub idea: usize,
+    pub todo: usize,
+    pub in_progress: usize,
+    pub blocked: usize,
+    pub done: usize,
+}
+
+pub fn count_cards(cards: &[NewCard]) -> Counts {
+    cards.iter().fold(Counts::default(), |mut c, card| {
+        match card.status {
+            TodoStatus::Idea => c.idea += 1,
+            TodoStatus::Todo => c.todo += 1,
+            TodoStatus::InProgress => c.in_progress += 1,
+            TodoStatus::Blocked => c.blocked += 1,
+            TodoStatus::Done => c.done += 1,
+            // No Trello list maps to Paused: the first review sorts Waiting cards.
+            TodoStatus::Paused => {}
+        }
+        c
+    })
 }
 
 /// Parses a Trello board export and maps each open card to a Duilio card.
@@ -300,6 +323,22 @@ mod tests {
     #[test]
     fn cards_follow_the_trello_order() {
         assert_eq!(import().cards[0].title, "Plan trip");
+    }
+
+    #[test]
+    fn cards_are_counted_per_list() {
+        let c = count_cards(&import().cards);
+
+        assert_eq!(
+            c,
+            Counts {
+                idea: 1,
+                todo: 2,
+                in_progress: 1,
+                blocked: 1,
+                done: 1
+            }
+        );
     }
 
     #[test]
