@@ -93,7 +93,7 @@ fn required_waiting_on(value: Option<String>) -> Result<String, TransitionError>
         .ok_or(TransitionError::WaitingOnRequired)
 }
 
-fn required_monday(value: Option<NaiveDate>) -> Result<NaiveDate, TransitionError> {
+pub fn required_monday(value: Option<NaiveDate>) -> Result<NaiveDate, TransitionError> {
     let date = value.ok_or(TransitionError::PausedUntilRequired)?;
 
     match date.weekday() {

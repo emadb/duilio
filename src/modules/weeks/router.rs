@@ -1,16 +1,22 @@
-use axum::{Extension, Router, extract::State, http::StatusCode, middleware, routing::get};
+use axum::{
+    Extension, Json, Router,
+    extract::State,
+    http::StatusCode,
+    middleware,
+    routing::{get, post},
+};
 use chrono::NaiveDate;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 
 use crate::{
     auth_middleware::{Claims, auth_middleware_admin},
     modules::{
-        RequestResult, internal_server_error,
+        ErrorResponse, RequestResult, internal_server_error,
         todos::repository::{Todo, TodoRepository},
         weeks::{
-            repository::{Week, WeekRepository},
-            review::review_cards,
+            repository::{CompleteError, Week, WeekRepository},
+            review::{Decision, review_cards},
         },
     },
 };
@@ -21,6 +27,12 @@ struct ReviewResponse {
     week_start: NaiveDate,
     needs_review: bool,
     cards: Vec<Todo>,
+}
+
+#[derive(Deserialize)]
+struct CompleteReq {
+    decisions: Vec<Decision>,
+    note: Option<String>,
 }
 
 async fn current_week(
@@ -68,6 +80,28 @@ async fn review(
     }
 }
 
+async fn complete_review(
+    State(pool): State<PgPool>,
+    Extension(claims): Extension<Claims>,
+    Json(payload): Json<CompleteReq>,
+) -> RequestResult<Week> {
+    let repo = WeekRepository::new(pool);
+    match repo
+        .complete(claims.user_id, &payload.decisions, payload.note)
+        .await
+    {
+        Ok(week) => RequestResult::Success((StatusCode::OK, week)),
+        Err(CompleteError::AlreadyReviewed) => RequestResult::Error((
+            StatusCode::CONFLICT,
+            ErrorResponse::new("This week is already reviewed".to_string()),
+        )),
+        Err(CompleteError::Invalid(e)) => {
+            RequestResult::Error((StatusCode::BAD_REQUEST, ErrorResponse::new(e.message())))
+        }
+        Err(CompleteError::Db(e)) => internal_server_error(e.to_string()),
+    }
+}
+
 fn empty(week_start: NaiveDate) -> ReviewResponse {
     ReviewResponse {
         week_start,
@@ -80,5 +114,6 @@ pub fn build_routes() -> Router<PgPool> {
     Router::new()
         .route("/api/weeks/current", get(current_week))
         .route("/api/review", get(review))
+        .route("/api/review/complete", post(complete_review))
         .layer(middleware::from_fn(auth_middleware_admin))
 }

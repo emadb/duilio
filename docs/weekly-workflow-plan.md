@@ -100,7 +100,7 @@ Data flow: app opens → `GET /api/review` → `{ weekStart, needsReview, cards[
 - Files: `src/modules/weeks/*`
 - Acceptance: unit tests for the card selection predicate (pure function); `curl` on seeded data.
 
-### 3.2 Backend: complete review — status: todo
+### 3.2 Backend: complete review — status: done
 - Goal: `POST /api/review/complete` body `{ decisions: [{ id, action, pausedUntil? }], note? }`. Actions: `keep-todo`, `keep-doing`, `still-waiting`, `to-ideas`, `pause`, `delete`. Pure function `apply_decision` reuses `transitions` and bumps `rollover_count` on keep actions. Every reviewable card must have a decision, otherwise 400 and nothing changes. Bulk actions are client-side: they only fill the decisions list.
 - Files: `src/modules/weeks/*`, `src/modules/todos/transitions.rs`
 - Acceptance: unit tests per action; `curl`: a partial decision list → 400 and no change; a full list → 200, `reviewed_at` set, a second call → 409.
@@ -155,3 +155,4 @@ Data flow: app opens → `GET /api/review` → `{ weekStart, needsReview, cards[
 - **D1 = B.** Week logic is in pure Rust with the `chrono-tz` crate (new dependency, approved by the user). `week_start(now, tz)` and `week_of(instant, tz)` are pure functions with unit tests. SQL stores and compares plain dates and instants only.
 - **D2 = A.** `apply_status` is a pure function in `src/modules/todos/transitions.rs`.
 - **D3 = A.** The Trello import takes a JSON body.
+- **Review rules (3.2).** `still-waiting` does not bump `rollover_count` (the spec lists the bump only for the two keep actions). `pause` needs a Monday after the current week, also for a card whose pause has ended. `apply_decision` handles that case itself because `apply_status` ignores a same-status change. A decision list with a missing, unknown or duplicate card is rejected as a whole (400). An unknown action name is rejected by serde (422). `needsReview` is false when no card needs a decision, so a new user sees no review.
