@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import type { Task, TaskStatus, TagColorMap } from '../../types/task';
+import type { Task, TaskDraft, TaskStatus, TagColorMap } from '../../types/task';
 import { STATUSES } from '../../constants';
 import { TagInput } from '../common/TagInput';
 
@@ -15,7 +15,7 @@ function useIsMobile() {
 
 interface TaskModalProps {
   task: Partial<Task> | null;
-  onSave: (data: Omit<Task, 'id' | 'createdAt'>) => void;
+  onSave: (data: TaskDraft) => void;
   onClose: () => void;
   onDelete?: () => void;
   tagColorMap: TagColorMap;
@@ -53,7 +53,16 @@ export const TaskModal: React.FC<TaskModalProps> = ({
       setTitleError('Title is required.');
       return;
     }
-    onSave({ title: title.trim(), description: desc, status, dueDate: due, tags, important });
+    onSave({
+      title: title.trim(),
+      description: desc,
+      status,
+      dueDate: due,
+      tags,
+      important,
+      waitingOn: task?.waitingOn ?? '',
+      pausedUntil: task?.pausedUntil ?? '',
+    });
   }
 
   const statusOptions = STATUSES.map((s) => ({ value: s.value, label: s.label }));

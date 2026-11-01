@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import type { Task, TaskStatus, TagColorMap } from '../types/task';
+import type { Task, TaskDraft, TaskStatus, TagColorMap } from '../types/task';
 import {
   fetchTasks,
   createTask,
@@ -15,8 +15,8 @@ interface UseTasksReturn {
   tagColorMap: TagColorMap;
   loading: boolean;
   error: string | null;
-  addTask: (data: Omit<Task, 'id' | 'createdAt'>) => Promise<void>;
-  editTask: (id: string, data: Partial<Omit<Task, 'id' | 'createdAt'>>) => Promise<void>;
+  addTask: (data: TaskDraft) => Promise<void>;
+  editTask: (id: string, data: Partial<TaskDraft>) => Promise<void>;
   moveTask: (id: string, status: TaskStatus) => Promise<void>;
   toggleImportant: (id: string) => Promise<void>;
   removeTask: (id: string) => Promise<void>;
@@ -57,13 +57,13 @@ export function useTasks(onUnauthorized?: () => void): UseTasksReturn {
     return () => { cancelled = true; };
   }, []);
 
-  const addTask = useCallback(async (data: Omit<Task, 'id' | 'createdAt'>) => {
+  const addTask = useCallback(async (data: TaskDraft) => {
     const task = await createTask(data);
     setTasks((prev) => [...prev, task]);
   }, []);
 
   const editTask = useCallback(
-    async (id: string, data: Partial<Omit<Task, 'id' | 'createdAt'>>) => {
+    async (id: string, data: Partial<TaskDraft>) => {
       const updated = await updateTask(id, data);
       setTasks((prev) => prev.map((t) => (t.id === id ? updated : t)));
     },

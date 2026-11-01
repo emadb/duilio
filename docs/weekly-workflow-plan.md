@@ -67,7 +67,7 @@ Data flow: card moves in the UI → `PATCH /api/todos/{id}` with `status` plus o
 - Files: `src/modules/todos/repository.rs`, `src/modules/todos/router.rs`, `.sqlx/` (regenerate).
 - Acceptance: `curl` on a fresh DB: create without status → `idea`; move to `blocked` without `waitingOn` → 400; with it → 200 and `waitingSince` set; move to `done` → `completedAt` set; move back → `completedAt` null; move to `paused` with a non-Monday → 400. `SQLX_OFFLINE=true cargo build` passes.
 
-### 2.3 Front-end: types, constants, API mapping — status: todo
+### 2.3 Front-end: types, constants, API mapping — status: done
 - Goal: add `idea` and `paused`; rename labels (Ideas, This week, Doing, Waiting on, Paused, Done); fix the `BackendTodo` status union; map the new fields into `Task`.
 - `STATUSES` keeps the single-source-of-truth role. Add a `drawer: true` flag on Paused so the board skips it.
 - Files: `front-end/src/types/task.ts`, `front-end/src/constants/index.ts`, `front-end/src/services/api.ts`

@@ -8,7 +8,7 @@ import { AuthModal } from './components/AuthModal/AuthModal';
 import { useTasks } from './hooks/useTasks';
 import { logout } from './services/api';
 import { STATUSES } from './constants';
-import type { Task, TaskStatus } from './types/task';
+import type { Task, TaskDraft, TaskStatus } from './types/task';
 
 // ── Auth gate ─────────────────────────────────────────────────────────────────
 
@@ -67,7 +67,7 @@ const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
     setModalTask(task);
   }
 
-  async function handleSave(data: Omit<Task, 'id' | 'createdAt'>) {
+  async function handleSave(data: TaskDraft) {
     if (modalTask?.id) {
       await editTask(modalTask.id, data);
     } else {
