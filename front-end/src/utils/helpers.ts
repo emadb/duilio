@@ -1,5 +1,5 @@
 import { TAG_COLORS } from '../constants';
-import type { TagColor, Task } from '../types/task';
+import type { ReviewAction, TagColor, Task } from '../types/task';
 
 /** Generate a short unique id */
 export function uid(): string {
@@ -92,6 +92,13 @@ export function cardBadges(task: Task, now: Date): string[] {
 export function onBoard(task: Task, weekStartsAt: string): boolean {
   if (task.status !== 'done' || !task.completedAt) return true;
   return new Date(task.completedAt) >= new Date(weekStartsAt);
+}
+
+/** The action that leaves a card where it is. A paused card that is due returns to This week. */
+export function keepAsIs(task: Task): ReviewAction {
+  if (task.status === 'in-progress') return 'keep-doing';
+  if (task.status === 'blocked') return 'still-waiting';
+  return 'keep-todo';
 }
 
 export interface WeekOption {

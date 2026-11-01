@@ -105,7 +105,7 @@ Data flow: app opens → `GET /api/review` → `{ weekStart, needsReview, cards[
 - Files: `src/modules/weeks/*`, `src/modules/todos/transitions.rs`
 - Acceptance: unit tests per action; `curl`: a partial decision list → 400 and no change; a full list → 200, `reviewed_at` set, a second call → 409.
 
-### 3.3 Front-end: review screen — status: todo
+### 3.3 Front-end: review screen — status: done
 - Goal: full-screen review before the board; one row per card with the badges ("in Doing for N days", who/since); per-card action buttons (Waiting cards get "Still waiting"); bulk buttons "Keep all as they are" and "Move all remaining to Ideas"; optional note; "Review later" goes to the board with a banner until done.
 - Files: new `components/WeeklyReview/*`, `App.tsx`, `services/api.ts`, `hooks/useReview.ts`
 - Acceptance: browser check with screenshots: review shown, each action, bulk, review later + banner, completion, reload shows no review.
@@ -156,3 +156,4 @@ Data flow: app opens → `GET /api/review` → `{ weekStart, needsReview, cards[
 - **D2 = A.** `apply_status` is a pure function in `src/modules/todos/transitions.rs`.
 - **D3 = A.** The Trello import takes a JSON body.
 - **Review rules (3.2).** `still-waiting` does not bump `rollover_count` (the spec lists the bump only for the two keep actions). `pause` needs a Monday after the current week, also for a card whose pause has ended. `apply_decision` handles that case itself because `apply_status` ignores a same-status change. A decision list with a missing, unknown or duplicate card is rejected as a whole (400). An unknown action name is rejected by serde (422). `needsReview` is false when no card needs a decision, so a new user sees no review.
+- **Review screen (3.3).** The bulk buttons fill only the cards that have no decision yet, so "Move all remaining to Ideas" never overwrites a choice. "Keep all as they are" works the same way. A paused card that is due is kept as "Keep in This week". "Review later" drops the decisions made so far: the screen starts again on "Start review". A load error of `GET /api/review` is logged and does not block the board. A 409 on completion is treated as done.

@@ -25,6 +25,8 @@ interface UseTasksReturn {
   toggleImportant: (id: string) => Promise<void>;
   removeTask: (id: string) => Promise<void>;
   assignTagColor: (tag: string, colorIndex: number) => void;
+  /** Loads the tasks and the week again, e.g. after a review changed them */
+  refresh: () => Promise<void>;
 }
 
 export function useTasks(onUnauthorized?: () => void): UseTasksReturn {
@@ -128,5 +130,11 @@ export function useTasks(onUnauthorized?: () => void): UseTasksReturn {
     [],
   );
 
-  return { tasks, tagColorMap, week, loading, error, addTask, editTask, moveTask, toggleImportant, removeTask, assignTagColor };
+  const refresh = useCallback(async () => {
+    const [t, w] = await Promise.all([fetchTasks(), fetchCurrentWeek()]);
+    setTasks(t);
+    setWeek(w);
+  }, []);
+
+  return { tasks, tagColorMap, week, loading, error, addTask, editTask, moveTask, toggleImportant, removeTask, assignTagColor, refresh };
 }
