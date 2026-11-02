@@ -27,10 +27,11 @@ The main weak points:
 - Fix: key on the last `X-Forwarded-For` value (the one the proxy adds), or on the peer address when there is no proxy. Add a test with two fake headers.
 - Files: `src/modules/auth/router.rs`.
 
-#### A2. Editing "blocked by" or the return week is ignored — High, S — status: todo
+#### A2. Editing "blocked by" or the return week is ignored — High, S — status: done
 - Evidence (**verified**): `PATCH /api/todos/:id` with `{"status":"blocked","waitingOn":"Anna"}` on a card that is already blocked by "Marco" returns 200 and keeps "Marco". `apply_status` returns early when the status is the same (`todos/transitions.rs`). The task modal always sends the status, so the field cannot be changed from the UI. The same happens to `pausedUntil`.
 - Fix: when the status is the same and `waitingOn` or `pausedUntil` is sent, validate it and update it (and `waiting_since` only when the name changes). Add unit tests.
 - Files: `src/modules/todos/transitions.rs`, tests.
+- Done: a card that keeps its status now takes a new `waitingOn` or `pausedUntil`. A new person restarts `waiting_since`; the same name changes nothing. A blank name or a non-Monday returns 400.
 
 #### A3. Registration accepts an empty email and password — High, S — status: todo
 - Evidence (**verified**): `POST /api/auth/register` with `{"email":"","password":""}` returns 201. Anyone can register (open registration). Emails are case sensitive, so `A@x.com` and `a@x.com` are two users (the unique index is on `email`). Register says "User already exists", so it tells which emails exist.
