@@ -45,9 +45,6 @@ const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
   const [view, setView] = useState<'board' | 'log'>('board');
 
   const [search, setSearch] = useState('');
-  const [activeStatuses, setActiveStatuses] = useState<TaskStatus[]>(
-    STATUSES.map((s) => s.value),
-  );
   const [modalTask, setModalTask] = useState<Partial<Task> | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Task | null>(null);
   const [prompt, setPrompt] = useState<{ task: Task; status: PromptStatus } | null>(null);
@@ -58,16 +55,6 @@ const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
       onLogout();
     }
   }, [error, onLogout]);
-
-  function toggleStatus(value: TaskStatus) {
-    setActiveStatuses((prev) =>
-      prev.includes(value)
-        ? prev.length > 1
-          ? prev.filter((s) => s !== value)
-          : prev
-        : [...prev, value],
-    );
-  }
 
   function openCreate(defaultStatus: string = 'idea') {
     setModalTask({ status: defaultStatus as TaskStatus, tags: [] });
@@ -128,8 +115,8 @@ const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
     ]),
   ) as Record<TaskStatus, Task[]>;
 
-  const visibleStatuses = STATUSES.filter((s) => !s.drawer && activeStatuses.includes(s.value));
-  const drawerStatus = STATUSES.find((s) => s.drawer && activeStatuses.includes(s.value));
+  const visibleStatuses = STATUSES.filter((s) => !s.drawer);
+  const drawerStatus = STATUSES.find((s) => s.drawer);
   const noResults = q.length > 0 && filtered.length === 0;
 
   if (loading || reviewLoading) {
@@ -171,11 +158,8 @@ const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
   return (
     <div style={{ minHeight: '100vh', background: 'var(--eui-page-background)' }}>
       <AppHeader
-        tasks={boardTasks}
         search={search}
         onSearch={setSearch}
-        activeStatuses={activeStatuses}
-        onToggleStatus={toggleStatus}
         onCreateTask={() => openCreate()}
         onImport={() => setImportOpen(true)}
         onLog={() => setView('log')}
