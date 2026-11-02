@@ -1,5 +1,5 @@
 import { TAG_COLORS } from '../constants';
-import type { TagColor } from '../types/task';
+import type { TagColor, Task } from '../types/task';
 
 /** Generate a short unique id */
 export function uid(): string {
@@ -46,4 +46,71 @@ export function resolveTagColor(
 /** Normalize a raw tag input string into a slug */
 export function slugifyTag(raw: string): string {
   return raw.trim().toLowerCase().replace(/\s+/g, '-');
+}
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/** Whole days between an ISO timestamp and `now`, never negative */
+export function daysSince(iso: string, now: Date): number {
+  return Math.max(0, Math.floor((now.getTime() - new Date(iso).getTime()) / DAY_MS));
+}
+
+/** ISO 8601 week number of a YYYY-MM-DD date */
+export function isoWeekNumber(dateStr: string): number {
+  const d = new Date(dateStr + 'T00:00:00Z');
+  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+  const yearStart = Date.UTC(d.getUTCFullYear(), 0, 1);
+  return Math.ceil(((d.getTime() - yearStart) / DAY_MS + 1) / 7);
+}
+
+/** Small badges that make stale work visible, in display order */
+export function cardBadges(task: Task, now: Date): string[] {
+  const badges: string[] = [];
+
+  if (task.status === 'in-progress') {
+    badges.push(`${daysSince(task.statusChangedAt, now)}d`);
+  }
+  if (task.status === 'blocked') {
+    const since = daysSince(task.waitingSince || task.statusChangedAt, now);
+    badges.push(`${task.waitingOn || 'someone'} · ${since}d`);
+  }
+  if (task.status === 'paused' && task.pausedUntil) {
+    badges.push(`Back wk ${isoWeekNumber(task.pausedUntil)}`);
+  }
+  if (task.status === 'done' && task.completedAt) {
+    const day = new Date(task.completedAt).toLocaleDateString('en-US', { weekday: 'short' });
+    badges.push(`Done ${day}`);
+  }
+  if (task.rolloverCount > 0) {
+    badges.push(`↻${task.rolloverCount}`);
+  }
+
+  return badges;
+}
+
+/** The board shows a done card only when it was completed since the week started */
+export function onBoard(task: Task, weekStartsAt: string): boolean {
+  if (task.status !== 'done' || !task.completedAt) return true;
+  return new Date(task.completedAt) >= new Date(weekStartsAt);
+}
+
+export interface WeekOption {
+  value: string; // Monday, YYYY-MM-DD
+  label: string;
+}
+
+const shortDay = (d: Date) =>
+  d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' });
+
+/** The Mondays of the `count` weeks after the week that starts on `weekStart` */
+export function upcomingWeeks(weekStart: string, count = 12): WeekOption[] {
+  return Array.from({ length: count }, (_, i) => {
+    const start = new Date(weekStart + 'T00:00:00Z');
+    start.setUTCDate(start.getUTCDate() + 7 * (i + 1));
+    const end = new Date(start);
+    end.setUTCDate(end.getUTCDate() + 6);
+    const value = start.toISOString().slice(0, 10);
+
+    return { value, label: `Week ${isoWeekNumber(value)} · ${shortDay(start)} – ${shortDay(end)}` };
+  });
 }

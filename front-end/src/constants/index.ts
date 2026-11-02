@@ -2,25 +2,40 @@ import type { StatusMeta, TagColor } from '../types/task';
 
 export const STATUSES: StatusMeta[] = [
   {
-    value: 'todo',
-    label: 'To Do',
+    value: 'idea',
+    label: 'Ideas',
     dot: '#8E9FBC',
     countBg: 'var(--eui-bg-subdued)',
     countFg: 'var(--eui-text-subdued)',
   },
   {
+    value: 'todo',
+    label: 'This week',
+    dot: '#3B82F6',
+    countBg: 'var(--eui-bg-base-primary)',
+    countFg: 'var(--eui-text-primary)',
+  },
+  {
     value: 'in-progress',
-    label: 'In Progress',
+    label: 'Doing',
     dot: '#EAAE01',
     countBg: 'var(--eui-bg-base-warning)',
     countFg: 'var(--eui-text-warning)',
   },
   {
     value: 'blocked',
-    label: 'Blocked',
+    label: 'Waiting on',
     dot: '#EF4444',
     countBg: 'var(--eui-bg-base-danger)',
     countFg: 'var(--eui-text-danger)',
+  },
+  {
+    value: 'paused',
+    label: 'Paused',
+    drawer: true,
+    dot: '#94A3B8',
+    countBg: 'var(--eui-bg-subdued)',
+    countFg: 'var(--eui-text-subdued)',
   },
   {
     value: 'done',

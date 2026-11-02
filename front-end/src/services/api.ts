@@ -1,4 +1,4 @@
-import type { Task, TagColorMap } from '../types/task';
+import type { Task, TaskDraft, TaskStatus, TagColorMap } from '../types/task';
 import { TAG_COLORS } from '../constants';
 import { autoColorIndex } from '../utils/helpers';
 
@@ -22,6 +22,13 @@ export function setAuthToken(token: string | null): void {
   }
 }
 
+export interface Week {
+  weekStart: string;  // Monday, YYYY-MM-DD
+  startsAt: string;   // ISO instant of Monday 00:00 in the user's time zone
+  reviewedAt: string | null;
+  note: string;
+}
+
 // ── Tag cache (name → BackendTag) ─────────────────────────────────────────────
 
 interface BackendTag {
@@ -39,8 +46,14 @@ interface BackendTodo {
   title: string;
   description: string;
   dueDate: string | null;
-  status: 'todo' | 'in-progress' | 'done';
+  status: TaskStatus;
   important: boolean;
+  statusChangedAt: string;
+  waitingOn: string | null;
+  waitingSince: string | null;
+  pausedUntil: string | null;
+  completedAt: string | null;
+  rolloverCount: number;
   tags: BackendTag[];
 }
 
@@ -84,6 +97,12 @@ function todoToTask(todo: BackendTodo, index: number): Task {
     tags: todo.tags.map((t) => t.name),
     important: todo.important,
     createdAt: Date.now() - index, // preserve backend DESC order
+    waitingOn: todo.waitingOn ?? '',
+    pausedUntil: todo.pausedUntil ?? '',
+    statusChangedAt: todo.statusChangedAt,
+    waitingSince: todo.waitingSince ?? '',
+    completedAt: todo.completedAt ?? '',
+    rolloverCount: todo.rolloverCount,
   };
 }
 
@@ -120,9 +139,7 @@ export async function fetchTasks(): Promise<Task[]> {
   return todos.map(todoToTask);
 }
 
-export async function createTask(
-  data: Omit<Task, 'id' | 'createdAt'>,
-): Promise<Task> {
+export async function createTask(data: TaskDraft): Promise<Task> {
   const tagIds = await Promise.all(data.tags.map((name) => ensureTag(name, 0)));
   const todo = await request<BackendTodo>('/todos', {
     method: 'POST',
@@ -131,6 +148,8 @@ export async function createTask(
       description: data.description,
       dueDate: data.dueDate || null,
       status: data.status,
+      waitingOn: data.waitingOn || null,
+      pausedUntil: data.pausedUntil || null,
       important: data.important,
       tagIds,
     }),
@@ -140,12 +159,14 @@ export async function createTask(
 
 export async function updateTask(
   id: string,
-  data: Partial<Omit<Task, 'id' | 'createdAt'>>,
+  data: Partial<TaskDraft>,
 ): Promise<Task> {
   const body: Record<string, unknown> = {};
   if (data.title !== undefined) body.title = data.title;
   if (data.description !== undefined) body.description = data.description;
   if (data.status !== undefined) body.status = data.status;
+  if (data.waitingOn) body.waitingOn = data.waitingOn;
+  if (data.pausedUntil) body.pausedUntil = data.pausedUntil;
   if (data.important !== undefined) body.important = data.important;
   if (data.dueDate !== undefined) body.dueDate = data.dueDate || null;
   if (data.tags !== undefined) {
@@ -161,6 +182,10 @@ export async function updateTask(
 
 export async function deleteTask(id: string): Promise<void> {
   await request<void>(`/todos/${id}`, { method: 'DELETE' });
+}
+
+export function fetchCurrentWeek(): Promise<Week> {
+  return request<Week>('/weeks/current');
 }
 
 // ── Tag color endpoints ───────────────────────────────────────────────────────

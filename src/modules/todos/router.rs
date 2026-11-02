@@ -15,7 +15,10 @@ use crate::{
     auth_middleware::{Claims, auth_middleware_admin},
     modules::{
         EntityId, ErrorResponse, RequestResult, internal_server_error,
-        todos::repository::{Todo, TodoRepository, TodoStatus},
+        todos::{
+            repository::{SaveError, Todo, TodoRepository, TodoStatus},
+            transitions::StatusInput,
+        },
     },
 };
 
@@ -66,6 +69,8 @@ struct CreateTodoReq {
     #[serde(default, deserialize_with = "opt_due_date")]
     due_date: Option<DateTime<Utc>>,
     status: Option<TodoStatus>,
+    waiting_on: Option<String>,
+    paused_until: Option<NaiveDate>,
     #[serde(default)]
     important: bool,
     #[serde(default)]
@@ -80,13 +85,28 @@ struct UpdateTodoReq {
     #[serde(default, deserialize_with = "double_opt_due_date")]
     due_date: Option<Option<DateTime<Utc>>>,
     status: Option<TodoStatus>,
+    waiting_on: Option<String>,
+    paused_until: Option<NaiveDate>,
     important: Option<bool>,
     tag_ids: Option<Vec<String>>,
 }
 
 #[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
 struct UpdateStatusReq {
     status: TodoStatus,
+    waiting_on: Option<String>,
+    paused_until: Option<NaiveDate>,
+}
+
+fn save_error<T>(e: SaveError) -> RequestResult<T> {
+    match e {
+        SaveError::Invalid(e) => RequestResult::Error((
+            StatusCode::BAD_REQUEST,
+            ErrorResponse::new(e.message().to_string()),
+        )),
+        SaveError::Db(e) => internal_server_error(e.to_string()),
+    }
 }
 
 async fn list_todos(
@@ -106,7 +126,11 @@ async fn create_todo(
     Json(payload): Json<CreateTodoReq>,
 ) -> RequestResult<Todo> {
     let repo = TodoRepository::new(pool);
-    let status = payload.status.unwrap_or(TodoStatus::Todo);
+    let status = payload.status.unwrap_or(TodoStatus::Idea);
+    let status_input = StatusInput {
+        waiting_on: payload.waiting_on,
+        paused_until: payload.paused_until,
+    };
     match repo
         .create(
             claims.user_id,
@@ -114,13 +138,14 @@ async fn create_todo(
             payload.description,
             payload.due_date,
             status,
+            status_input,
             payload.important,
             &payload.tag_ids,
         )
         .await
     {
         Ok(todo) => RequestResult::Success((StatusCode::CREATED, todo)),
-        Err(e) => internal_server_error(e.to_string()),
+        Err(e) => save_error(e),
     }
 }
 
@@ -139,6 +164,10 @@ async fn update_todo(
             payload.description,
             payload.due_date,
             payload.status,
+            StatusInput {
+                waiting_on: payload.waiting_on,
+                paused_until: payload.paused_until,
+            },
             payload.important,
             payload.tag_ids,
         )
@@ -149,7 +178,7 @@ async fn update_todo(
             StatusCode::NOT_FOUND,
             ErrorResponse::new(format!("Todo {} not found", id)),
         )),
-        Err(e) => internal_server_error(e.to_string()),
+        Err(e) => save_error(e),
     }
 }
 
@@ -168,6 +197,10 @@ async fn update_todo_status(
             None,
             None,
             Some(payload.status),
+            StatusInput {
+                waiting_on: payload.waiting_on,
+                paused_until: payload.paused_until,
+            },
             None,
             None,
         )
@@ -178,7 +211,7 @@ async fn update_todo_status(
             StatusCode::NOT_FOUND,
             ErrorResponse::new(format!("Todo {} not found", id)),
         )),
-        Err(e) => internal_server_error(e.to_string()),
+        Err(e) => save_error(e),
     }
 }
 

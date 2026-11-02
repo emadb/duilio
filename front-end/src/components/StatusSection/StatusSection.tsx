@@ -10,6 +10,7 @@ interface StatusSectionProps {
   onDropTask: (taskId: string, status: TaskStatus) => void;
   onToggleImportant: (id: string) => void;
   tagColorMap: TagColorMap;
+  defaultCollapsed?: boolean;
 }
 
 export const StatusSection: React.FC<StatusSectionProps> = ({
@@ -20,8 +21,9 @@ export const StatusSection: React.FC<StatusSectionProps> = ({
   onDropTask,
   onToggleImportant,
   tagColorMap,
+  defaultCollapsed = false,
 }) => {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(defaultCollapsed);
   const [dragOver, setDragOver] = useState(false);
   // dragenter/dragleave fire on every child; count them to know when we truly leave
   const dragDepth = useRef(0);
@@ -61,7 +63,7 @@ export const StatusSection: React.FC<StatusSectionProps> = ({
         flex: '1 0 280px',
         minWidth: 280,
         maxWidth: 360,
-        minHeight: 220,
+        minHeight: collapsed ? 0 : 220,
         transition: 'background 0.15s ease, border-color 0.15s ease',
       }}
     >

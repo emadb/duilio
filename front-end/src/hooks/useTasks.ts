@@ -1,23 +1,27 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import type { Task, TaskStatus, TagColorMap } from '../types/task';
+import type { Task, TaskDraft, TaskStatus, TagColorMap } from '../types/task';
+import type { StatusExtra } from '../components/StatusPrompt/StatusPrompt';
 import {
   fetchTasks,
   createTask,
   updateTask,
   deleteTask,
   fetchTagColors,
+  fetchCurrentWeek,
   saveTagColors,
   ApiError,
+  type Week,
 } from '../services/api';
 
 interface UseTasksReturn {
   tasks: Task[];
   tagColorMap: TagColorMap;
+  week: Week | null;
   loading: boolean;
   error: string | null;
-  addTask: (data: Omit<Task, 'id' | 'createdAt'>) => Promise<void>;
-  editTask: (id: string, data: Partial<Omit<Task, 'id' | 'createdAt'>>) => Promise<void>;
-  moveTask: (id: string, status: TaskStatus) => Promise<void>;
+  addTask: (data: TaskDraft) => Promise<void>;
+  editTask: (id: string, data: Partial<TaskDraft>) => Promise<void>;
+  moveTask: (id: string, status: TaskStatus, extra?: StatusExtra) => Promise<void>;
   toggleImportant: (id: string) => Promise<void>;
   removeTask: (id: string) => Promise<void>;
   assignTagColor: (tag: string, colorIndex: number) => void;
@@ -26,8 +30,12 @@ interface UseTasksReturn {
 export function useTasks(onUnauthorized?: () => void): UseTasksReturn {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [tagColorMap, setTagColorMap] = useState<TagColorMap>({});
+  const [week, setWeek] = useState<Week | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const tasksRef = useRef(tasks);
+  tasksRef.current = tasks;
 
   const onUnauthorizedRef = useRef(onUnauthorized);
   onUnauthorizedRef.current = onUnauthorized;
@@ -37,10 +45,11 @@ export function useTasks(onUnauthorized?: () => void): UseTasksReturn {
     let cancelled = false;
     (async () => {
       try {
-        const [t, c] = await Promise.all([fetchTasks(), fetchTagColors()]);
+        const [t, c, w] = await Promise.all([fetchTasks(), fetchTagColors(), fetchCurrentWeek()]);
         if (!cancelled) {
           setTasks(t);
           setTagColorMap(c);
+          setWeek(w);
         }
       } catch (e) {
         if (!cancelled) {
@@ -57,13 +66,13 @@ export function useTasks(onUnauthorized?: () => void): UseTasksReturn {
     return () => { cancelled = true; };
   }, []);
 
-  const addTask = useCallback(async (data: Omit<Task, 'id' | 'createdAt'>) => {
+  const addTask = useCallback(async (data: TaskDraft) => {
     const task = await createTask(data);
     setTasks((prev) => [...prev, task]);
   }, []);
 
   const editTask = useCallback(
-    async (id: string, data: Partial<Omit<Task, 'id' | 'createdAt'>>) => {
+    async (id: string, data: Partial<TaskDraft>) => {
       const updated = await updateTask(id, data);
       setTasks((prev) => prev.map((t) => (t.id === id ? updated : t)));
     },
@@ -71,21 +80,19 @@ export function useTasks(onUnauthorized?: () => void): UseTasksReturn {
   );
 
   // Optimistic status change (drag & drop): move the card immediately, revert on failure
-  const moveTask = useCallback(async (id: string, status: TaskStatus) => {
-    let previous: TaskStatus | undefined;
-    setTasks((prev) =>
-      prev.map((t) => {
-        if (t.id !== id) return t;
-        previous = t.status;
-        return { ...t, status };
-      }),
-    );
-    if (previous === undefined || previous === status) return;
+  const moveTask = useCallback(async (id: string, status: TaskStatus, extra: StatusExtra = {}) => {
+    // Read the current status from the ref: a setState updater may run later than this line
+    const current = tasksRef.current.find((t) => t.id === id);
+    if (!current || current.status === status) return;
+
+    const previous = current.status;
+    setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, status, ...extra } : t)));
     try {
-      await updateTask(id, { status });
+      // The server sets the status-dependent fields (since, completed, ...): use its answer
+      const saved = await updateTask(id, { status, ...extra });
+      setTasks((prev) => prev.map((t) => (t.id === id ? { ...saved, createdAt: t.createdAt } : t)));
     } catch (e) {
-      const revert = previous;
-      setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, status: revert } : t)));
+      setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, status: previous } : t)));
       throw e;
     }
   }, []);
@@ -121,5 +128,5 @@ export function useTasks(onUnauthorized?: () => void): UseTasksReturn {
     [],
   );
 
-  return { tasks, tagColorMap, loading, error, addTask, editTask, moveTask, toggleImportant, removeTask, assignTagColor };
+  return { tasks, tagColorMap, week, loading, error, addTask, editTask, moveTask, toggleImportant, removeTask, assignTagColor };
 }

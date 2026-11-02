@@ -5,6 +5,7 @@ pub mod auth;
 pub mod health;
 pub mod tags;
 pub mod todos;
+pub mod weeks;
 
 #[derive(Debug, Serialize, Deserialize, Clone, Type)]
 #[sqlx(transparent)]

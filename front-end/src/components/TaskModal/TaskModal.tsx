@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import type { Task, TaskStatus, TagColorMap } from '../../types/task';
+import type { Task, TaskDraft, TaskStatus, TagColorMap } from '../../types/task';
 import { STATUSES } from '../../constants';
 import { TagInput } from '../common/TagInput';
+import { StatusFields } from '../StatusPrompt/StatusFields';
+import type { WeekOption } from '../../utils/helpers';
 
 function useIsMobile() {
   const [v, setV] = useState(typeof window !== 'undefined' ? window.innerWidth < 640 : false);
@@ -15,11 +17,12 @@ function useIsMobile() {
 
 interface TaskModalProps {
   task: Partial<Task> | null;
-  onSave: (data: Omit<Task, 'id' | 'createdAt'>) => void;
+  onSave: (data: TaskDraft) => void;
   onClose: () => void;
   onDelete?: () => void;
   tagColorMap: TagColorMap;
   onColorAssign: (tag: string, colorIndex: number) => void;
+  weeks: WeekOption[];
 }
 
 export const TaskModal: React.FC<TaskModalProps> = ({
@@ -29,17 +32,21 @@ export const TaskModal: React.FC<TaskModalProps> = ({
   onDelete,
   tagColorMap,
   onColorAssign,
+  weeks,
 }) => {
   const isMobile = useIsMobile();
   const isEdit = !!task?.id;
 
   const [title, setTitle] = useState(task?.title ?? '');
   const [desc, setDesc] = useState(task?.description ?? '');
-  const [status, setStatus] = useState<TaskStatus>(task?.status ?? 'todo');
+  const [status, setStatus] = useState<TaskStatus>(task?.status ?? 'idea');
   const [due, setDue] = useState(task?.dueDate ?? '');
   const [tags, setTags] = useState<string[]>(task?.tags ?? []);
   const [important, setImportant] = useState(task?.important ?? false);
+  const [waitingOn, setWaitingOn] = useState(task?.waitingOn ?? '');
+  const [pausedUntil, setPausedUntil] = useState(task?.pausedUntil || weeks[0]?.value || '');
   const [titleError, setTitleError] = useState('');
+  const [statusError, setStatusError] = useState('');
 
   // Close on Escape
   useEffect(() => {
@@ -53,7 +60,24 @@ export const TaskModal: React.FC<TaskModalProps> = ({
       setTitleError('Title is required.');
       return;
     }
-    onSave({ title: title.trim(), description: desc, status, dueDate: due, tags, important });
+    if (status === 'blocked' && !waitingOn.trim()) {
+      setStatusError('Write who you are waiting for.');
+      return;
+    }
+    if (status === 'paused' && !pausedUntil) {
+      setStatusError('Choose a return week.');
+      return;
+    }
+    onSave({
+      title: title.trim(),
+      description: desc,
+      status,
+      dueDate: due,
+      tags,
+      important,
+      waitingOn: status === 'blocked' ? waitingOn.trim() : '',
+      pausedUntil: status === 'paused' ? pausedUntil : '',
+    });
   }
 
   const statusOptions = STATUSES.map((s) => ({ value: s.value, label: s.label }));
@@ -171,7 +195,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
               <FieldLabel>Status</FieldLabel>
               <select
                 value={status}
-                onChange={(e) => setStatus(e.target.value as TaskStatus)}
+                onChange={(e) => { setStatus(e.target.value as TaskStatus); setStatusError(''); }}
                 style={inputStyle(false)}
               >
                 {statusOptions.map((o) => (
@@ -189,6 +213,16 @@ export const TaskModal: React.FC<TaskModalProps> = ({
               />
             </div>
           </div>
+
+          <StatusFields
+            status={status}
+            waitingOn={waitingOn}
+            pausedUntil={pausedUntil}
+            weeks={weeks}
+            error={statusError}
+            onWaitingOn={(v) => { setWaitingOn(v); setStatusError(''); }}
+            onPausedUntil={(v) => { setPausedUntil(v); setStatusError(''); }}
+          />
 
           {/* Important flag */}
           <label
