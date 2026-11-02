@@ -60,8 +60,3 @@ export const TAG_COLORS: TagColor[] = [
   { bg: '#F43F5E', fg: '#111111', dot: '#F43F5E' }, // rose
   { bg: '#64748B', fg: '#FFFFFF', dot: '#64748B' }, // slate
 ];
-
-export const PRESET_TAGS: string[] = [
-  'bug', 'feature', 'urgent', 'backend', 'frontend',
-  'design', 'review', 'docs', 'devops', 'security',
-];

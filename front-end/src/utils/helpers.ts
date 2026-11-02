@@ -49,22 +49,15 @@ export function slugifyTag(raw: string): string {
 }
 
 /**
- * Tags to offer in the tag input: tags the user already has come first, then the
- * presets that are not in use yet. Tags already on the card and tags that do not
- * contain the typed text are left out.
+ * Tags to offer in the tag input: the user's own tags that contain the typed text,
+ * in alphabetical order. Tags already on the card are left out.
  */
-export function tagSuggestions(
-  known: string[],
-  presets: string[],
-  selected: string[],
-  query: string,
-  limit = 30,
-): string[] {
+export function tagSuggestions(known: string[], selected: string[], query: string): string[] {
   const q = query.trim().toLowerCase();
-  const own = [...known].sort((a, b) => a.localeCompare(b));
-  const all = [...own, ...presets.filter((p) => !known.includes(p))];
 
-  return all.filter((t) => !selected.includes(t) && t.includes(q)).slice(0, limit);
+  return known
+    .filter((t) => !selected.includes(t) && t.includes(q))
+    .sort((a, b) => a.localeCompare(b));
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000;

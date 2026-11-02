@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { TAG_COLORS, PRESET_TAGS } from '../../constants';
+import { TAG_COLORS } from '../../constants';
 import { autoColorIndex, slugifyTag, resolveTagColor, tagSuggestions } from '../../utils/helpers';
 import { TagPill } from './TagPill';
 import type { TagColorMap } from '../../types/task';
@@ -24,7 +24,7 @@ export const TagInput: React.FC<TagInputProps> = ({
 
   const slug = slugifyTag(val);
 
-  const suggestions = tagSuggestions(Object.keys(tagColorMap), PRESET_TAGS, tags, val);
+  const suggestions = tagSuggestions(Object.keys(tagColorMap), tags, val);
 
   const showPicker = open && val.trim().length > 0 && tagColorMap[slug] === undefined;
 
