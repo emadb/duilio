@@ -9,6 +9,7 @@ interface AppHeaderProps {
   activeStatuses: TaskStatus[];
   onToggleStatus: (status: TaskStatus) => void;
   onCreateTask: () => void;
+  onImport: () => void;
   onLogout: () => void;
 }
 
@@ -19,6 +20,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
   activeStatuses,
   onToggleStatus,
   onCreateTask,
+  onImport,
   onLogout,
 }) => {
   const [isMobile, setIsMobile] = useState(
@@ -197,6 +199,26 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
           {!isMobile && 'Create task'}
         </button>
       </div>
+
+      {/* Trello import */}
+      <button
+        onClick={onImport}
+        style={{
+          order: isMobile ? 2 : 4,
+          height: 32,
+          padding: '0 12px',
+          border: '1px solid var(--eui-border-color)',
+          borderRadius: 6,
+          background: 'transparent',
+          color: 'var(--eui-text-subdued)',
+          fontFamily: 'var(--eui-font-family)',
+          fontSize: 13,
+          cursor: 'pointer',
+          flexShrink: 0,
+        }}
+      >
+        Import
+      </button>
 
       {/* Logout — last item on the bar */}
       <button

@@ -112,17 +112,17 @@ Data flow: app opens → `GET /api/review` → `{ weekStart, needsReview, cards[
 
 ## Step 4 — Trello import (branch `weekly-step4-import`)
 
-### 4.1 Backend: pure mapping — status: todo
+### 4.1 Backend: pure mapping — status: done
 - Goal: `map_trello(json) -> Vec<NewCard>` per the spec table. Archived cards skipped. Checklists appended as `- [ ]` / `- [x]` markdown. Labels become tags. Unknown list names are reported, not guessed. Waiting cards: `waiting_on` stays empty (the spec says so), which conflicts with the 2.1 rule "waiting_on required". Import writes through a dedicated insert, not through `apply_status`.
 - Files: `src/modules/import/{mod,trello}.rs`
 - Acceptance: unit tests with a small JSON fixture (no real user data in the repo).
 
-### 4.2 Backend: endpoint — status: todo
+### 4.2 Backend: endpoint — status: done
 - Goal: `POST /api/import/trello` (D3=A). One transaction. Returns counts per list and skipped cards. Tags are created or reused per user. No deduplication in v1: the response says so, and the UI warns before a second import.
 - Files: `src/modules/import/router.rs`, `src/main.rs`
 - Acceptance: `curl` on a fresh DB with the fixture: counts match; second run doubles the cards (documented behavior).
 
-### 4.3 Front-end: import UI — status: todo
+### 4.3 Front-end: import UI — status: done
 - Goal: file input in the header menu, preview of counts, confirm, result message.
 - Files: `AppHeader.tsx`, new `components/TrelloImport/*`, `services/api.ts`
 - Acceptance: browser check with the fixture.
@@ -157,3 +157,4 @@ Data flow: app opens → `GET /api/review` → `{ weekStart, needsReview, cards[
 - **D3 = A.** The Trello import takes a JSON body.
 - **Review rules (3.2).** `still-waiting` does not bump `rollover_count` (the spec lists the bump only for the two keep actions). `pause` needs a Monday after the current week, also for a card whose pause has ended. `apply_decision` handles that case itself because `apply_status` ignores a same-status change. A decision list with a missing, unknown or duplicate card is rejected as a whole (400). An unknown action name is rejected by serde (422). `needsReview` is false when no card needs a decision, so a new user sees no review.
 - **Review screen (3.3).** The bulk buttons fill only the cards that have no decision yet, so "Move all remaining to Ideas" never overwrites a choice. "Keep all as they are" works the same way. A paused card that is due is kept as "Keep in This week". "Review later" drops the decisions made so far: the screen starts again on "Start review". A load error of `GET /api/review` is logged and does not block the board. A 409 on completion is treated as done.
+- **Trello import (4.1, 4.2).** The body of `POST /api/import/trello` is the raw board JSON (not wrapped). `?dryRun=true` returns the counts without writing, for the preview in 4.3. The route accepts up to 20 MB. Archived cards and cards of archived lists count as `archived`. Cards of lists with an unknown name are not imported; their list names come back in `unknownLists`. Done cards get `completed_at` from the card's `dateLastActivity`, so old Done cards land in the right week of the log. Imported tags use the first palette color.

@@ -7,6 +7,7 @@ import { ConfirmDelete } from './components/ConfirmDelete/ConfirmDelete';
 import { AuthModal } from './components/AuthModal/AuthModal';
 import { useTasks } from './hooks/useTasks';
 import { useReview } from './hooks/useReview';
+import { TrelloImport } from './components/TrelloImport/TrelloImport';
 import { WeeklyReview } from './components/WeeklyReview/WeeklyReview';
 import { logout } from './services/api';
 import { STATUSES } from './constants';
@@ -40,6 +41,7 @@ const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
     useTasks(onLogout); // onLogout doubles as onUnauthorized handler
   const { review, loading: reviewLoading, complete } = useReview(onLogout);
   const [reviewLater, setReviewLater] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
 
   const [search, setSearch] = useState('');
   const [activeStatuses, setActiveStatuses] = useState<TaskStatus[]>(
@@ -170,6 +172,7 @@ const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
         activeStatuses={activeStatuses}
         onToggleStatus={toggleStatus}
         onCreateTask={() => openCreate()}
+        onImport={() => setImportOpen(true)}
         onLogout={onLogout}
       />
 
@@ -281,6 +284,12 @@ const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
             setPrompt(null);
           }}
           onClose={() => setPrompt(null)}
+        />
+      )}
+      {importOpen && (
+        <TrelloImport
+          onClose={() => setImportOpen(false)}
+          onImported={() => window.location.reload()}
         />
       )}
       {deleteTarget !== null && (

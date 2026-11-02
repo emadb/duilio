@@ -35,6 +35,15 @@ export interface Review {
   cards: Task[];
 }
 
+export interface TrelloResult {
+  dryRun: boolean;
+  total: number;
+  counts: Record<'idea' | 'todo' | 'inProgress' | 'blocked' | 'done', number>;
+  archived: number;
+  unknownLists: string[];
+  warning: string;
+}
+
 // ── Tag cache (name → BackendTag) ─────────────────────────────────────────────
 
 interface BackendTag {
@@ -205,6 +214,14 @@ export function completeReview(decisions: ReviewDecision[], note: string): Promi
   return request<Week>('/review/complete', {
     method: 'POST',
     body: JSON.stringify({ decisions, note: note.trim() || null }),
+  });
+}
+
+/** Sends the text of a Trello board export. A dry run only counts the cards. */
+export function importTrello(json: string, dryRun: boolean): Promise<TrelloResult> {
+  return request<TrelloResult>(`/import/trello${dryRun ? '?dryRun=true' : ''}`, {
+    method: 'POST',
+    body: json,
   });
 }
 

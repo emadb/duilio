@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 use sqlx::{Type, types::Uuid};
 pub mod auth;
 pub mod health;
+pub mod import;
 pub mod tags;
 pub mod todos;
 pub mod weeks;
