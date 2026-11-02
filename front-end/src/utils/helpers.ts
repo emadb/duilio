@@ -48,6 +48,25 @@ export function slugifyTag(raw: string): string {
   return raw.trim().toLowerCase().replace(/\s+/g, '-');
 }
 
+/**
+ * Tags to offer in the tag input: tags the user already has come first, then the
+ * presets that are not in use yet. Tags already on the card and tags that do not
+ * contain the typed text are left out.
+ */
+export function tagSuggestions(
+  known: string[],
+  presets: string[],
+  selected: string[],
+  query: string,
+  limit = 30,
+): string[] {
+  const q = query.trim().toLowerCase();
+  const own = [...known].sort((a, b) => a.localeCompare(b));
+  const all = [...own, ...presets.filter((p) => !known.includes(p))];
+
+  return all.filter((t) => !selected.includes(t) && t.includes(q)).slice(0, limit);
+}
+
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 /** Whole days between an ISO timestamp and `now`, never negative */
