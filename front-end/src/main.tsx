@@ -62,6 +62,11 @@ style.textContent = `
   }
 
 
+  /* Card actions show on hover or keyboard focus. Touch screens have no hover: always show them. */
+  .task-card .card-action { opacity: 0; transition: opacity 0.12s ease; }
+  .task-card:hover .card-action, .task-card:focus-within .card-action { opacity: 1; }
+  @media (hover: none) { .task-card .card-action { opacity: 1; } }
+
   @keyframes tmFadeIn  { from { opacity: 0; }                              to { opacity: 1; } }
   @keyframes tmSlideIn { from { transform: translateY(12px) scale(0.97); opacity: 0; } to { transform: none; opacity: 1; } }
 `;

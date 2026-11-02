@@ -23,6 +23,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onEdit, onToggleImport
 
   return (
     <div
+      className="task-card"
       draggable
       onDragStart={(e) => {
         e.dataTransfer.setData('text/task-id', task.id);
@@ -70,13 +71,17 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onEdit, onToggleImport
 
           {/* Action buttons */}
           <div style={{ display: 'flex', gap: 2, marginTop: -2, flexShrink: 0 }}>
-            <FlagBtn
-              important={task.important}
-              onClick={() => onToggleImportant(task.id)}
-            />
-            <ActionBtn onClick={() => onEdit(task)} aria-label="Edit task" color="primary">
-              <PencilIcon />
-            </ActionBtn>
+            <span className={task.important ? undefined : 'card-action'}>
+              <FlagBtn
+                important={task.important}
+                onClick={() => onToggleImportant(task.id)}
+              />
+            </span>
+            <span className="card-action">
+              <ActionBtn onClick={() => onEdit(task)} aria-label="Edit task" color="primary">
+                <PencilIcon />
+              </ActionBtn>
+            </span>
           </div>
         </div>
 
@@ -88,7 +93,9 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onEdit, onToggleImport
               color: 'var(--eui-text-subdued)',
               fontFamily: 'var(--eui-font-family)',
               lineHeight: 1.5,
-              maxHeight: '4.5em',
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
               overflow: 'hidden',
             }}
           >

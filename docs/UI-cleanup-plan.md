@@ -60,7 +60,7 @@ Existing `--eui-*` variables stay. Their values change in `front-end/src/main.ts
 - Files: `StatusSection.tsx`, new `components/TaskCard/GhostCard.tsx`.
 - Acceptance: ghost card in every column; click opens the modal with the right status; keyboard focus works.
 
-### 7. Less noise — status: todo
+### 7. Less noise — status: done
 - Goal (D2 = a, b, c): flag and pencil show only on hover, and the flag stays visible on an important card. Description clamps to 2 lines. The flatter look (D2 d) is already part of items 3 and 4.
 - Files: `TaskCard.tsx`.
 - Acceptance: before and after screenshots. Touch screens: icons stay visible when there is no hover (`@media (hover: none)`).
