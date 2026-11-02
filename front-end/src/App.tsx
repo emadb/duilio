@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { AppHeader } from './components/AppHeader/AppHeader';
-import { SummaryBar } from './components/SummaryBar/SummaryBar';
 import { StatusSection } from './components/StatusSection/StatusSection';
 import { TaskModal } from './components/TaskModal/TaskModal';
 import { ConfirmDelete } from './components/ConfirmDelete/ConfirmDelete';
@@ -38,7 +37,7 @@ export const App: React.FC = () => {
 // ── Main app (rendered only when authenticated) ───────────────────────────────
 
 const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
-  const { tasks, tagColorMap, week, loading, error, addTask, editTask, moveTask, toggleImportant, removeTask, assignTagColor, refresh } =
+  const { tasks, tagColorMap, knownTags, week, loading, error, addTask, editTask, moveTask, toggleImportant, removeTask, assignTagColor, refresh } =
     useTasks(onLogout); // onLogout doubles as onUnauthorized handler
   const { review, loading: reviewLoading, complete } = useReview(onLogout);
   const [reviewLater, setReviewLater] = useState(false);
@@ -46,9 +45,6 @@ const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
   const [view, setView] = useState<'board' | 'log'>('board');
 
   const [search, setSearch] = useState('');
-  const [activeStatuses, setActiveStatuses] = useState<TaskStatus[]>(
-    STATUSES.map((s) => s.value),
-  );
   const [modalTask, setModalTask] = useState<Partial<Task> | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Task | null>(null);
   const [prompt, setPrompt] = useState<{ task: Task; status: PromptStatus } | null>(null);
@@ -59,16 +55,6 @@ const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
       onLogout();
     }
   }, [error, onLogout]);
-
-  function toggleStatus(value: TaskStatus) {
-    setActiveStatuses((prev) =>
-      prev.includes(value)
-        ? prev.length > 1
-          ? prev.filter((s) => s !== value)
-          : prev
-        : [...prev, value],
-    );
-  }
 
   function openCreate(defaultStatus: string = 'idea') {
     setModalTask({ status: defaultStatus as TaskStatus, tags: [] });
@@ -89,7 +75,7 @@ const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
 
   function handleDropTask(taskId: string, status: TaskStatus) {
     const task = tasks.find((t) => t.id === taskId);
-    // Waiting on and Paused need extra data: ask before moving the card
+    // Blocked and Paused need extra data: ask before moving the card
     if (task && task.status !== status && (status === 'blocked' || status === 'paused')) {
       setPrompt({ task, status });
       return;
@@ -129,8 +115,8 @@ const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
     ]),
   ) as Record<TaskStatus, Task[]>;
 
-  const visibleStatuses = STATUSES.filter((s) => !s.drawer && activeStatuses.includes(s.value));
-  const drawerStatus = STATUSES.find((s) => s.drawer && activeStatuses.includes(s.value));
+  const visibleStatuses = STATUSES.filter((s) => !s.drawer);
+  const drawerStatus = STATUSES.find((s) => s.drawer);
   const noResults = q.length > 0 && filtered.length === 0;
 
   if (loading || reviewLoading) {
@@ -172,11 +158,8 @@ const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
   return (
     <div style={{ minHeight: '100vh', background: 'var(--eui-page-background)' }}>
       <AppHeader
-        tasks={boardTasks}
         search={search}
         onSearch={setSearch}
-        activeStatuses={activeStatuses}
-        onToggleStatus={toggleStatus}
         onCreateTask={() => openCreate()}
         onImport={() => setImportOpen(true)}
         onLog={() => setView('log')}
@@ -200,8 +183,6 @@ const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
             </button>
           </div>
         )}
-
-        <SummaryBar tasks={boardTasks} />
 
         {noResults ? (
           <div style={{ textAlign: 'center', padding: '52px 0' }}>
@@ -277,6 +258,7 @@ const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
           onClose={() => setModalTask(null)}
           onDelete={modalTask.id ? () => { setDeleteTarget(modalTask as Task); setModalTask(null); } : undefined}
           tagColorMap={tagColorMap}
+          knownTags={knownTags}
           onColorAssign={assignTagColor}
           weeks={weeks}
         />

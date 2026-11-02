@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import type { Task } from '../../types/task';
 import type { WeekOption } from '../../utils/helpers';
 import { StatusFields } from './StatusFields';
+import { GHOST_BTN, PRIMARY_BTN } from '../../utils/styles';
 
 export type PromptStatus = 'blocked' | 'paused';
 
@@ -18,7 +19,7 @@ interface StatusPromptProps {
   onClose: () => void;
 }
 
-/** Asks the extra data a card needs before it moves to Waiting on or Paused. */
+/** Asks the extra data a card needs before it moves to Blocked or Paused. */
 export const StatusPrompt: React.FC<StatusPromptProps> = ({
   task,
   status,
@@ -39,7 +40,7 @@ export const StatusPrompt: React.FC<StatusPromptProps> = ({
   function confirm() {
     if (status === 'blocked') {
       if (!waitingOn.trim()) {
-        setError('Write who you are waiting for.');
+        setError('Write who or what is blocking it.');
         return;
       }
       onConfirm({ waitingOn: waitingOn.trim() });
@@ -70,7 +71,8 @@ export const StatusPrompt: React.FC<StatusPromptProps> = ({
       <div
         style={{
           background: 'var(--eui-bg-plain)',
-          borderRadius: 8,
+          borderRadius: 'var(--eui-border-radius-large)',
+          border: 'var(--eui-outline)',
           width: '100%',
           maxWidth: 420,
           boxShadow: 'var(--eui-shadow-l)',
@@ -79,7 +81,7 @@ export const StatusPrompt: React.FC<StatusPromptProps> = ({
         }}
       >
         <p style={titleStyle}>
-          {status === 'blocked' ? 'Move to Waiting on' : 'Move to Paused'}
+          {status === 'blocked' ? 'Move to Blocked' : 'Move to Paused'}
         </p>
         <p style={subtitleStyle}>{task.title}</p>
 
@@ -122,10 +124,8 @@ function btnStyle(variant: 'ghost' | 'primary'): React.CSSProperties {
   return {
     height: 40,
     padding: '0 16px',
-    borderRadius: 6,
-    border: variant === 'ghost' ? '1px solid var(--eui-border-color)' : 'none',
-    background: variant === 'primary' ? 'var(--eui-color-primary)' : 'transparent',
-    color: variant === 'primary' ? '#fff' : 'var(--eui-text-color)',
+    borderRadius: 'var(--eui-border-radius-medium)',
+    ...(variant === 'primary' ? PRIMARY_BTN : GHOST_BTN),
     fontFamily: 'var(--eui-font-family)',
     fontSize: 14,
     fontWeight: 500,

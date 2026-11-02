@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { login, register } from '../../services/api';
+import { PRIMARY_BTN } from '../../utils/styles';
 
 interface AuthModalProps {
   onSuccess: () => void;
@@ -48,8 +49,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onSuccess }) => {
           width: '100%',
           maxWidth: 400,
           background: 'var(--eui-bg-plain)',
-          border: '1px solid var(--eui-border-color)',
+          border: 'var(--eui-outline)',
           borderRadius: 'var(--eui-border-radius-large)',
+          boxShadow: 'var(--eui-shadow-m)',
           padding: 32,
         }}
       >
@@ -187,10 +189,8 @@ const primaryButtonStyle: React.CSSProperties = {
   width: '100%',
   height: 38,
   padding: '0 16px',
-  border: 'none',
-  borderRadius: 6,
-  background: 'var(--eui-color-primary)',
-  color: '#fff',
+  ...PRIMARY_BTN,
+  borderRadius: 'var(--eui-border-radius-medium)',
   fontFamily: 'var(--eui-font-family)',
   fontSize: 13,
   fontWeight: 500,

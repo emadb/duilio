@@ -15,7 +15,7 @@ interface WeeklyReviewProps {
 const ACTIONS: { value: ReviewAction; label: string; only?: Task['status'] }[] = [
   { value: 'keep-todo', label: 'Keep in This week' },
   { value: 'keep-doing', label: 'Keep in Doing' },
-  { value: 'still-waiting', label: 'Still waiting', only: 'blocked' },
+  { value: 'still-waiting', label: 'Still blocked', only: 'blocked' },
   { value: 'to-ideas', label: 'Back to Ideas' },
   { value: 'pause', label: 'Pause' },
   { value: 'delete', label: 'Delete' },
@@ -172,10 +172,10 @@ const subtleStyle: React.CSSProperties = {
 
 const rowStyle: React.CSSProperties = {
   background: 'var(--eui-bg-plain)',
-  border: '1px solid var(--eui-border-color)',
-  borderRadius: 6,
+  border: 'var(--eui-outline)',
+  borderRadius: 'var(--eui-border-radius-large)',
   padding: '14px 16px',
-  boxShadow: 'var(--eui-shadow-xs)',
+  boxShadow: 'var(--eui-shadow-m)',
   fontFamily: font,
 };
 
@@ -185,10 +185,10 @@ function pillStyle(selected: boolean, danger = false): React.CSSProperties {
   return {
     height: 32,
     padding: '0 12px',
-    borderRadius: 6,
-    border: `1px solid ${selected ? color : 'var(--eui-border-color)'}`,
+    borderRadius: 'var(--eui-border-radius-medium)',
+    border: `1.5px solid ${selected ? 'var(--eui-ink)' : 'var(--eui-border-color)'}`,
     background: selected ? color : 'transparent',
-    color: selected ? '#fff' : 'var(--eui-text-color)',
+    color: selected ? (danger ? '#fff' : 'var(--eui-on-primary)') : 'var(--eui-text-color)',
     fontFamily: font,
     fontSize: 13,
     fontWeight: 500,

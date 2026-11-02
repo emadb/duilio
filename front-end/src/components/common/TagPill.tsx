@@ -16,7 +16,7 @@ export const TagPill: React.FC<TagPillProps> = ({
   size = 'md',
 }) => {
   const col = resolveTagColor(tag, tagColorMap);
-  const fontSize = size === 'sm' ? 10 : 11;
+  const fontSize = size === 'sm' ? 11 : 12;
 
   return (
     <span
@@ -24,10 +24,10 @@ export const TagPill: React.FC<TagPillProps> = ({
         display: 'inline-flex',
         alignItems: 'center',
         gap: 3,
-        borderRadius: 999,
-        padding: '2px 8px',
+        borderRadius: 8,
+        padding: '2px 9px',
         fontSize,
-        fontWeight: 500,
+        fontWeight: 600,
         fontFamily: 'var(--eui-font-family)',
         whiteSpace: 'nowrap',
         background: col.bg,

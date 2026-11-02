@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
-import { TAG_COLORS, PRESET_TAGS } from '../../constants';
-import { autoColorIndex, slugifyTag, resolveTagColor } from '../../utils/helpers';
+import { TAG_COLORS } from '../../constants';
+import { autoColorIndex, slugifyTag, resolveTagColor, tagSuggestions } from '../../utils/helpers';
 import { TagPill } from './TagPill';
 import type { TagColorMap } from '../../types/task';
 
@@ -8,6 +8,8 @@ interface TagInputProps {
   tags: string[];
   onChange: (tags: string[]) => void;
   tagColorMap: TagColorMap;
+  /** Tags that exist on the server: the only ones offered as suggestions */
+  knownTags: string[];
   onColorAssign: (tag: string, colorIndex: number) => void;
 }
 
@@ -15,6 +17,7 @@ export const TagInput: React.FC<TagInputProps> = ({
   tags,
   onChange,
   tagColorMap,
+  knownTags,
   onColorAssign,
 }) => {
   const [val, setVal] = useState('');
@@ -24,11 +27,7 @@ export const TagInput: React.FC<TagInputProps> = ({
 
   const slug = slugifyTag(val);
 
-  const suggestions = (
-    val.trim()
-      ? PRESET_TAGS.filter((p) => p.includes(val.toLowerCase()) && !tags.includes(p))
-      : PRESET_TAGS.filter((p) => !tags.includes(p))
-  ).slice(0, 6);
+  const suggestions = tagSuggestions(knownTags, tags, val);
 
   const showPicker = open && val.trim().length > 0 && tagColorMap[slug] === undefined;
 
@@ -110,7 +109,7 @@ export const TagInput: React.FC<TagInputProps> = ({
             left: 0,
             right: 0,
             background: 'var(--eui-bg-plain)',
-            border: '1px solid var(--eui-border-color)',
+            border: 'var(--eui-outline)',
             borderRadius: 'var(--eui-border-radius-medium)',
             boxShadow: 'var(--eui-shadow-s)',
             zIndex: 20,

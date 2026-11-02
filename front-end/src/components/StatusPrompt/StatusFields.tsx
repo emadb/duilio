@@ -13,7 +13,7 @@ interface StatusFieldsProps {
   onEnter?: () => void;
 }
 
-/** The extra input a status needs: who for Waiting on, a return week for Paused. */
+/** The extra input a status needs: who blocks it for Blocked, a return week for Paused. */
 export const StatusFields: React.FC<StatusFieldsProps> = ({
   status,
   waitingOn,
@@ -27,13 +27,13 @@ export const StatusFields: React.FC<StatusFieldsProps> = ({
   if (status === 'blocked') {
     return (
       <div>
-        <label style={labelStyle}>Waiting on</label>
+        <label style={labelStyle}>Blocked by</label>
         <input
           autoFocus
           value={waitingOn}
           onChange={(e) => onWaitingOn(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && onEnter?.()}
-          placeholder="Who are you waiting for?"
+          placeholder="Who or what is blocking it?"
           style={inputStyle(!!error)}
         />
         {error && <p style={errorStyle}>{error}</p>}

@@ -23,6 +23,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onEdit, onToggleImport
 
   return (
     <div
+      className="task-card"
       draggable
       onDragStart={(e) => {
         e.dataTransfer.setData('text/task-id', task.id);
@@ -32,22 +33,15 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onEdit, onToggleImport
       onDragEnd={() => setDragging(false)}
       style={{
         background: 'var(--eui-bg-plain)',
-        border: '1px solid var(--eui-border-color)',
-        borderRadius: 6,
-        padding: '14px 16px',
-        boxShadow: 'var(--eui-shadow-xs)',
-        transition: 'box-shadow 0.15s ease',
+        border: 'var(--eui-outline)',
+        borderRadius: 'var(--eui-border-radius-large)',
+        padding: '12px 14px',
+        boxShadow: 'var(--eui-shadow-m)',
         display: 'flex',
         flexDirection: 'column',
         cursor: 'grab',
         opacity: dragging ? 0.4 : 1,
       }}
-      onMouseEnter={(e) =>
-        ((e.currentTarget as HTMLElement).style.boxShadow = 'var(--eui-shadow-m)')
-      }
-      onMouseLeave={(e) =>
-        ((e.currentTarget as HTMLElement).style.boxShadow = 'var(--eui-shadow-xs)')
-      }
     >
       {/* Top: title + actions */}
       <div style={{ flex: 1 }}>
@@ -63,9 +57,9 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onEdit, onToggleImport
             onClick={() => onEdit(task)}
             style={{
               flex: 1,
-              fontSize: 20,
+              fontSize: 15,
               fontWeight: 600,
-              lineHeight: 1.45,
+              lineHeight: 1.35,
               color: done ? 'var(--eui-text-subdued)' : 'var(--eui-title-color)',
               fontFamily: 'var(--eui-font-family)',
               cursor: 'pointer',
@@ -77,13 +71,17 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onEdit, onToggleImport
 
           {/* Action buttons */}
           <div style={{ display: 'flex', gap: 2, marginTop: -2, flexShrink: 0 }}>
-            <FlagBtn
-              important={task.important}
-              onClick={() => onToggleImportant(task.id)}
-            />
-            <ActionBtn onClick={() => onEdit(task)} aria-label="Edit task" color="primary">
-              <PencilIcon />
-            </ActionBtn>
+            <span className={task.important ? undefined : 'card-action'}>
+              <FlagBtn
+                important={task.important}
+                onClick={() => onToggleImportant(task.id)}
+              />
+            </span>
+            <span className="card-action">
+              <ActionBtn onClick={() => onEdit(task)} aria-label="Edit task" color="primary">
+                <PencilIcon />
+              </ActionBtn>
+            </span>
           </div>
         </div>
 
@@ -95,7 +93,9 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onEdit, onToggleImport
               color: 'var(--eui-text-subdued)',
               fontFamily: 'var(--eui-font-family)',
               lineHeight: 1.5,
-              maxHeight: '4.5em',
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
               overflow: 'hidden',
             }}
           >

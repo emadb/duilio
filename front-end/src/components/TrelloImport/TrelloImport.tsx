@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { importTrello, type TrelloResult } from '../../services/api';
+import { GHOST_BTN, PRIMARY_BTN } from '../../utils/styles';
 
 interface TrelloImportProps {
   onClose: () => void;
@@ -11,7 +12,7 @@ const LISTS: { key: keyof TrelloResult['counts']; label: string }[] = [
   { key: 'idea', label: 'Ideas' },
   { key: 'todo', label: 'This week' },
   { key: 'inProgress', label: 'Doing' },
-  { key: 'blocked', label: 'Waiting on' },
+  { key: 'blocked', label: 'Blocked' },
   { key: 'done', label: 'Done' },
 ];
 
@@ -107,7 +108,7 @@ export const TrelloImport: React.FC<TrelloImportProps> = ({ onClose, onImported 
             )}
             {shown.counts.blocked > 0 && (
               <p style={subtleStyle}>
-                Waiting cards have no name yet. Sort them out in the first weekly review.
+                Blocked cards have no name yet. Sort them out in the first weekly review.
               </p>
             )}
           </div>
@@ -142,7 +143,8 @@ const font = 'var(--eui-font-family)';
 
 const panelStyle: React.CSSProperties = {
   background: 'var(--eui-bg-plain)',
-  borderRadius: 8,
+  borderRadius: 'var(--eui-border-radius-large)',
+  border: 'var(--eui-outline)',
   width: '100%',
   maxWidth: 480,
   boxShadow: 'var(--eui-shadow-l)',
@@ -169,10 +171,8 @@ function btnStyle(primary: boolean): React.CSSProperties {
   return {
     height: 40,
     padding: '0 16px',
-    borderRadius: 6,
-    border: primary ? 'none' : '1px solid var(--eui-border-color)',
-    background: primary ? 'var(--eui-color-primary)' : 'transparent',
-    color: primary ? '#fff' : 'var(--eui-text-color)',
+    borderRadius: 'var(--eui-border-radius-medium)',
+    ...(primary ? PRIMARY_BTN : GHOST_BTN),
     fontFamily: font,
     fontSize: 14,
     fontWeight: 500,

@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import type { Task } from '../../types/task';
+import { DANGER_BTN, GHOST_BTN } from '../../utils/styles';
 
 interface ConfirmDeleteProps {
   task: Task;
@@ -32,7 +33,8 @@ export const ConfirmDelete: React.FC<ConfirmDeleteProps> = ({ task, onConfirm, o
       <div
         style={{
           background: 'var(--eui-bg-plain)',
-          borderRadius: 8,
+          borderRadius: 'var(--eui-border-radius-large)',
+          border: 'var(--eui-outline)',
           width: '100%',
           maxWidth: 420,
           boxShadow: 'var(--eui-shadow-l)',
@@ -89,10 +91,8 @@ function btnStyle(variant: 'ghost' | 'danger'): React.CSSProperties {
   return {
     height: 40,
     padding: '0 16px',
-    borderRadius: 6,
-    border: variant === 'ghost' ? '1px solid var(--eui-border-color)' : 'none',
-    background: variant === 'danger' ? 'var(--eui-color-danger)' : 'transparent',
-    color: variant === 'danger' ? '#fff' : 'var(--eui-text-color)',
+    borderRadius: 'var(--eui-border-radius-medium)',
+    ...(variant === 'danger' ? DANGER_BTN : GHOST_BTN),
     fontFamily: 'var(--eui-font-family)',
     fontSize: 14,
     fontWeight: 500,

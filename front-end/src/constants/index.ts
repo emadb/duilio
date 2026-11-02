@@ -4,62 +4,59 @@ export const STATUSES: StatusMeta[] = [
   {
     value: 'idea',
     label: 'Ideas',
-    dot: '#8E9FBC',
+    dot: '#B9B9FF',
     countBg: 'var(--eui-bg-subdued)',
     countFg: 'var(--eui-text-subdued)',
   },
   {
     value: 'todo',
     label: 'This week',
-    dot: '#3B82F6',
+    dot: '#5B8DEF',
     countBg: 'var(--eui-bg-base-primary)',
     countFg: 'var(--eui-text-primary)',
   },
   {
     value: 'in-progress',
     label: 'Doing',
-    dot: '#EAAE01',
+    dot: '#FFC93C',
     countBg: 'var(--eui-bg-base-warning)',
     countFg: 'var(--eui-text-warning)',
   },
   {
     value: 'blocked',
-    label: 'Waiting on',
-    dot: '#EF4444',
+    label: 'Blocked',
+    dot: '#4FC1BE',
     countBg: 'var(--eui-bg-base-danger)',
     countFg: 'var(--eui-text-danger)',
   },
   {
     value: 'paused',
     label: 'Paused',
-    drawer: true,
-    dot: '#94A3B8',
+    dot: '#F4705A',
     countBg: 'var(--eui-bg-subdued)',
     countFg: 'var(--eui-text-subdued)',
   },
   {
     value: 'done',
     label: 'Done',
-    dot: '#24C292',
+    drawer: true,
+    dot: '#8FD694',
     countBg: 'var(--eui-bg-base-success)',
     countFg: 'var(--eui-text-success)',
   },
 ];
 
+// Strong fills: the pill background is the same color as the picker dot.
+// Text is ink, or white where white has better contrast (indigo, slate).
 export const TAG_COLORS: TagColor[] = [
-  { bg: '#EEF2FF', fg: '#3730A3', dot: '#6366F1' }, // indigo
-  { bg: '#EFF6FF', fg: '#1D4ED8', dot: '#3B82F6' }, // blue
-  { bg: '#ECFDF5', fg: '#065F46', dot: '#10B981' }, // green
-  { bg: '#FFF7ED', fg: '#9A3412', dot: '#F97316' }, // orange
-  { bg: '#FEF2F2', fg: '#991B1B', dot: '#EF4444' }, // red
-  { bg: '#FDF4FF', fg: '#7E22CE', dot: '#A855F7' }, // purple
-  { bg: '#FFFBEB', fg: '#92400E', dot: '#F59E0B' }, // amber
-  { bg: '#F0FDFA', fg: '#134E4A', dot: '#14B8A6' }, // teal
-  { bg: '#FFF1F2', fg: '#9F1239', dot: '#F43F5E' }, // rose
-  { bg: '#F1F5F9', fg: '#334155', dot: '#64748B' }, // slate
-];
-
-export const PRESET_TAGS: string[] = [
-  'bug', 'feature', 'urgent', 'backend', 'frontend',
-  'design', 'review', 'docs', 'devops', 'security',
+  { bg: '#6366F1', fg: '#FFFFFF', dot: '#6366F1' }, // indigo
+  { bg: '#3B82F6', fg: '#111111', dot: '#3B82F6' }, // blue
+  { bg: '#10B981', fg: '#111111', dot: '#10B981' }, // green
+  { bg: '#F97316', fg: '#111111', dot: '#F97316' }, // orange
+  { bg: '#EF4444', fg: '#111111', dot: '#EF4444' }, // red
+  { bg: '#A855F7', fg: '#111111', dot: '#A855F7' }, // purple
+  { bg: '#F59E0B', fg: '#111111', dot: '#F59E0B' }, // amber
+  { bg: '#14B8A6', fg: '#111111', dot: '#14B8A6' }, // teal
+  { bg: '#F43F5E', fg: '#111111', dot: '#F43F5E' }, // rose
+  { bg: '#64748B', fg: '#FFFFFF', dot: '#64748B' }, // slate
 ];

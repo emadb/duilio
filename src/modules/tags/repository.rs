@@ -1,6 +1,6 @@
 use crate::modules::EntityId;
 use serde::Serialize;
-use sqlx::{Error, Pool, Postgres};
+use sqlx::{Error, Pool, Postgres, types::Uuid};
 
 #[derive(Debug, Serialize, Clone)]
 pub struct Tag {
@@ -68,5 +68,29 @@ impl TagRepository {
         .await?;
 
         Ok(Some(tag))
+    }
+
+    /// Sets the color of one of the user's tags. Returns `None` when the tag
+    /// does not exist for this user.
+    pub async fn update_color(
+        &self,
+        user_id: EntityId,
+        id: Uuid,
+        color: String,
+    ) -> Result<Option<Tag>, Error> {
+        sqlx::query_as!(
+            Tag,
+            r#"
+            UPDATE tags
+            SET color = $3
+            WHERE id = $1 AND user_id = $2
+            RETURNING id, name, color
+            "#,
+            id,
+            user_id.0,
+            color
+        )
+        .fetch_optional(&self.pool)
+        .await
     }
 }

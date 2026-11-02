@@ -73,7 +73,7 @@ The board renders one `StatusSection` column per entry in the `STATUSES` array (
 2. A new variant in `TodoStatus` in `repository.rs`
 3. A new entry in the `STATUSES` array and the `TaskStatus` union type
 
-The `SummaryBar`, `TaskModal` status dropdown, and `App.tsx` column filter all derive from `STATUSES` — no other files need changing.
+The `AppHeader` status chips, `TaskModal` status dropdown, and `App.tsx` column filter all derive from `STATUSES` — no other files need changing.
 
 `useTasks` (`src/hooks/useTasks.ts`) owns all API calls and client-side task state. `App.tsx` is the top-level orchestrator; it is auth-gated and renders `TaskApp` only when a token is present in `localStorage`.
 

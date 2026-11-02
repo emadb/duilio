@@ -4,6 +4,7 @@ import { STATUSES } from '../../constants';
 import { TagInput } from '../common/TagInput';
 import { StatusFields } from '../StatusPrompt/StatusFields';
 import type { WeekOption } from '../../utils/helpers';
+import { DANGER_BTN, GHOST_BTN, PRIMARY_BTN } from '../../utils/styles';
 
 function useIsMobile() {
   const [v, setV] = useState(typeof window !== 'undefined' ? window.innerWidth < 640 : false);
@@ -21,6 +22,7 @@ interface TaskModalProps {
   onClose: () => void;
   onDelete?: () => void;
   tagColorMap: TagColorMap;
+  knownTags: string[];
   onColorAssign: (tag: string, colorIndex: number) => void;
   weeks: WeekOption[];
 }
@@ -31,6 +33,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
   onClose,
   onDelete,
   tagColorMap,
+  knownTags,
   onColorAssign,
   weeks,
 }) => {
@@ -61,7 +64,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
       return;
     }
     if (status === 'blocked' && !waitingOn.trim()) {
-      setStatusError('Write who you are waiting for.');
+      setStatusError('Write who or what is blocking it.');
       return;
     }
     if (status === 'paused' && !pausedUntil) {
@@ -100,7 +103,8 @@ export const TaskModal: React.FC<TaskModalProps> = ({
       <div
         style={{
           background: 'var(--eui-bg-plain)',
-          borderRadius: 8,
+          borderRadius: 'var(--eui-border-radius-large)',
+          border: 'var(--eui-outline)',
           width: '100%',
           maxWidth: 560,
           boxShadow: 'var(--eui-shadow-l)',
@@ -257,6 +261,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
               tags={tags}
               onChange={setTags}
               tagColorMap={tagColorMap}
+              knownTags={knownTags}
               onColorAssign={onColorAssign}
             />
             <p style={{ margin: '4px 0 0', fontSize: 11, color: 'var(--eui-text-subdued)', fontFamily: 'var(--eui-font-family)' }}>
@@ -346,13 +351,8 @@ const ModalBtn: React.FC<{
     style={{
       height: 40,
       padding: '0 16px',
-      borderRadius: 6,
-      border: variant === 'ghost' ? '1px solid var(--eui-border-color)' : 'none',
-      background:
-        variant === 'primary' ? 'var(--eui-color-primary)'
-        : variant === 'danger' ? 'var(--eui-color-danger)'
-        : 'transparent',
-      color: variant === 'ghost' ? 'var(--eui-text-color)' : '#fff',
+      borderRadius: 'var(--eui-border-radius-medium)',
+      ...(variant === 'primary' ? PRIMARY_BTN : variant === 'danger' ? DANGER_BTN : GHOST_BTN),
       fontFamily: 'var(--eui-font-family)',
       fontSize: 14,
       fontWeight: 500,

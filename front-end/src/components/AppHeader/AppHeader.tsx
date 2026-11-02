@@ -1,13 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { STATUSES } from '../../constants';
-import type { Task, TaskStatus } from '../../types/task';
+import { PRIMARY_BTN } from '../../utils/styles';
 
 interface AppHeaderProps {
-  tasks: Task[];
   search: string;
   onSearch: (value: string) => void;
-  activeStatuses: TaskStatus[];
-  onToggleStatus: (status: TaskStatus) => void;
   onCreateTask: () => void;
   onImport: () => void;
   onLog: () => void;
@@ -15,11 +11,8 @@ interface AppHeaderProps {
 }
 
 export const AppHeader: React.FC<AppHeaderProps> = ({
-  tasks,
   search,
   onSearch,
-  activeStatuses,
-  onToggleStatus,
   onCreateTask,
   onImport,
   onLog,
@@ -114,64 +107,6 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
         </div>
       </div>
 
-      {/* Status filter toggles */}
-      <div style={{ display: 'flex', gap: 4, order: isMobile ? 4 : 3, flex: isMobile ? '0 0 100%' : undefined, overflowX: isMobile ? 'auto' : undefined, paddingBottom: isMobile ? 2 : 0 }}>
-        {STATUSES.map((s) => {
-          const active = activeStatuses.includes(s.value);
-          const count = tasks.filter((t) => t.status === s.value).length;
-          return (
-            <button
-              key={s.value}
-              onClick={() => onToggleStatus(s.value)}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 5,
-                height: 28,
-                padding: '0 10px',
-                border: active
-                  ? `1.5px solid ${s.dot}`
-                  : '1px solid var(--eui-border-color)',
-                borderRadius: 4,
-                background: active ? 'var(--eui-bg-plain)' : 'transparent',
-                cursor: 'pointer',
-                fontFamily: 'var(--eui-font-family)',
-                fontSize: 12,
-                fontWeight: 500,
-                color: active ? 'var(--eui-title-color)' : 'var(--eui-text-subdued)',
-                transition: 'all 0.15s ease',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              <span
-                style={{
-                  width: 7,
-                  height: 7,
-                  borderRadius: '50%',
-                  flexShrink: 0,
-                  background: active ? s.dot : 'var(--eui-border-color)',
-                  transition: 'background 0.15s ease',
-                }}
-              />
-              {s.label}
-              <span
-                style={{
-                  background: active ? s.countBg : 'var(--eui-bg-subdued)',
-                  color: active ? s.countFg : 'var(--eui-text-subdued)',
-                  borderRadius: 999,
-                  padding: '1px 6px',
-                  fontSize: 10,
-                  fontWeight: 700,
-                  transition: 'all 0.15s ease',
-                }}
-              >
-                {count}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-
       {/* Create */}
       <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginLeft: 'auto', order: 2, flexShrink: 0 }}>
         <button
@@ -182,10 +117,8 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
             gap: 6,
             height: 32,
             padding: '0 14px',
-            borderRadius: 6,
-            border: 'none',
-            background: 'var(--eui-color-primary)',
-            color: '#fff',
+            ...PRIMARY_BTN,
+            borderRadius: 'var(--eui-border-radius-medium)',
             fontFamily: 'var(--eui-font-family)',
             fontSize: 13,
             fontWeight: 500,
@@ -209,10 +142,10 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
           order: isMobile ? 2 : 4,
           height: 32,
           padding: '0 12px',
-          border: '1px solid var(--eui-border-color)',
-          borderRadius: 6,
+          border: 'var(--eui-outline)',
+          borderRadius: 'var(--eui-border-radius-medium)',
           background: 'transparent',
-          color: 'var(--eui-text-subdued)',
+          color: 'var(--eui-text-color)',
           fontFamily: 'var(--eui-font-family)',
           fontSize: 13,
           cursor: 'pointer',
@@ -229,10 +162,10 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
           order: isMobile ? 2 : 4,
           height: 32,
           padding: '0 12px',
-          border: '1px solid var(--eui-border-color)',
-          borderRadius: 6,
+          border: 'var(--eui-outline)',
+          borderRadius: 'var(--eui-border-radius-medium)',
           background: 'transparent',
-          color: 'var(--eui-text-subdued)',
+          color: 'var(--eui-text-color)',
           fontFamily: 'var(--eui-font-family)',
           fontSize: 13,
           cursor: 'pointer',
@@ -254,8 +187,8 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
           justifyContent: 'center',
           width: 32,
           height: 32,
-          border: '1px solid var(--eui-border-color)',
-          borderRadius: 6,
+          border: 'var(--eui-outline)',
+          borderRadius: 'var(--eui-border-radius-medium)',
           background: 'transparent',
           cursor: 'pointer',
           color: 'var(--eui-text-subdued)',
