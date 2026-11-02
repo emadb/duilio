@@ -75,7 +75,7 @@ const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
 
   function handleDropTask(taskId: string, status: TaskStatus) {
     const task = tasks.find((t) => t.id === taskId);
-    // Waiting on and Paused need extra data: ask before moving the card
+    // Blocked and Paused need extra data: ask before moving the card
     if (task && task.status !== status && (status === 'blocked' || status === 'paused')) {
       setPrompt({ task, status });
       return;

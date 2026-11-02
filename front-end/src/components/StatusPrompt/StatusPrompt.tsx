@@ -19,7 +19,7 @@ interface StatusPromptProps {
   onClose: () => void;
 }
 
-/** Asks the extra data a card needs before it moves to Waiting on or Paused. */
+/** Asks the extra data a card needs before it moves to Blocked or Paused. */
 export const StatusPrompt: React.FC<StatusPromptProps> = ({
   task,
   status,
@@ -40,7 +40,7 @@ export const StatusPrompt: React.FC<StatusPromptProps> = ({
   function confirm() {
     if (status === 'blocked') {
       if (!waitingOn.trim()) {
-        setError('Write who you are waiting for.');
+        setError('Write who or what is blocking it.');
         return;
       }
       onConfirm({ waitingOn: waitingOn.trim() });
@@ -81,7 +81,7 @@ export const StatusPrompt: React.FC<StatusPromptProps> = ({
         }}
       >
         <p style={titleStyle}>
-          {status === 'blocked' ? 'Move to Waiting on' : 'Move to Paused'}
+          {status === 'blocked' ? 'Move to Blocked' : 'Move to Paused'}
         </p>
         <p style={subtitleStyle}>{task.title}</p>
 

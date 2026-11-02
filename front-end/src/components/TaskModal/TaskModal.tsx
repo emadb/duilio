@@ -64,7 +64,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
       return;
     }
     if (status === 'blocked' && !waitingOn.trim()) {
-      setStatusError('Write who you are waiting for.');
+      setStatusError('Write who or what is blocking it.');
       return;
     }
     if (status === 'paused' && !pausedUntil) {

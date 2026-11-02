@@ -24,7 +24,7 @@ export const STATUSES: StatusMeta[] = [
   },
   {
     value: 'blocked',
-    label: 'Waiting on',
+    label: 'Blocked',
     dot: '#4FC1BE',
     countBg: 'var(--eui-bg-base-danger)',
     countFg: 'var(--eui-text-danger)',

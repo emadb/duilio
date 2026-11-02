@@ -15,7 +15,7 @@ interface WeeklyReviewProps {
 const ACTIONS: { value: ReviewAction; label: string; only?: Task['status'] }[] = [
   { value: 'keep-todo', label: 'Keep in This week' },
   { value: 'keep-doing', label: 'Keep in Doing' },
-  { value: 'still-waiting', label: 'Still waiting', only: 'blocked' },
+  { value: 'still-waiting', label: 'Still blocked', only: 'blocked' },
   { value: 'to-ideas', label: 'Back to Ideas' },
   { value: 'pause', label: 'Pause' },
   { value: 'delete', label: 'Delete' },

@@ -12,7 +12,7 @@ const LISTS: { key: keyof TrelloResult['counts']; label: string }[] = [
   { key: 'idea', label: 'Ideas' },
   { key: 'todo', label: 'This week' },
   { key: 'inProgress', label: 'Doing' },
-  { key: 'blocked', label: 'Waiting on' },
+  { key: 'blocked', label: 'Blocked' },
   { key: 'done', label: 'Done' },
 ];
 
@@ -108,7 +108,7 @@ export const TrelloImport: React.FC<TrelloImportProps> = ({ onClose, onImported 
             )}
             {shown.counts.blocked > 0 && (
               <p style={subtleStyle}>
-                Waiting cards have no name yet. Sort them out in the first weekly review.
+                Blocked cards have no name yet. Sort them out in the first weekly review.
               </p>
             )}
           </div>
