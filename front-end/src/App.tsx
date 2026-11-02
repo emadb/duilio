@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { AppHeader } from './components/AppHeader/AppHeader';
-import { SummaryBar } from './components/SummaryBar/SummaryBar';
 import { StatusSection } from './components/StatusSection/StatusSection';
 import { TaskModal } from './components/TaskModal/TaskModal';
 import { ConfirmDelete } from './components/ConfirmDelete/ConfirmDelete';
@@ -200,8 +199,6 @@ const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
             </button>
           </div>
         )}
-
-        <SummaryBar tasks={boardTasks} />
 
         {noResults ? (
           <div style={{ textAlign: 'center', padding: '52px 0' }}>
