@@ -32,7 +32,6 @@ export const STATUSES: StatusMeta[] = [
   {
     value: 'paused',
     label: 'Paused',
-    drawer: true,
     dot: '#F4705A',
     countBg: 'var(--eui-bg-subdued)',
     countFg: 'var(--eui-text-subdued)',
@@ -40,6 +39,7 @@ export const STATUSES: StatusMeta[] = [
   {
     value: 'done',
     label: 'Done',
+    drawer: true,
     dot: '#8FD694',
     countBg: 'var(--eui-bg-base-success)',
     countFg: 'var(--eui-text-success)',

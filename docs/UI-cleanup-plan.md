@@ -49,7 +49,7 @@ Existing `--eui-*` variables stay. Their values change in `front-end/src/main.ts
 - Files: `components/StatusSection/StatusSection.tsx`, `constants/index.ts` (dot colors, already present), `types/task.ts` (`StatusMeta`).
 - Acceptance: header has the toggle, dot, name and count. Drop target still highlights during a drag.
 
-### 5. Swap Paused and Done — status: todo
+### 5. Swap Paused and Done — status: done
 - Goal: Paused becomes a board column (after Waiting on). Done becomes the collapsed drawer.
 - Files: `constants/index.ts` (move the `drawer: true` flag). `App.tsx` already reads the flag.
 - Acceptance: five columns Ideas, This week, Doing, Waiting on, Paused. The Done drawer is collapsed and shows its count. Dropping a card on the Done drawer still works.
