@@ -45,10 +45,11 @@ The main weak points:
 - Fix: one `AppError` enum with `IntoResponse`. Log the detail on the server. Send a fixed message. This also removes the mix of `SaveError`, `CompleteError`, `Option` and bare `sqlx::Error`.
 - Files: `src/modules/mod.rs` and all routers.
 
-#### A5. Duplicate tag returns 500 — Medium, S — status: todo
+#### A5. Duplicate tag returns 500 — Medium, S — status: done
 - Evidence (**verified**): creating the same tag twice returns `500 {"message":"Tag \"a\" already exists"}`. The check and the insert are two steps, so a race gives a raw unique-violation error.
 - Fix: `INSERT ... ON CONFLICT DO NOTHING RETURNING`, answer 409. The front-end matches the text `already exists` (`api.ts:161`): switch it to the status code.
 - Files: `tags/repository.rs`, `tags/router.rs`, `front-end/src/services/api.ts`.
+- Done: `INSERT ... ON CONFLICT DO NOTHING`, 409 on a duplicate, and the front-end checks the status code. Six simultaneous creates gave one 201 and five 409.
 
 #### A6. Todo create and update are not atomic — Medium, M — status: todo
 - Evidence: `update` reads the row, computes in Rust and writes with no lock (`todos/repository.rs`). Tags are synced with a separate delete and insert on the pool. Two writes at once (drag and drop plus a modal save, or two tabs) can overwrite each other. A failure between delete and insert leaves a card without tags.

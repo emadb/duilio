@@ -156,9 +156,8 @@ async function ensureTag(name: string): Promise<string> {
     _tagCache.set(name, tag);
     return tag.id;
   } catch (err) {
-    const msg = (err as Error).message;
-    // Only retry on "already exists" — let all other errors (network, 401, 500) propagate
-    if (!msg.includes('already exists')) throw err;
+    // Only retry on 409 (the tag exists) — let all other errors (network, 401, 500) propagate
+    if (!(err instanceof ApiError && err.status === 409)) throw err;
     const tags = await request<BackendTag[]>('/tags');
     tags.forEach((t) => _tagCache.set(t.name, t));
     const found = _tagCache.get(name);

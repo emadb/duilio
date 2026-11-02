@@ -162,7 +162,7 @@ returns `400` with a message. The response also has `statusChangedAt`, `waitingS
 | Method | Path | Description |
 |---|---|---|
 | `GET` | `/api/tags` | List the current user's tags |
-| `POST` | `/api/tags` | Create a tag `{ name, color }`, where `color` looks like `#RRGGBB`. It fails if the name already exists |
+| `POST` | `/api/tags` | Create a tag `{ name, color }`, where `color` looks like `#RRGGBB`. Returns `409` if the name already exists |
 | `PATCH` | `/api/tags/:id` | Change the color of a tag `{ color }` |
 
 ### Weeks, review and log

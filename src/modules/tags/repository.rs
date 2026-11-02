@@ -34,40 +34,28 @@ impl TagRepository {
     }
 
     /// Creates a tag for the user. Returns `None` when a tag with the same name
-    /// already exists for that user (mirrors the TS repository's duplicate check).
+    /// already exists for that user. The insert is the check, so two requests at
+    /// once cannot both create it.
     pub async fn create(
         &self,
         user_id: EntityId,
         name: String,
         color: String,
     ) -> Result<Option<Tag>, Error> {
-        let existing = sqlx::query_scalar!(
-            r#"SELECT id FROM tags WHERE user_id = $1 AND name = $2 LIMIT 1"#,
-            user_id.0,
-            name
-        )
-        .fetch_optional(&self.pool)
-        .await?;
-
-        if existing.is_some() {
-            return Ok(None);
-        }
-
-        let tag = sqlx::query_as!(
+        sqlx::query_as!(
             Tag,
             r#"
             INSERT INTO tags (user_id, name, color)
             VALUES ($1, $2, $3)
+            ON CONFLICT (user_id, name) DO NOTHING
             RETURNING id, name, color
             "#,
             user_id.0,
             name,
             color
         )
-        .fetch_one(&self.pool)
-        .await?;
-
-        Ok(Some(tag))
+        .fetch_optional(&self.pool)
+        .await
     }
 
     /// Sets the color of one of the user's tags. Returns `None` when the tag

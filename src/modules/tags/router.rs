@@ -66,7 +66,10 @@ async fn create_tag(
         .await
     {
         Ok(Some(tag)) => RequestResult::Success((StatusCode::CREATED, tag)),
-        Ok(None) => internal_server_error(format!("Tag \"{}\" already exists", name)),
+        Ok(None) => RequestResult::Error((
+            StatusCode::CONFLICT,
+            ErrorResponse::new(format!("Tag \"{}\" already exists", name)),
+        )),
         Err(e) => internal_server_error(e.to_string()),
     }
 }
