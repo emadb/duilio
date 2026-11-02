@@ -127,11 +127,12 @@ The main weak points:
 - Fix: load only open cards and the done cards of the current week for the board. Add paging to the log (for example 12 weeks, "load more").
 - Files: `todos/repository.rs`, `todos/router.rs`, `weeks/repository.rs`, `WeeklyLog.tsx`.
 
-#### C3. Remove unused front-end dependencies — Medium, S — status: todo
+#### C3. Remove unused front-end dependencies — Medium, S — status: done
 - Evidence (**verified**): `@elastic/eui`, `@elastic/eui-theme-borealis`, `@emotion/css` and `@emotion/react` are in `front-end/package.json`, and no file in `src/` imports them. `npm audit --omit=dev` reports moderate findings that come from this tree. There is also an unused `postcss.config.mjs`, and extra packages (Tailwind, Radix and others) in the root `node_modules`.
 - Fix: remove the four dependencies and the PostCSS file, run `npm install`, rebuild. It makes `npm ci` and the Docker build faster. The `--eui-*` variable names can stay (they are plain CSS variables), or be renamed later.
 - The bundle is 367 KB (111 KB gzip). I did not run a bundle analyzer.
 - Files: `front-end/package.json`, `package-lock.json`.
+- Done: the four packages and `postcss.config.mjs` are removed. Lockfile entries 458 to 282, `node_modules` 259 MB to 73 MB, bundle unchanged (366,730 bytes). `npm audit --omit=dev`: 5 moderate to 0. The findings left are build tools (Vite, esbuild, PostCSS), which are not shipped. `front-end/README.md` is still the text of the original Figma template.
 
 #### C4. The whole board re-renders on every keystroke in search — Low/Medium, S — status: todo
 - Evidence: the filter and sort run in `TaskApp` on every render, and cards are not memoized. Each card parses its markdown again. Not an issue with tens of cards. It will show with hundreds.
