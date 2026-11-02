@@ -34,7 +34,7 @@ Existing `--eui-*` variables stay. Their values change in `front-end/src/main.ts
 - Files: `App.tsx`, delete `components/SummaryBar/SummaryBar.tsx`.
 - Acceptance: no panel on the board; build passes.
 
-### 2. Theme tokens and font — status: todo
+### 2. Theme tokens and font — status: done
 - Goal: new colors, radius and shadow tokens in `main.tsx`. Poppins loaded from Google Fonts with a system fallback stack. Primary button becomes coral with ink text and the outline plus flat shadow.
 - Files: `front-end/src/main.tsx`, `front-end/index.html`.
 - Acceptance: login, modal, review and log screens pick up the new colors and font with no layout break. Screenshots of all five.

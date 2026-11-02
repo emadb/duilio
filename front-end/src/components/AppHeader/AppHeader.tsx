@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { STATUSES } from '../../constants';
 import type { Task, TaskStatus } from '../../types/task';
+import { PRIMARY_BTN } from '../../utils/styles';
 
 interface AppHeaderProps {
   tasks: Task[];
@@ -182,10 +183,8 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
             gap: 6,
             height: 32,
             padding: '0 14px',
-            borderRadius: 6,
-            border: 'none',
-            background: 'var(--eui-color-primary)',
-            color: '#fff',
+            ...PRIMARY_BTN,
+            borderRadius: 'var(--eui-border-radius-medium)',
             fontFamily: 'var(--eui-font-family)',
             fontSize: 13,
             fontWeight: 500,

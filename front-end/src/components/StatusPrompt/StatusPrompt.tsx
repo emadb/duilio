@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import type { Task } from '../../types/task';
 import type { WeekOption } from '../../utils/helpers';
 import { StatusFields } from './StatusFields';
+import { GHOST_BTN, PRIMARY_BTN } from '../../utils/styles';
 
 export type PromptStatus = 'blocked' | 'paused';
 
@@ -122,10 +123,8 @@ function btnStyle(variant: 'ghost' | 'primary'): React.CSSProperties {
   return {
     height: 40,
     padding: '0 16px',
-    borderRadius: 6,
-    border: variant === 'ghost' ? '1px solid var(--eui-border-color)' : 'none',
-    background: variant === 'primary' ? 'var(--eui-color-primary)' : 'transparent',
-    color: variant === 'primary' ? '#fff' : 'var(--eui-text-color)',
+    borderRadius: 'var(--eui-border-radius-medium)',
+    ...(variant === 'primary' ? PRIMARY_BTN : GHOST_BTN),
     fontFamily: 'var(--eui-font-family)',
     fontSize: 14,
     fontWeight: 500,

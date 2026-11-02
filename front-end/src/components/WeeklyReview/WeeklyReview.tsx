@@ -188,7 +188,7 @@ function pillStyle(selected: boolean, danger = false): React.CSSProperties {
     borderRadius: 6,
     border: `1px solid ${selected ? color : 'var(--eui-border-color)'}`,
     background: selected ? color : 'transparent',
-    color: selected ? '#fff' : 'var(--eui-text-color)',
+    color: selected ? (danger ? '#fff' : 'var(--eui-on-primary)') : 'var(--eui-text-color)',
     fontFamily: font,
     fontSize: 13,
     fontWeight: 500,

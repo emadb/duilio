@@ -4,6 +4,7 @@ import { STATUSES } from '../../constants';
 import { TagInput } from '../common/TagInput';
 import { StatusFields } from '../StatusPrompt/StatusFields';
 import type { WeekOption } from '../../utils/helpers';
+import { DANGER_BTN, GHOST_BTN, PRIMARY_BTN } from '../../utils/styles';
 
 function useIsMobile() {
   const [v, setV] = useState(typeof window !== 'undefined' ? window.innerWidth < 640 : false);
@@ -346,13 +347,8 @@ const ModalBtn: React.FC<{
     style={{
       height: 40,
       padding: '0 16px',
-      borderRadius: 6,
-      border: variant === 'ghost' ? '1px solid var(--eui-border-color)' : 'none',
-      background:
-        variant === 'primary' ? 'var(--eui-color-primary)'
-        : variant === 'danger' ? 'var(--eui-color-danger)'
-        : 'transparent',
-      color: variant === 'ghost' ? 'var(--eui-text-color)' : '#fff',
+      borderRadius: 'var(--eui-border-radius-medium)',
+      ...(variant === 'primary' ? PRIMARY_BTN : variant === 'danger' ? DANGER_BTN : GHOST_BTN),
       fontFamily: 'var(--eui-font-family)',
       fontSize: 14,
       fontWeight: 500,

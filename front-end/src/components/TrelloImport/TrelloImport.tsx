@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { importTrello, type TrelloResult } from '../../services/api';
+import { GHOST_BTN, PRIMARY_BTN } from '../../utils/styles';
 
 interface TrelloImportProps {
   onClose: () => void;
@@ -169,10 +170,8 @@ function btnStyle(primary: boolean): React.CSSProperties {
   return {
     height: 40,
     padding: '0 16px',
-    borderRadius: 6,
-    border: primary ? 'none' : '1px solid var(--eui-border-color)',
-    background: primary ? 'var(--eui-color-primary)' : 'transparent',
-    color: primary ? '#fff' : 'var(--eui-text-color)',
+    borderRadius: 'var(--eui-border-radius-medium)',
+    ...(primary ? PRIMARY_BTN : GHOST_BTN),
     fontFamily: font,
     fontSize: 14,
     fontWeight: 500,
