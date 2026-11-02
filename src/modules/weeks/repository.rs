@@ -1,9 +1,13 @@
+use std::collections::HashMap;
+
 use chrono::{DateTime, NaiveDate, Utc};
 use serde::Serialize;
 use sqlx::{Error, Pool, Postgres};
 
 use crate::modules::EntityId;
+use crate::modules::todos::repository::TodoRepository;
 use crate::modules::todos::{repository::TodoStatus, transitions::StatusState};
+use crate::modules::weeks::log::{LogWeek, group_log};
 use crate::modules::weeks::review::{
     Decision, Outcome, ReviewCard, ReviewError, is_reviewable, plan_review,
 };
@@ -215,5 +219,27 @@ impl WeekRepository {
             note,
             ..week
         })
+    }
+
+    /// Completed cards grouped by the week they were completed in, newest week first.
+    pub async fn log(&self, user_id: EntityId) -> Result<Vec<LogWeek>, Error> {
+        let timezone =
+            sqlx::query_scalar!(r#"SELECT timezone FROM users WHERE id = $1"#, user_id.0)
+                .fetch_one(&self.pool)
+                .await?;
+        let notes = sqlx::query!(
+            r#"SELECT week_start, note FROM weeks WHERE user_id = $1 AND note <> ''"#,
+            user_id.0
+        )
+        .fetch_all(&self.pool)
+        .await?
+        .into_iter()
+        .map(|r| (r.week_start, r.note))
+        .collect::<HashMap<_, _>>();
+        let done = TodoRepository::new(self.pool.clone())
+            .list_done(user_id)
+            .await?;
+
+        Ok(group_log(done, &notes, parse_tz(&timezone)))
     }
 }

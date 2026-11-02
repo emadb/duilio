@@ -35,6 +35,13 @@ export interface Review {
   cards: Task[];
 }
 
+export interface LogWeek {
+  weekStart: string; // Monday, YYYY-MM-DD
+  count: number;
+  note: string;
+  cards: Task[];
+}
+
 export interface TrelloResult {
   dryRun: boolean;
   total: number;
@@ -215,6 +222,11 @@ export function completeReview(decisions: ReviewDecision[], note: string): Promi
     method: 'POST',
     body: JSON.stringify({ decisions, note: note.trim() || null }),
   });
+}
+
+export async function fetchLog(): Promise<LogWeek[]> {
+  const weeks = await request<(Omit<LogWeek, 'cards'> & { cards: BackendTodo[] })[]>('/log');
+  return weeks.map((w) => ({ ...w, cards: w.cards.map(todoToTask) }));
 }
 
 /** Sends the text of a Trello board export. A dry run only counts the cards. */

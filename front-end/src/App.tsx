@@ -8,6 +8,7 @@ import { AuthModal } from './components/AuthModal/AuthModal';
 import { useTasks } from './hooks/useTasks';
 import { useReview } from './hooks/useReview';
 import { TrelloImport } from './components/TrelloImport/TrelloImport';
+import { WeeklyLog } from './components/WeeklyLog/WeeklyLog';
 import { WeeklyReview } from './components/WeeklyReview/WeeklyReview';
 import { logout } from './services/api';
 import { STATUSES } from './constants';
@@ -42,6 +43,7 @@ const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
   const { review, loading: reviewLoading, complete } = useReview(onLogout);
   const [reviewLater, setReviewLater] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
+  const [view, setView] = useState<'board' | 'log'>('board');
 
   const [search, setSearch] = useState('');
   const [activeStatuses, setActiveStatuses] = useState<TaskStatus[]>(
@@ -163,6 +165,10 @@ const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
     );
   }
 
+  if (view === 'log') {
+    return <WeeklyLog onBack={() => setView('board')} onUnauthorized={onLogout} />;
+  }
+
   return (
     <div style={{ minHeight: '100vh', background: 'var(--eui-page-background)' }}>
       <AppHeader
@@ -173,6 +179,7 @@ const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
         onToggleStatus={toggleStatus}
         onCreateTask={() => openCreate()}
         onImport={() => setImportOpen(true)}
+        onLog={() => setView('log')}
         onLogout={onLogout}
       />
 
