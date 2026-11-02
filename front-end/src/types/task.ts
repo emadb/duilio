@@ -28,6 +28,21 @@ export type TaskDraft = Omit<
   'id' | 'createdAt' | 'statusChangedAt' | 'waitingSince' | 'completedAt' | 'rolloverCount'
 >;
 
+export type ReviewAction =
+  | 'keep-todo'
+  | 'keep-doing'
+  | 'still-waiting'
+  | 'to-ideas'
+  | 'pause'
+  | 'delete';
+
+export interface ReviewDecision {
+  id: string;
+  action: ReviewAction;
+  /** Monday (YYYY-MM-DD) of the return week, only for `pause` */
+  pausedUntil?: string;
+}
+
 export interface StatusMeta {
   value: TaskStatus;
   label: string;

@@ -1,4 +1,4 @@
-import type { Task, TaskDraft, TaskStatus, TagColorMap } from '../types/task';
+import type { Task, TaskDraft, TaskStatus, TagColorMap, ReviewDecision } from '../types/task';
 import { TAG_COLORS } from '../constants';
 import { autoColorIndex } from '../utils/helpers';
 
@@ -27,6 +27,12 @@ export interface Week {
   startsAt: string;   // ISO instant of Monday 00:00 in the user's time zone
   reviewedAt: string | null;
   note: string;
+}
+
+export interface Review {
+  weekStart: string;
+  needsReview: boolean;
+  cards: Task[];
 }
 
 // ── Tag cache (name → BackendTag) ─────────────────────────────────────────────
@@ -186,6 +192,20 @@ export async function deleteTask(id: string): Promise<void> {
 
 export function fetchCurrentWeek(): Promise<Week> {
   return request<Week>('/weeks/current');
+}
+
+export async function fetchReview(): Promise<Review> {
+  const res = await request<{ weekStart: string; needsReview: boolean; cards: BackendTodo[] }>(
+    '/review',
+  );
+  return { ...res, cards: res.cards.map(todoToTask) };
+}
+
+export function completeReview(decisions: ReviewDecision[], note: string): Promise<Week> {
+  return request<Week>('/review/complete', {
+    method: 'POST',
+    body: JSON.stringify({ decisions, note: note.trim() || null }),
+  });
 }
 
 // ── Tag color endpoints ───────────────────────────────────────────────────────

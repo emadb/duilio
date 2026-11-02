@@ -6,6 +6,8 @@ import { TaskModal } from './components/TaskModal/TaskModal';
 import { ConfirmDelete } from './components/ConfirmDelete/ConfirmDelete';
 import { AuthModal } from './components/AuthModal/AuthModal';
 import { useTasks } from './hooks/useTasks';
+import { useReview } from './hooks/useReview';
+import { WeeklyReview } from './components/WeeklyReview/WeeklyReview';
 import { logout } from './services/api';
 import { STATUSES } from './constants';
 import { onBoard, upcomingWeeks } from './utils/helpers';
@@ -34,8 +36,10 @@ export const App: React.FC = () => {
 // ── Main app (rendered only when authenticated) ───────────────────────────────
 
 const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
-  const { tasks, tagColorMap, week, loading, error, addTask, editTask, moveTask, toggleImportant, removeTask, assignTagColor } =
+  const { tasks, tagColorMap, week, loading, error, addTask, editTask, moveTask, toggleImportant, removeTask, assignTagColor, refresh } =
     useTasks(onLogout); // onLogout doubles as onUnauthorized handler
+  const { review, loading: reviewLoading, complete } = useReview(onLogout);
+  const [reviewLater, setReviewLater] = useState(false);
 
   const [search, setSearch] = useState('');
   const [activeStatuses, setActiveStatuses] = useState<TaskStatus[]>(
@@ -125,7 +129,7 @@ const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
   const drawerStatus = STATUSES.find((s) => s.drawer && activeStatuses.includes(s.value));
   const noResults = q.length > 0 && filtered.length === 0;
 
-  if (loading) {
+  if (loading || reviewLoading) {
     return (
       <div style={centeredStyle}>
         <Spinner />
@@ -139,6 +143,21 @@ const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
       <div style={centeredStyle}>
         <p style={{ ...subtleText, color: 'var(--eui-text-danger)' }}>{error}</p>
       </div>
+    );
+  }
+
+  if (review?.needsReview && !reviewLater) {
+    return (
+      <WeeklyReview
+        cards={review.cards}
+        weekStart={review.weekStart}
+        weeks={weeks}
+        onComplete={async (decisions, note) => {
+          await complete(decisions, note);
+          await refresh();
+        }}
+        onLater={() => setReviewLater(true)}
+      />
     );
   }
 
@@ -161,6 +180,17 @@ const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
           padding: '28px 24px 60px',
         }}
       >
+        {review?.needsReview && (
+          <div role="status" style={bannerStyle}>
+            <span>
+              Weekly review pending: {review.cards.length} card{review.cards.length === 1 ? '' : 's'} need a decision.
+            </span>
+            <button onClick={() => setReviewLater(false)} style={bannerButtonStyle}>
+              Start review
+            </button>
+          </div>
+        )}
+
         <SummaryBar tasks={boardTasks} />
 
         {noResults ? (
@@ -262,6 +292,33 @@ const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
       )}
     </div>
   );
+};
+
+const bannerStyle: React.CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: 12,
+  marginBottom: 16,
+  padding: '10px 16px',
+  borderRadius: 6,
+  background: 'var(--eui-bg-base-warning)',
+  color: 'var(--eui-text-warning)',
+  fontFamily: 'var(--eui-font-family)',
+  fontSize: 14,
+};
+
+const bannerButtonStyle: React.CSSProperties = {
+  height: 32,
+  padding: '0 12px',
+  borderRadius: 6,
+  border: '1px solid currentColor',
+  background: 'transparent',
+  color: 'inherit',
+  fontFamily: 'var(--eui-font-family)',
+  fontSize: 13,
+  fontWeight: 500,
+  cursor: 'pointer',
 };
 
 const centeredStyle: React.CSSProperties = {
