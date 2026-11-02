@@ -65,7 +65,7 @@ Existing `--eui-*` variables stay. Their values change in `front-end/src/main.ts
 - Files: `TaskCard.tsx`.
 - Acceptance: before and after screenshots. Touch screens: icons stay visible when there is no hover (`@media (hover: none)`).
 
-### 8. Other screens — status: todo
+### 8. Other screens — status: done
 - Goal: modal, status prompt, review, log, import and login use the same outline, radius and button style.
 - Files: `TaskModal.tsx`, `StatusPrompt.tsx`, `WeeklyReview.tsx`, `WeeklyLog.tsx`, `TrelloImport.tsx`, `AuthModal.tsx`, `AppHeader.tsx`.
 - Acceptance: one screenshot per screen; no clipped text.
@@ -82,3 +82,5 @@ Existing `--eui-*` variables stay. Their values change in `front-end/src/main.ts
 ## Decision log
 
 (empty)
+- **Implementation notes (2026-11-02).** Theme values live in `front-end/src/main.tsx`; shared dialog button looks in `front-end/src/utils/styles.ts`. Primary buttons use ink text on coral (white on coral is too faint). Card actions are hidden at rest through the `.card-action` CSS in `main.tsx`; on touch screens (`hover: none`) they stay visible. The description clamp uses `-webkit-line-clamp`. `SummaryBar` is deleted and `CLAUDE.md` is updated.
+- **Not checked:** phone widths, and the TaskModal and StatusPrompt dialogs after item 8 (only the import dialog and the login panel were captured).

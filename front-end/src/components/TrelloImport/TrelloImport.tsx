@@ -143,7 +143,8 @@ const font = 'var(--eui-font-family)';
 
 const panelStyle: React.CSSProperties = {
   background: 'var(--eui-bg-plain)',
-  borderRadius: 8,
+  borderRadius: 'var(--eui-border-radius-large)',
+  border: 'var(--eui-outline)',
   width: '100%',
   maxWidth: 480,
   boxShadow: 'var(--eui-shadow-l)',

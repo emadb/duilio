@@ -49,8 +49,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onSuccess }) => {
           width: '100%',
           maxWidth: 400,
           background: 'var(--eui-bg-plain)',
-          border: '1px solid var(--eui-border-color)',
+          border: 'var(--eui-outline)',
           borderRadius: 'var(--eui-border-radius-large)',
+          boxShadow: 'var(--eui-shadow-m)',
           padding: 32,
         }}
       >

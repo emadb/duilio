@@ -110,7 +110,7 @@ export const TagInput: React.FC<TagInputProps> = ({
             left: 0,
             right: 0,
             background: 'var(--eui-bg-plain)',
-            border: '1px solid var(--eui-border-color)',
+            border: 'var(--eui-outline)',
             borderRadius: 'var(--eui-border-radius-medium)',
             boxShadow: 'var(--eui-shadow-s)',
             zIndex: 20,

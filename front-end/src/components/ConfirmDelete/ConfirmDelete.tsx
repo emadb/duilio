@@ -33,7 +33,8 @@ export const ConfirmDelete: React.FC<ConfirmDeleteProps> = ({ task, onConfirm, o
       <div
         style={{
           background: 'var(--eui-bg-plain)',
-          borderRadius: 8,
+          borderRadius: 'var(--eui-border-radius-large)',
+          border: 'var(--eui-outline)',
           width: '100%',
           maxWidth: 420,
           boxShadow: 'var(--eui-shadow-l)',

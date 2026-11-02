@@ -75,18 +75,18 @@ const subtleStyle: React.CSSProperties = { margin: 0, fontSize: 13, color: 'var(
 
 const cardStyle: React.CSSProperties = {
   background: 'var(--eui-bg-plain)',
-  border: '1px solid var(--eui-border-color)',
-  borderRadius: 6,
+  border: 'var(--eui-outline)',
+  borderRadius: 'var(--eui-border-radius-large)',
   padding: '14px 16px',
-  marginBottom: 12,
-  boxShadow: 'var(--eui-shadow-xs)',
+  marginBottom: 16,
+  boxShadow: 'var(--eui-shadow-m)',
 };
 
 const btnStyle: React.CSSProperties = {
   height: 32,
   padding: '0 12px',
-  borderRadius: 6,
-  border: '1px solid var(--eui-border-color)',
+  borderRadius: 'var(--eui-border-radius-medium)',
+  border: 'var(--eui-outline)',
   background: 'transparent',
   color: 'var(--eui-text-color)',
   fontFamily: font,

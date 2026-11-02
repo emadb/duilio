@@ -172,10 +172,10 @@ const subtleStyle: React.CSSProperties = {
 
 const rowStyle: React.CSSProperties = {
   background: 'var(--eui-bg-plain)',
-  border: '1px solid var(--eui-border-color)',
-  borderRadius: 6,
+  border: 'var(--eui-outline)',
+  borderRadius: 'var(--eui-border-radius-large)',
   padding: '14px 16px',
-  boxShadow: 'var(--eui-shadow-xs)',
+  boxShadow: 'var(--eui-shadow-m)',
   fontFamily: font,
 };
 
@@ -185,8 +185,8 @@ function pillStyle(selected: boolean, danger = false): React.CSSProperties {
   return {
     height: 32,
     padding: '0 12px',
-    borderRadius: 6,
-    border: `1px solid ${selected ? color : 'var(--eui-border-color)'}`,
+    borderRadius: 'var(--eui-border-radius-medium)',
+    border: `1.5px solid ${selected ? 'var(--eui-ink)' : 'var(--eui-border-color)'}`,
     background: selected ? color : 'transparent',
     color: selected ? (danger ? '#fff' : 'var(--eui-on-primary)') : 'var(--eui-text-color)',
     fontFamily: font,
