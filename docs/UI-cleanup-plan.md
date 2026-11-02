@@ -55,7 +55,7 @@ Existing `--eui-*` variables stay. Their values change in `front-end/src/main.ts
 - Acceptance: five columns Ideas, This week, Doing, Waiting on, Paused. The Done drawer is collapsed and shows its count. Dropping a card on the Done drawer still works.
 - Note: this week's done cards stay hidden until the drawer opens. The header chip keeps the count.
 
-### 6. Ghost "Add task" card — status: todo
+### 6. Ghost "Add task" card — status: done
 - Goal: a dashed card with a black "+" circle at the end of every column and in the Done drawer. Click opens the task modal with that status (D1 = A). It replaces the "No tasks — add one" box.
 - Files: `StatusSection.tsx`, new `components/TaskCard/GhostCard.tsx`.
 - Acceptance: ghost card in every column; click opens the modal with the right status; keyboard focus works.

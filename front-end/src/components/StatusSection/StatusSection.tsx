@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { TaskCard } from '../TaskCard/TaskCard';
+import { GhostCard } from '../TaskCard/GhostCard';
 import type { Task, StatusMeta, TagColorMap, TaskStatus } from '../../types/task';
 
 interface StatusSectionProps {
@@ -146,45 +147,16 @@ export const StatusSection: React.FC<StatusSectionProps> = ({
       {/* Card stack */}
       {!collapsed && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minHeight: 64 }}>
-          {tasks.length === 0 ? (
-            <div
-              style={{
-                padding: 20,
-                border: '1px dashed var(--eui-border-color)',
-                borderRadius: 6,
-                textAlign: 'center',
-                color: 'var(--eui-text-subdued)',
-                fontSize: 13,
-                fontFamily: 'var(--eui-font-family)',
-              }}
-            >
-              No tasks —{' '}
-              <button
-                onClick={() => onAdd(status.value)}
-                style={{
-                  color: 'var(--eui-text-primary)',
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: 13,
-                  fontFamily: 'var(--eui-font-family)',
-                  padding: 0,
-                }}
-              >
-                add one
-              </button>
-            </div>
-          ) : (
-            tasks.map((t) => (
-              <TaskCard
-                key={t.id}
-                task={t}
-                onEdit={onEdit}
-                onToggleImportant={onToggleImportant}
-                tagColorMap={tagColorMap}
-              />
-            ))
-          )}
+          {tasks.map((t) => (
+            <TaskCard
+              key={t.id}
+              task={t}
+              onEdit={onEdit}
+              onToggleImportant={onToggleImportant}
+              tagColorMap={tagColorMap}
+            />
+          ))}
+          <GhostCard onClick={() => onAdd(status.value)} />
         </div>
       )}
     </div>
