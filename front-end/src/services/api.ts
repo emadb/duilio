@@ -130,11 +130,24 @@ function todoToTask(todo: BackendTodo, index: number): Task {
 
 // ── Tag helpers ───────────────────────────────────────────────────────────────
 
-async function ensureTag(name: string, colorIndex: number): Promise<string> {
+const COLORS_KEY = 'tm_tagColors';
+
+/** Colors picked in this browser for tags that may not exist on the server yet */
+function readSavedColors(): TagColorMap {
+  try {
+    return (JSON.parse(localStorage.getItem(COLORS_KEY) || 'null') as TagColorMap | null) ?? {};
+  } catch {
+    return {};
+  }
+}
+
+const colorHex = (index: number) => TAG_COLORS[index % TAG_COLORS.length].dot;
+
+async function ensureTag(name: string): Promise<string> {
   const cached = _tagCache.get(name);
   if (cached) return cached.id;
 
-  const color = TAG_COLORS[colorIndex % TAG_COLORS.length].dot;
+  const color = colorHex(readSavedColors()[name] ?? autoColorIndex(name));
   try {
     const tag = await request<BackendTag>('/tags', {
       method: 'POST',
@@ -162,7 +175,7 @@ export async function fetchTasks(): Promise<Task[]> {
 }
 
 export async function createTask(data: TaskDraft): Promise<Task> {
-  const tagIds = await Promise.all(data.tags.map((name) => ensureTag(name, 0)));
+  const tagIds = await Promise.all(data.tags.map((name) => ensureTag(name)));
   const todo = await request<BackendTodo>('/todos', {
     method: 'POST',
     body: JSON.stringify({
@@ -192,7 +205,7 @@ export async function updateTask(
   if (data.important !== undefined) body.important = data.important;
   if (data.dueDate !== undefined) body.dueDate = data.dueDate || null;
   if (data.tags !== undefined) {
-    body.tagIds = await Promise.all(data.tags.map((name) => ensureTag(name, 0)));
+    body.tagIds = await Promise.all(data.tags.map((name) => ensureTag(name)));
   }
 
   const todo = await request<BackendTodo>(`/todos/${id}`, {
@@ -239,30 +252,46 @@ export function importTrello(json: string, dryRun: boolean): Promise<TrelloResul
 
 // ── Tag color endpoints ───────────────────────────────────────────────────────
 
+function updateTagColor(id: string, color: string): Promise<BackendTag> {
+  return request<BackendTag>(`/tags/${id}`, { method: 'PATCH', body: JSON.stringify({ color }) });
+}
+
+/**
+ * The server stores the color of each tag. A color picked before the tag exists
+ * stays in this browser until the tag is created.
+ *
+ * Tags made before colors were sent to the server all have the default color
+ * (index 0). Their real color is only in this browser: push it to the server once.
+ */
 export async function fetchTagColors(): Promise<TagColorMap> {
   const tags = await request<BackendTag[]>('/tags');
   tags.forEach((t) => _tagCache.set(t.name, t));
 
-  // Derive color index from the hex stored on each tag
-  const backendMap: TagColorMap = {};
+  const colors: TagColorMap = {};
   tags.forEach((tag) => {
-    const idx = TAG_COLORS.findIndex(
-      (c) => c.dot.toLowerCase() === tag.color.toLowerCase(),
-    );
-    backendMap[tag.name] = idx >= 0 ? idx : autoColorIndex(tag.name);
+    const idx = TAG_COLORS.findIndex((c) => c.dot.toLowerCase() === tag.color.toLowerCase());
+    colors[tag.name] = idx >= 0 ? idx : autoColorIndex(tag.name);
   });
 
-  // Merge with localStorage overrides (from assignTagColor)
-  try {
-    const saved = JSON.parse(localStorage.getItem('tm_tagColors') || 'null') as TagColorMap | null;
-    if (saved) return { ...backendMap, ...saved };
-  } catch { /* ignore */ }
+  const saved = readSavedColors();
+  const stale = tags.filter((t) => colors[t.name] === 0 && saved[t.name] !== undefined && saved[t.name] !== 0);
+  const results = await Promise.allSettled(stale.map((t) => updateTagColor(t.id, colorHex(saved[t.name]))));
 
-  return backendMap;
+  const keep: TagColorMap = {};
+  Object.entries(saved).forEach(([name, idx]) => {
+    if (!(name in colors)) keep[name] = idx; // tag not created yet
+  });
+  stale.forEach((t, i) => {
+    if (results[i].status === 'fulfilled') colors[t.name] = saved[t.name];
+    else keep[t.name] = saved[t.name]; // try again at the next load
+  });
+  try { localStorage.setItem(COLORS_KEY, JSON.stringify(keep)); } catch { /* ignore */ }
+
+  return { ...colors, ...keep };
 }
 
 export async function saveTagColors(map: TagColorMap): Promise<TagColorMap> {
-  localStorage.setItem('tm_tagColors', JSON.stringify(map));
+  localStorage.setItem(COLORS_KEY, JSON.stringify(map));
   return map;
 }
 
