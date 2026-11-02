@@ -33,11 +33,12 @@ The main weak points:
 - Files: `src/modules/todos/transitions.rs`, tests.
 - Done: a card that keeps its status now takes a new `waitingOn` or `pausedUntil`. A new person restarts `waiting_since`; the same name changes nothing. A blank name or a non-Monday returns 400.
 
-#### A3. Registration accepts an empty email and password — High, S — status: todo
+#### A3. Registration accepts an empty email and password — High, S — status: doing
 - Evidence (**verified**): `POST /api/auth/register` with `{"email":"","password":""}` returns 201. Anyone can register (open registration). Emails are case sensitive, so `A@x.com` and `a@x.com` are two users (the unique index is on `email`). Register says "User already exists", so it tells which emails exist.
 - Fix: check email format (basic) and password length (8 to 72 bytes), lower-case the email, add `CREATE UNIQUE INDEX ... ON users (lower(email))` in a new migration. Decide if registration stays open: add an env flag `REGISTRATION_OPEN` (default off in production).
 - Note: a password longer than 72 bytes is **cut silently** by bcrypt (checked in the crate source). It does not panic, as one reviewer claimed.
 - Files: `src/modules/auth/*`, new migration, `config.rs`.
+- Done (partly): the API now requires an email with a valid shape and a password of 6 to 72 bytes (same minimum as the form), and trims the email. Still open: the case-insensitive unique index, the open-registration flag, and the "User already exists" answer that shows which emails exist.
 
 #### A4. Database errors reach the client — Medium, M — status: todo
 - Evidence: `internal_server_error(e.to_string())` in every router. A constraint or connection error shows table and constraint names in the JSON message.
