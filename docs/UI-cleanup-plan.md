@@ -39,7 +39,7 @@ Existing `--eui-*` variables stay. Their values change in `front-end/src/main.ts
 - Files: `front-end/src/main.tsx`, `front-end/index.html`.
 - Acceptance: login, modal, review and log screens pick up the new colors and font with no layout break. Screenshots of all five.
 
-### 3. Cards: outline, flat shadow, smaller title — status: todo
+### 3. Cards: outline, flat shadow, smaller title — status: done
 - Goal: Streamline card. Title 15px, weight 600, line height 1.35. Badges per the table. Drop the hover shadow change.
 - Files: `components/TaskCard/TaskCard.tsx`, `components/common/Badge.tsx`, `TagPill.tsx`, `DueBadge.tsx`.
 - Acceptance: screenshot; a long title wraps without crowding the flag and pencil icons.

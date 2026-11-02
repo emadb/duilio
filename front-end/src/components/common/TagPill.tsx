@@ -24,7 +24,7 @@ export const TagPill: React.FC<TagPillProps> = ({
         display: 'inline-flex',
         alignItems: 'center',
         gap: 3,
-        borderRadius: 999,
+        borderRadius: 8,
         padding: '2px 8px',
         fontSize,
         fontWeight: 500,
