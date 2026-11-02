@@ -52,18 +52,16 @@ export const StatusSection: React.FC<StatusSectionProps> = ({
         if (taskId) onDropTask(taskId, status.value);
       }}
       style={{
-        background: dragOver ? 'var(--eui-bg-base-primary)' : 'var(--eui-bg-subdued)',
-        border: dragOver
-          ? '1px dashed var(--eui-color-primary)'
-          : '1px solid var(--eui-border-color)',
-        borderRadius: 10,
-        padding: 10,
+        background: dragOver ? 'var(--eui-bg-base-primary)' : 'transparent',
+        border: dragOver ? '1.5px dashed var(--eui-ink)' : '1.5px dashed transparent',
+        borderRadius: 'var(--eui-border-radius-large)',
+        padding: 8,
         display: 'flex',
         flexDirection: 'column',
         flex: '1 0 280px',
         minWidth: 280,
         maxWidth: 360,
-        minHeight: collapsed ? 0 : 220,
+        minHeight: collapsed ? 0 : 160,
         transition: 'background 0.15s ease, border-color 0.15s ease',
       }}
     >
@@ -111,10 +109,11 @@ export const StatusSection: React.FC<StatusSectionProps> = ({
 
           <span
             style={{
-              width: 8,
-              height: 8,
+              width: 10,
+              height: 10,
               borderRadius: '50%',
               background: status.dot,
+              border: 'var(--eui-outline)',
               display: 'inline-block',
               flexShrink: 0,
             }}
@@ -122,11 +121,9 @@ export const StatusSection: React.FC<StatusSectionProps> = ({
 
           <span
             style={{
-              fontSize: 12,
+              fontSize: 14,
               fontWeight: 600,
-              textTransform: 'uppercase',
-              letterSpacing: '.06em',
-              color: 'var(--eui-text-subdued)',
+              color: 'var(--eui-title-color)',
               fontFamily: 'var(--eui-font-family)',
             }}
           >
@@ -135,50 +132,14 @@ export const StatusSection: React.FC<StatusSectionProps> = ({
 
           <span
             style={{
-              background: status.countBg,
-              color: status.countFg,
-              borderRadius: 999,
-              padding: '1px 8px',
-              fontSize: 11,
-              fontWeight: 700,
+              fontSize: 13,
+              fontWeight: 500,
+              color: 'var(--eui-text-subdued)',
               fontFamily: 'var(--eui-font-family)',
-              minWidth: 20,
-              textAlign: 'center',
             }}
           >
             {tasks.length}
           </span>
-        </button>
-
-        {/* Add task shortcut */}
-        <button
-          onClick={() => onAdd(status.value)}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 4,
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            color: 'var(--eui-text-primary)',
-            fontSize: 12,
-            fontWeight: 500,
-            fontFamily: 'var(--eui-font-family)',
-            padding: '2px 6px',
-            borderRadius: 4,
-            transition: 'background 0.1s ease',
-          }}
-          onMouseEnter={(e) =>
-            ((e.currentTarget as HTMLElement).style.background = 'var(--eui-bg-base-primary)')
-          }
-          onMouseLeave={(e) =>
-            ((e.currentTarget as HTMLElement).style.background = 'none')
-          }
-        >
-          <svg width={11} height={11} viewBox="0 0 16 16" fill="currentColor">
-            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z" />
-          </svg>
-          Add task
         </button>
       </div>
 

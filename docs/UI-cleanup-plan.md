@@ -44,7 +44,7 @@ Existing `--eui-*` variables stay. Their values change in `front-end/src/main.ts
 - Files: `components/TaskCard/TaskCard.tsx`, `components/common/Badge.tsx`, `TagPill.tsx`, `DueBadge.tsx`.
 - Acceptance: screenshot; a long title wraps without crowding the flag and pencil icons.
 
-### 4. Columns: no panel, light title — status: todo
+### 4. Columns: no panel, light title — status: done
 - Goal: the grey column panel goes away. The title is a small colored dot, the name in ink (14px, weight 600, no uppercase) and the count in muted grey. No border and no background on the title. The dot color comes from `STATUSES`. The "Add task" button leaves the header.
 - Files: `components/StatusSection/StatusSection.tsx`, `constants/index.ts` (dot colors, already present), `types/task.ts` (`StatusMeta`).
 - Acceptance: header has the toggle, dot, name and count. Drop target still highlights during a drag.
