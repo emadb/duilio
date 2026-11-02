@@ -84,3 +84,7 @@ The `AppHeader` status chips, `TaskModal` status dropdown, and `App.tsx` column 
 ### Deployment
 
 Kamal (`config/deploy.yml`) builds and deploys a single Docker image. Migrations run automatically on container startup via `sqlx::migrate!` in `main.rs`.
+
+### Continuous integration
+
+`.github/workflows/ci.yml` runs on every push to any branch and on pull requests to `main`. The backend job starts a Postgres 17 service and applies `migrations/*.sql` with `psql`, because sqlx checks queries against a live database at build time (`.sqlx/` is not in git). Then it runs `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings` and `cargo test`. The front-end job runs `npm ci` and `npm run build` (type check plus Vite). A new migration needs no CI change: the job applies every file in `migrations/` in name order.
