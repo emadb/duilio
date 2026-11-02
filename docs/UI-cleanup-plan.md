@@ -19,7 +19,7 @@ Front-end only. No backend change, no migration.
 | Page background | `#F4F4F2` |
 | Ink (text, outlines) | `#111111` |
 | Muted text | `#6B6B68` |
-| Accent (primary buttons) | `#F4705A`, text on it `#111` |
+| Primary buttons | ink `#111111`, text on it white (changed from coral: coral looked like the tag colors) |
 | Column dots | This week `#5B8DEF`, Doing `#FFC93C`, Waiting on `#4FC1BE`, Paused `#F4705A`, Ideas `#B9B9FF`, Done `#8FD694` |
 | Card | white, `1.5px` ink outline, radius 12, shadow `0 4px 0 ink` |
 | Badge | `#ECECE8`, radius 8; stale badge `#FFE3DD` |
@@ -84,3 +84,4 @@ Existing `--eui-*` variables stay. Their values change in `front-end/src/main.ts
 (empty)
 - **Implementation notes (2026-11-02).** Theme values live in `front-end/src/main.tsx`; shared dialog button looks in `front-end/src/utils/styles.ts`. Primary buttons use ink text on coral (white on coral is too faint). Card actions are hidden at rest through the `.card-action` CSS in `main.tsx`; on touch screens (`hover: none`) they stay visible. The description clamp uses `-webkit-line-clamp`. `SummaryBar` is deleted and `CLAUDE.md` is updated.
 - **Not checked:** phone widths, and the TaskModal and StatusPrompt dialogs after item 8 (only the import dialog and the login panel were captured).
+- **Primary color (2026-11-02).** Primary buttons are ink black with white text. Coral `#F4705A` looked too close to the red, rose and orange tag colors. `--eui-color-primary`, `--eui-on-primary`, `--eui-text-primary` and `--eui-bg-base-primary` changed in `main.tsx`.

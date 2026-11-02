@@ -9,12 +9,12 @@ style.textContent = `
   body { margin: 0; }
 
   :root {
-    /* Streamline theme: soft grey ground, ink outlines, coral accent */
+    /* Streamline theme: soft grey ground, ink outlines. Primary actions are ink black: no tag color can match them. */
     --eui-font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
 
     /* Colors */
-    --eui-color-primary: #F4705A;
-    --eui-on-primary: #111111;
+    --eui-color-primary: #111111;
+    --eui-on-primary: #FFFFFF;
     --eui-color-danger: #C9362B;
     --eui-color-medium-shade: #6B6B68;
     --eui-ink: #111111;
@@ -25,7 +25,7 @@ style.textContent = `
     --eui-bg-subdued: #ECECE8;
     --eui-bg-interactive-hover: #E8E8E4;
     --eui-bg-interactive-overlay: rgba(17, 17, 17, 0.5);
-    --eui-bg-base-primary: #FDE6E1;
+    --eui-bg-base-primary: #E8E8E3;
     --eui-bg-base-success: #E3F4E6;
     --eui-bg-base-warning: #FFF1CC;
     --eui-bg-base-danger: #FFE3DD;
@@ -34,7 +34,7 @@ style.textContent = `
     --eui-text-color: #111111;
     --eui-title-color: #111111;
     --eui-text-subdued: #6B6B68;
-    --eui-text-primary: #B83A25;
+    --eui-text-primary: #111111;
     --eui-text-success: #1E7A4F;
     --eui-text-warning: #8A5A00;
     --eui-text-danger: #B33A25;
