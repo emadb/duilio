@@ -13,6 +13,13 @@ export class ApiError extends Error {
 
 let _authToken: string | null = localStorage.getItem('auth_token');
 
+let _onUnauthorized: (() => void) | null = null;
+
+/** Registers what happens when the server rejects the token (for example it expired). */
+export function setUnauthorizedHandler(handler: (() => void) | null): void {
+  _onUnauthorized = handler;
+}
+
 export function setAuthToken(token: string | null): void {
   _authToken = token;
   if (token) {
@@ -89,7 +96,10 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const res = await fetch(`/api${path}`, { ...init, headers });
 
   if (!res.ok) {
-    if (res.status === 401) setAuthToken(null);
+    if (res.status === 401) {
+      setAuthToken(null);
+      _onUnauthorized?.();
+    }
     let msg = `Request failed (${res.status})`;
     try {
       const body = await res.json();

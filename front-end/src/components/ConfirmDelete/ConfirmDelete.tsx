@@ -1,14 +1,33 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import type { Task } from '../../types/task';
 import { DANGER_BTN, GHOST_BTN } from '../../utils/styles';
 
 interface ConfirmDeleteProps {
   task: Task;
-  onConfirm: () => void;
+  /** Rejects when the card could not be deleted. The dialog shows the message. */
+  onConfirm: () => Promise<void>;
   onClose: () => void;
 }
 
 export const ConfirmDelete: React.FC<ConfirmDeleteProps> = ({ task, onConfirm, onClose }) => {
+  const [deleting, setDeleting] = useState(false);
+  const deletingRef = useRef(false);
+  const [error, setError] = useState('');
+
+  async function confirm() {
+    if (deletingRef.current) return;
+    deletingRef.current = true;
+    setDeleting(true);
+    setError('');
+    try {
+      await onConfirm();
+    } catch (e) {
+      setError((e as Error).message || 'The card could not be deleted.');
+      deletingRef.current = false;
+      setDeleting(false);
+    }
+  }
+
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     window.addEventListener('keydown', handler);
@@ -64,6 +83,11 @@ export const ConfirmDelete: React.FC<ConfirmDeleteProps> = ({ task, onConfirm, o
         >
           Delete <strong>"{task.title}"</strong>? This cannot be undone.
         </p>
+        {error && (
+          <p role="alert" style={{ margin: '0 0 12px', fontSize: 13, color: 'var(--eui-text-danger)', fontFamily: 'var(--eui-font-family)' }}>
+            {error}
+          </p>
+        )}
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
           <button
             onClick={onClose}
@@ -74,12 +98,11 @@ export const ConfirmDelete: React.FC<ConfirmDeleteProps> = ({ task, onConfirm, o
             Cancel
           </button>
           <button
-            onClick={onConfirm}
-            style={btnStyle('danger')}
-            onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.opacity = '0.85')}
-            onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.opacity = '1')}
+            onClick={confirm}
+            disabled={deleting}
+            style={{ ...btnStyle('danger'), opacity: deleting ? 0.6 : 1, cursor: deleting ? 'not-allowed' : 'pointer' }}
           >
-            Delete task
+            {deleting ? 'Deleting…' : 'Delete task'}
           </button>
         </div>
       </div>

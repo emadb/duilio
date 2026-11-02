@@ -76,15 +76,17 @@ The main weak points:
 
 ### B. Front-end bugs and robustness
 
-#### B1. Session expiry in the middle of a session — High, M — status: todo
+#### B1. Session expiry in the middle of a session — High, M — status: done
 - Evidence (**verified**): only the first loads call `onUnauthorized`. Later calls end in `.catch(console.error)`. After the token expires (7 days), a drag and drop snaps back and nothing is shown, and every action keeps failing until a reload.
 - Fix: one global 401 handler in `request()` that logs out, and a small error message (toast) for failed actions.
 - Files: `services/api.ts`, `App.tsx`, `useTasks.ts`.
+- Done: `request()` calls one registered handler on a 401, which logs out. A failed drag or flag change shows a short message (`Toast`) and the card goes back.
 
-#### B2. Task modal: no error message, no double-click guard — High, S — status: todo
+#### B2. Task modal: no error message, no double-click guard — High, S — status: done
 - Evidence (**verified**): `onSave` is typed `void`, `handleSave` can reject, the modal stays open with no message, and the Save button is never disabled. Two clicks create two cards. `ConfirmDelete` has the same problem.
 - Fix: `saving` state, `await` in the modal, an error line (as the review screen does).
 - Files: `TaskModal.tsx`, `ConfirmDelete.tsx`, `App.tsx`.
+- Done: both dialogs wait for the result, disable the button while they work (a ref guards two clicks in the same instant), and show the error inside the dialog.
 
 #### B3. Tag colors in `localStorage` are shared between users — Medium, S — status: todo
 - Evidence: the key `tm_tagColors` is global and is not cleared on logout. User B on the same browser can have A's colors pushed to B's tags with the same name (the sync I added only runs for tags at the default color, which limits the damage).
