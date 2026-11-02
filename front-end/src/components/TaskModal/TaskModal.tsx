@@ -22,6 +22,7 @@ interface TaskModalProps {
   onClose: () => void;
   onDelete?: () => void;
   tagColorMap: TagColorMap;
+  knownTags: string[];
   onColorAssign: (tag: string, colorIndex: number) => void;
   weeks: WeekOption[];
 }
@@ -32,6 +33,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
   onClose,
   onDelete,
   tagColorMap,
+  knownTags,
   onColorAssign,
   weeks,
 }) => {
@@ -259,6 +261,7 @@ export const TaskModal: React.FC<TaskModalProps> = ({
               tags={tags}
               onChange={setTags}
               tagColorMap={tagColorMap}
+              knownTags={knownTags}
               onColorAssign={onColorAssign}
             />
             <p style={{ margin: '4px 0 0', fontSize: 11, color: 'var(--eui-text-subdued)', fontFamily: 'var(--eui-font-family)' }}>

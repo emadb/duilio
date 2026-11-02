@@ -8,6 +8,8 @@ interface TagInputProps {
   tags: string[];
   onChange: (tags: string[]) => void;
   tagColorMap: TagColorMap;
+  /** Tags that exist on the server: the only ones offered as suggestions */
+  knownTags: string[];
   onColorAssign: (tag: string, colorIndex: number) => void;
 }
 
@@ -15,6 +17,7 @@ export const TagInput: React.FC<TagInputProps> = ({
   tags,
   onChange,
   tagColorMap,
+  knownTags,
   onColorAssign,
 }) => {
   const [val, setVal] = useState('');
@@ -24,7 +27,7 @@ export const TagInput: React.FC<TagInputProps> = ({
 
   const slug = slugifyTag(val);
 
-  const suggestions = tagSuggestions(Object.keys(tagColorMap), tags, val);
+  const suggestions = tagSuggestions(knownTags, tags, val);
 
   const showPicker = open && val.trim().length > 0 && tagColorMap[slug] === undefined;
 

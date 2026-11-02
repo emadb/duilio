@@ -257,13 +257,14 @@ function updateTagColor(id: string, color: string): Promise<BackendTag> {
 }
 
 /**
- * The server stores the color of each tag. A color picked before the tag exists
- * stays in this browser until the tag is created.
+ * The server stores the tags and their colors. A color picked before the tag is
+ * saved lives in this browser only until the next load, so names the server does
+ * not know are dropped here: they must not show up as tags.
  *
  * Tags made before colors were sent to the server all have the default color
  * (index 0). Their real color is only in this browser: push it to the server once.
  */
-export async function fetchTagColors(): Promise<TagColorMap> {
+export async function fetchTagColors(): Promise<{ colors: TagColorMap; known: string[] }> {
   const tags = await request<BackendTag[]>('/tags');
   tags.forEach((t) => _tagCache.set(t.name, t));
 
@@ -278,16 +279,13 @@ export async function fetchTagColors(): Promise<TagColorMap> {
   const results = await Promise.allSettled(stale.map((t) => updateTagColor(t.id, colorHex(saved[t.name]))));
 
   const keep: TagColorMap = {};
-  Object.entries(saved).forEach(([name, idx]) => {
-    if (!(name in colors)) keep[name] = idx; // tag not created yet
-  });
   stale.forEach((t, i) => {
     if (results[i].status === 'fulfilled') colors[t.name] = saved[t.name];
     else keep[t.name] = saved[t.name]; // try again at the next load
   });
   try { localStorage.setItem(COLORS_KEY, JSON.stringify(keep)); } catch { /* ignore */ }
 
-  return { ...colors, ...keep };
+  return { colors: { ...colors, ...keep }, known: tags.map((t) => t.name) };
 }
 
 export async function saveTagColors(map: TagColorMap): Promise<TagColorMap> {

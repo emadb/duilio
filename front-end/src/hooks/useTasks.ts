@@ -16,6 +16,8 @@ import {
 interface UseTasksReturn {
   tasks: Task[];
   tagColorMap: TagColorMap;
+  /** Names of the tags that exist on the server */
+  knownTags: string[];
   week: Week | null;
   loading: boolean;
   error: string | null;
@@ -32,6 +34,7 @@ interface UseTasksReturn {
 export function useTasks(onUnauthorized?: () => void): UseTasksReturn {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [tagColorMap, setTagColorMap] = useState<TagColorMap>({});
+  const [knownTags, setKnownTags] = useState<string[]>([]);
   const [week, setWeek] = useState<Week | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -50,7 +53,8 @@ export function useTasks(onUnauthorized?: () => void): UseTasksReturn {
         const [t, c, w] = await Promise.all([fetchTasks(), fetchTagColors(), fetchCurrentWeek()]);
         if (!cancelled) {
           setTasks(t);
-          setTagColorMap(c);
+          setTagColorMap(c.colors);
+          setKnownTags(c.known);
           setWeek(w);
         }
       } catch (e) {
@@ -68,17 +72,24 @@ export function useTasks(onUnauthorized?: () => void): UseTasksReturn {
     return () => { cancelled = true; };
   }, []);
 
+  // Saving a card creates its new tags on the server
+  const addKnown = useCallback((names: string[]) => {
+    setKnownTags((prev) => [...prev, ...names.filter((n) => !prev.includes(n))]);
+  }, []);
+
   const addTask = useCallback(async (data: TaskDraft) => {
     const task = await createTask(data);
     setTasks((prev) => [...prev, task]);
-  }, []);
+    addKnown(data.tags);
+  }, [addKnown]);
 
   const editTask = useCallback(
     async (id: string, data: Partial<TaskDraft>) => {
       const updated = await updateTask(id, data);
       setTasks((prev) => prev.map((t) => (t.id === id ? updated : t)));
+      addKnown(data.tags ?? []);
     },
-    [],
+    [addKnown],
   );
 
   // Optimistic status change (drag & drop): move the card immediately, revert on failure
@@ -136,5 +147,5 @@ export function useTasks(onUnauthorized?: () => void): UseTasksReturn {
     setWeek(w);
   }, []);
 
-  return { tasks, tagColorMap, week, loading, error, addTask, editTask, moveTask, toggleImportant, removeTask, assignTagColor, refresh };
+  return { tasks, tagColorMap, knownTags, week, loading, error, addTask, editTask, moveTask, toggleImportant, removeTask, assignTagColor, refresh };
 }

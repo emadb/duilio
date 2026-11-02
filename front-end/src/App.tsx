@@ -37,7 +37,7 @@ export const App: React.FC = () => {
 // ── Main app (rendered only when authenticated) ───────────────────────────────
 
 const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
-  const { tasks, tagColorMap, week, loading, error, addTask, editTask, moveTask, toggleImportant, removeTask, assignTagColor, refresh } =
+  const { tasks, tagColorMap, knownTags, week, loading, error, addTask, editTask, moveTask, toggleImportant, removeTask, assignTagColor, refresh } =
     useTasks(onLogout); // onLogout doubles as onUnauthorized handler
   const { review, loading: reviewLoading, complete } = useReview(onLogout);
   const [reviewLater, setReviewLater] = useState(false);
@@ -274,6 +274,7 @@ const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
           onClose={() => setModalTask(null)}
           onDelete={modalTask.id ? () => { setDeleteTarget(modalTask as Task); setModalTask(null); } : undefined}
           tagColorMap={tagColorMap}
+          knownTags={knownTags}
           onColorAssign={assignTagColor}
           weeks={weeks}
         />
