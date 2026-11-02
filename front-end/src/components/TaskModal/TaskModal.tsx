@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import type { Task, TaskDraft, TaskStatus, TagColorMap } from '../../types/task';
 import { STATUSES } from '../../constants';
 import { TagInput } from '../common/TagInput';
@@ -18,7 +18,8 @@ function useIsMobile() {
 
 interface TaskModalProps {
   task: Partial<Task> | null;
-  onSave: (data: TaskDraft) => void;
+  /** Rejects when the card could not be saved. The modal shows the message. */
+  onSave: (data: TaskDraft) => Promise<void>;
   onClose: () => void;
   onDelete?: () => void;
   tagColorMap: TagColorMap;
@@ -50,6 +51,10 @@ export const TaskModal: React.FC<TaskModalProps> = ({
   const [pausedUntil, setPausedUntil] = useState(task?.pausedUntil || weeks[0]?.value || '');
   const [titleError, setTitleError] = useState('');
   const [statusError, setStatusError] = useState('');
+  const [saving, setSaving] = useState(false);
+  // A ref changes at once; the state only changes at the next render. Two clicks in a row need the ref.
+  const savingRef = useRef(false);
+  const [saveError, setSaveError] = useState('');
 
   // Close on Escape
   useEffect(() => {
@@ -58,7 +63,8 @@ export const TaskModal: React.FC<TaskModalProps> = ({
     return () => window.removeEventListener('keydown', handler);
   }, [onClose]);
 
-  function handleSave() {
+  async function handleSave() {
+    if (savingRef.current) return;
     if (!title.trim()) {
       setTitleError('Title is required.');
       return;
@@ -71,16 +77,25 @@ export const TaskModal: React.FC<TaskModalProps> = ({
       setStatusError('Choose a return week.');
       return;
     }
-    onSave({
-      title: title.trim(),
-      description: desc,
-      status,
-      dueDate: due,
-      tags,
-      important,
-      waitingOn: status === 'blocked' ? waitingOn.trim() : '',
-      pausedUntil: status === 'paused' ? pausedUntil : '',
-    });
+    savingRef.current = true;
+    setSaving(true);
+    setSaveError('');
+    try {
+      await onSave({
+        title: title.trim(),
+        description: desc,
+        status,
+        dueDate: due,
+        tags,
+        important,
+        waitingOn: status === 'blocked' ? waitingOn.trim() : '',
+        pausedUntil: status === 'paused' ? pausedUntil : '',
+      });
+    } catch (e) {
+      setSaveError((e as Error).message || 'The card could not be saved.');
+      savingRef.current = false;
+      setSaving(false);
+    }
   }
 
   const statusOptions = STATUSES.map((s) => ({ value: s.value, label: s.label }));
@@ -270,6 +285,12 @@ export const TaskModal: React.FC<TaskModalProps> = ({
           </div>
         </div>
 
+        {saveError && (
+          <p role="alert" style={{ margin: 0, padding: '0 24px 10px', fontSize: 13, color: 'var(--eui-text-danger)', fontFamily: 'var(--eui-font-family)' }}>
+            {saveError}
+          </p>
+        )}
+
         {/* Footer */}
         <div
           style={{
@@ -288,8 +309,8 @@ export const TaskModal: React.FC<TaskModalProps> = ({
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
             <ModalBtn onClick={onClose} variant="ghost">Cancel</ModalBtn>
-            <ModalBtn onClick={handleSave} variant="primary">
-              {isEdit ? 'Save changes' : 'Create task'}
+            <ModalBtn onClick={handleSave} variant="primary" disabled={saving}>
+              {saving ? 'Saving…' : isEdit ? 'Save changes' : 'Create task'}
             </ModalBtn>
           </div>
         </div>
@@ -344,10 +365,12 @@ const FieldLabel: React.FC<{
 const ModalBtn: React.FC<{
   onClick: () => void;
   variant: 'ghost' | 'primary' | 'danger';
+  disabled?: boolean;
   children: React.ReactNode;
-}> = ({ onClick, variant, children }) => (
+}> = ({ onClick, variant, disabled, children }) => (
   <button
     onClick={onClick}
+    disabled={disabled}
     style={{
       height: 40,
       padding: '0 16px',
@@ -356,11 +379,12 @@ const ModalBtn: React.FC<{
       fontFamily: 'var(--eui-font-family)',
       fontSize: 14,
       fontWeight: 500,
-      cursor: 'pointer',
+      cursor: disabled ? 'not-allowed' : 'pointer',
+      opacity: disabled ? 0.6 : 1,
       transition: 'opacity 0.15s ease',
     }}
-    onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.opacity = '0.85')}
-    onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.opacity = '1')}
+    onMouseEnter={(e) => { if (!disabled) (e.currentTarget as HTMLElement).style.opacity = '0.85'; }}
+    onMouseLeave={(e) => { if (!disabled) (e.currentTarget as HTMLElement).style.opacity = '1'; }}
   >
     {children}
   </button>

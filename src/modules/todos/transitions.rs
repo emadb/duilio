@@ -51,7 +51,9 @@ pub fn new_state(now: DateTime<Utc>) -> StatusState {
     }
 }
 
-/// Moves a todo to `to`. Setting the same status again changes nothing.
+/// Moves a todo to `to`. Setting the same status again changes nothing, except
+/// the data of that status: a new `waiting_on` for a blocked card, or a new
+/// `paused_until` for a paused one.
 pub fn apply_status(
     state: StatusState,
     to: TodoStatus,
@@ -59,7 +61,7 @@ pub fn apply_status(
     now: DateTime<Utc>,
 ) -> Result<StatusState, TransitionError> {
     if state.status == to {
-        return Ok(state);
+        return same_status(state, input, now);
     }
 
     let waiting_on = match to {
@@ -84,6 +86,41 @@ pub fn apply_status(
             state.rollover_count
         },
     })
+}
+
+/// A card that stays in its status may still get new data for it.
+/// A new person starts a new wait, so `waiting_since` restarts. The same name changes nothing.
+fn same_status(
+    state: StatusState,
+    input: StatusInput,
+    now: DateTime<Utc>,
+) -> Result<StatusState, TransitionError> {
+    match state.status {
+        TodoStatus::Blocked => match input.waiting_on {
+            Some(raw) => {
+                let name = required_waiting_on(Some(raw))?;
+
+                if state.waiting_on.as_deref() == Some(name.as_str()) {
+                    return Ok(state);
+                }
+
+                Ok(StatusState {
+                    waiting_on: Some(name),
+                    waiting_since: Some(now),
+                    ..state
+                })
+            }
+            None => Ok(state),
+        },
+        TodoStatus::Paused => match input.paused_until {
+            Some(date) => Ok(StatusState {
+                paused_until: Some(required_monday(Some(date))?),
+                ..state
+            }),
+            None => Ok(state),
+        },
+        _ => Ok(state),
+    }
 }
 
 fn required_waiting_on(value: Option<String>) -> Result<String, TransitionError> {
@@ -242,5 +279,122 @@ mod tests {
         .unwrap();
 
         assert_eq!(after.rollover_count, 0);
+    }
+
+    fn blocked_by(name: &str) -> StatusState {
+        StatusState {
+            waiting_on: Some(name.to_string()),
+            waiting_since: Some(at(2)),
+            ..state(TodoStatus::Blocked)
+        }
+    }
+
+    fn with_waiting_on(name: &str) -> StatusInput {
+        StatusInput {
+            waiting_on: Some(name.to_string()),
+            ..StatusInput::default()
+        }
+    }
+
+    #[test]
+    fn blocked_card_takes_a_new_waiting_on() {
+        let after = apply_status(
+            blocked_by("Marco"),
+            TodoStatus::Blocked,
+            with_waiting_on("  Anna "),
+            at(5),
+        )
+        .unwrap();
+
+        assert_eq!(after.waiting_on.as_deref(), Some("Anna"));
+        assert_eq!(after.waiting_since, Some(at(5)));
+        assert_eq!(after.status_changed_at, at(1));
+    }
+
+    #[test]
+    fn blocked_card_with_the_same_name_keeps_its_since() {
+        let before = blocked_by("Marco");
+        let after = apply_status(
+            before.clone(),
+            TodoStatus::Blocked,
+            with_waiting_on("Marco"),
+            at(5),
+        );
+
+        assert_eq!(after, Ok(before));
+    }
+
+    #[test]
+    fn blocked_card_without_a_name_gets_one() {
+        let imported = state(TodoStatus::Blocked);
+        let after = apply_status(
+            imported,
+            TodoStatus::Blocked,
+            with_waiting_on("Marco"),
+            at(5),
+        )
+        .unwrap();
+
+        assert_eq!(after.waiting_on.as_deref(), Some("Marco"));
+        assert_eq!(after.waiting_since, Some(at(5)));
+    }
+
+    #[test]
+    fn blocked_card_rejects_an_empty_new_name() {
+        let after = apply_status(
+            blocked_by("Marco"),
+            TodoStatus::Blocked,
+            with_waiting_on("   "),
+            at(5),
+        );
+
+        assert_eq!(after, Err(TransitionError::WaitingOnRequired));
+    }
+
+    #[test]
+    fn blocked_card_without_input_is_unchanged() {
+        let before = blocked_by("Marco");
+        let after = apply_status(
+            before.clone(),
+            TodoStatus::Blocked,
+            StatusInput::default(),
+            at(5),
+        );
+
+        assert_eq!(after, Ok(before));
+    }
+
+    #[test]
+    fn paused_card_takes_a_new_return_week() {
+        let paused = StatusState {
+            paused_until: Some(monday()),
+            ..state(TodoStatus::Paused)
+        };
+        let later = NaiveDate::from_ymd_opt(2026, 11, 23).unwrap();
+        let input = StatusInput {
+            paused_until: Some(later),
+            ..StatusInput::default()
+        };
+        let after = apply_status(paused, TodoStatus::Paused, input, at(5)).unwrap();
+
+        assert_eq!(after.paused_until, Some(later));
+        assert_eq!(after.status_changed_at, at(1));
+    }
+
+    #[test]
+    fn paused_card_rejects_a_return_week_that_is_not_a_monday() {
+        let paused = StatusState {
+            paused_until: Some(monday()),
+            ..state(TodoStatus::Paused)
+        };
+        let input = StatusInput {
+            paused_until: NaiveDate::from_ymd_opt(2026, 11, 11),
+            ..StatusInput::default()
+        };
+
+        assert_eq!(
+            apply_status(paused, TodoStatus::Paused, input, at(5)),
+            Err(TransitionError::PausedUntilNotMonday)
+        );
     }
 }

@@ -11,7 +11,10 @@ use tower_governor::{
 
 use crate::modules::{
     EntityId, ErrorResponse, RequestResult,
-    auth::repository::{AuthRepository, User},
+    auth::{
+        credentials::check_registration,
+        repository::{AuthRepository, User},
+    },
     internal_server_error,
 };
 
@@ -52,7 +55,7 @@ async fn login(
     Json(payload): Json<LoginReq>,
 ) -> RequestResult<LoginRes> {
     let repo = AuthRepository::new(pool);
-    match repo.get_by_email(payload.email).await {
+    match repo.get_by_email(payload.email.trim().to_string()).await {
         Ok(Some(user)) if user.password_match(payload.password) => {
             let token = crate::auth_middleware::create_token(user.id.clone());
             RequestResult::Success((
@@ -78,9 +81,19 @@ async fn register(
     State(pool): State<PgPool>,
     Json(payload): Json<RegisterReq>,
 ) -> RequestResult<RegisterRes> {
+    let email = match check_registration(&payload.email, &payload.password) {
+        Ok(email) => email,
+        Err(message) => {
+            return RequestResult::Error((
+                StatusCode::BAD_REQUEST,
+                ErrorResponse::new(message.to_string()),
+            ));
+        }
+    };
+
     let repo = AuthRepository::new(pool);
 
-    match repo.get_by_email(payload.email.clone()).await {
+    match repo.get_by_email(email.clone()).await {
         Ok(Some(_)) => {
             return RequestResult::Error((
                 StatusCode::BAD_REQUEST,
@@ -93,7 +106,7 @@ async fn register(
         }
     }
 
-    let user = User::create(payload.email, payload.password);
+    let user = User::create(email, payload.password);
     match repo.create(user).await {
         Ok(user) => RequestResult::Success((
             StatusCode::CREATED,

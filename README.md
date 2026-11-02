@@ -1,7 +1,12 @@
 # Duilio
 
-A full-stack personal task manager: a React (Vite + Tailwind + shadcn) front-end and a
-Rust (Axum + SQLx) API back-end, backed by PostgreSQL.
+A full-stack personal task manager built around a weekly routine: a React (Vite) front-end
+and a Rust (Axum + SQLx) API back-end, backed by PostgreSQL.
+
+Cards live in six lists: Ideas, This week, Doing, Blocked, Paused and Done. Every Monday
+a review asks for a decision on each unfinished card. Completed cards go to a weekly log
+that can be copied as markdown. A Trello board can be imported once. The full spec is in
+[`docs/weekly-workflow-spec.md`](docs/weekly-workflow-spec.md).
 
 ## Project structure
 
@@ -14,10 +19,10 @@ duilio/
   src/
     main.rs            # entry point: builds the router, runs migrations, serves the SPA
     auth_middleware.rs
-    modules/           # feature modules: auth, todos, tags, health
+    modules/           # feature modules: auth, health, tags, todos, weeks, import
   migrations/          # SQL migrations (applied automatically at startup)
   .sqlx/               # SQLx offline query cache (used for the Docker build)
-  front-end/           # React SPA (Vite, Tailwind, shadcn components)
+  front-end/           # React SPA (Vite, TypeScript, inline styles with CSS variables)
     src/
     index.html
     vite.config.ts
@@ -26,6 +31,8 @@ duilio/
   Dockerfile           # multi-stage build → single deployable image
   docker-compose.yml   # local PostgreSQL service
   config/deploy.yml    # Kamal deployment config
+  .github/workflows/   # CI: formatting, lint, tests and front-end build on every push
+  docs/                # product spec, plans and UI notes
 ```
 
 ## Prerequisites
@@ -112,18 +119,20 @@ docker build -t duilio .
 
 The Rust build runs with `SQLX_OFFLINE=true` against the `.sqlx/` cache, so no
 database is needed during the image build. Regenerate that cache whenever you change
-a SQL query: `cargo sqlx prepare` (requires `sqlx-cli` and a reachable
+a SQL query: `cargo sqlx prepare -- --all-targets` (requires `sqlx-cli` and a reachable
 `DATABASE_URL`). Deployment is driven by `config/deploy.yml` (Kamal); migrations run
 automatically when the container boots.
 
 > `.sqlx/` is currently in `.gitignore`. Kamal builds the image from your working
-> tree, so local deploys work as-is. If you build from a fresh clone or CI, commit
-> `.sqlx/` instead (remove it from `.gitignore`).
+> tree, so local deploys work as-is. If you build the image from a fresh clone,
+> generate `.sqlx/` first or commit it (remove it from `.gitignore`). The CI workflow
+> does not need it: it starts a Postgres service and applies the migrations.
 
 ## API reference
 
-All endpoints require a `Bearer` JWT in the `Authorization` header except the auth
-routes. The token is returned by `POST /api/auth/login`.
+All endpoints require a `Bearer` JWT in the `Authorization` header except `/health` and
+the auth routes. The token is returned by `POST /api/auth/login`. The auth routes have a
+rate limit.
 
 ### Auth
 
@@ -137,19 +146,41 @@ routes. The token is returned by `POST /api/auth/login`.
 | Method | Path | Description |
 |---|---|---|
 | `GET` | `/api/todos` | List the current user's todos (with tags), newest first |
-| `POST` | `/api/todos` | Create a todo `{ title, description?, dueDate?, status?, tagIds? }` |
-| `PATCH` | `/api/todos/:id` | Update a todo (any subset of fields + `tagIds?`) |
-| `PATCH` | `/api/todos/:id/status` | Update only the status `{ status }` |
+| `POST` | `/api/todos` | Create a todo `{ title, description?, dueDate?, status?, waitingOn?, pausedUntil?, important?, tagIds? }` |
+| `PATCH` | `/api/todos/:id` | Update a todo (any subset of the fields above) |
+| `PATCH` | `/api/todos/:id/status` | Update only the status `{ status, waitingOn?, pausedUntil? }` |
 | `DELETE` | `/api/todos/:id` | Delete a todo |
 
-`status` is one of `todo`, `in-progress`, `done`.
+`status` is one of `idea` (default for a new card), `todo`, `in-progress`, `blocked`,
+`paused`, `done`. Moving a card to `blocked` needs `waitingOn` (who or what blocks it).
+Moving it to `paused` needs `pausedUntil`, a Monday (`YYYY-MM-DD`). An invalid change
+returns `400` with a message. The response also has `statusChangedAt`, `waitingSince`,
+`completedAt` and `rolloverCount`, which the server sets.
 
 ### Tags
 
 | Method | Path | Description |
 |---|---|---|
 | `GET` | `/api/tags` | List the current user's tags |
-| `POST` | `/api/tags` | Create a tag `{ name, color }` — returns `409` if the name already exists |
+| `POST` | `/api/tags` | Create a tag `{ name, color }`, where `color` looks like `#RRGGBB`. Returns `409` if the name already exists |
+| `PATCH` | `/api/tags/:id` | Change the color of a tag `{ color }` |
+
+### Weeks, review and log
+
+A week starts on Monday, in the user's time zone (default `Europe/Rome`).
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/api/weeks/current` | The current week `{ weekStart, startsAt, reviewedAt, note }`. Creates the week on first access |
+| `GET` | `/api/review` | `{ weekStart, needsReview, cards }`: the cards that need a decision this week |
+| `POST` | `/api/review/complete` | `{ decisions: [{ id, action, pausedUntil? }], note? }`. One decision per card. `action` is `keep-todo`, `keep-doing`, `still-waiting`, `to-ideas`, `pause` or `delete`. Returns `400` if a card has no decision, `409` if the week is already reviewed |
+| `GET` | `/api/log` | Completed cards grouped by week, newest first: `[{ weekStart, count, note, cards }]` |
+
+### Import
+
+| Method | Path | Description |
+|---|---|---|
+| `POST` | `/api/import/trello` | The body is the JSON text of a Trello board export. Returns the counts per list. With `?dryRun=true` it only counts. Duplicates are not detected |
 
 ### Health
 
@@ -161,7 +192,15 @@ routes. The token is returned by `POST /api/auth/login`.
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
-| `DATABASE_URL` | yes | — | PostgreSQL connection string (needed at build time and run time) |
-| `JWT_SECRET` | no | `dev-only-insecure-secret` | Secret used to sign and verify JWTs — **set a strong value in production** |
+| `DATABASE_URL` | yes | local docker database | PostgreSQL connection string (needed at build time and run time) |
+| `JWT_SECRET` | in production | `dev-only-insecure-secret` | Secret used to sign and verify JWTs. With `APP_ENV=production` the app exits if it is missing |
+| `APP_ENV` | no | — | Set to `production` in deployments |
+| `PORT` | no | `3000` | TCP port of the server |
+| `STATIC_DIR` | no | `static-assets` | Directory of the built front-end |
 
-The back-end listens on `0.0.0.0:3000`.
+## Continuous integration
+
+`.github/workflows/ci.yml` runs on every push and on pull requests to `main`. The back-end
+job checks formatting (`cargo fmt --check`), runs `cargo clippy -- -D warnings` and
+`cargo test` against a Postgres service. The front-end job runs `npm ci` and
+`npm run build`.

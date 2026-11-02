@@ -9,7 +9,8 @@ import { useReview } from './hooks/useReview';
 import { TrelloImport } from './components/TrelloImport/TrelloImport';
 import { WeeklyLog } from './components/WeeklyLog/WeeklyLog';
 import { WeeklyReview } from './components/WeeklyReview/WeeklyReview';
-import { logout } from './services/api';
+import { ApiError, logout, setUnauthorizedHandler } from './services/api';
+import { Toast } from './components/common/Toast';
 import { STATUSES } from './constants';
 import { onBoard, upcomingWeeks } from './utils/helpers';
 import { StatusPrompt, type PromptStatus } from './components/StatusPrompt/StatusPrompt';
@@ -42,12 +43,26 @@ const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
   const { review, loading: reviewLoading, complete } = useReview(onLogout);
   const [reviewLater, setReviewLater] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
   const [view, setView] = useState<'board' | 'log'>('board');
 
   const [search, setSearch] = useState('');
   const [modalTask, setModalTask] = useState<Partial<Task> | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Task | null>(null);
   const [prompt, setPrompt] = useState<{ task: Task; status: PromptStatus } | null>(null);
+
+  // A rejected token (for example an expired session) logs the user out, from any request
+  useEffect(() => {
+    setUnauthorizedHandler(onLogout);
+    return () => setUnauthorizedHandler(null);
+  }, [onLogout]);
+
+  // An action that failed shows a short message. A 401 is handled above: the login screen appears.
+  function fail(e: unknown) {
+    console.error(e);
+    if (e instanceof ApiError && e.status === 401) return;
+    setNotice(e instanceof Error && e.message ? e.message : 'Something went wrong.');
+  }
 
   // Fallback: if useTasks sets an error and the token is gone, redirect to auth
   useEffect(() => {
@@ -80,7 +95,7 @@ const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
       setPrompt({ task, status });
       return;
     }
-    moveTask(taskId, status).catch(console.error); // moveTask already reverts on failure
+    moveTask(taskId, status).catch(fail); // moveTask already reverts on failure
   }
 
   async function handleDelete() {
@@ -227,7 +242,7 @@ const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
                 onEdit={openEdit}
                 onAdd={openCreate}
                 onDropTask={handleDropTask}
-                onToggleImportant={(id) => { toggleImportant(id).catch(console.error); }}
+                onToggleImportant={(id) => { toggleImportant(id).catch(fail); }}
                 tagColorMap={tagColorMap}
               />
             ))}
@@ -243,7 +258,7 @@ const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
               onEdit={openEdit}
               onAdd={openCreate}
               onDropTask={handleDropTask}
-              onToggleImportant={(id) => { toggleImportant(id).catch(console.error); }}
+              onToggleImportant={(id) => { toggleImportant(id).catch(fail); }}
               tagColorMap={tagColorMap}
               defaultCollapsed
             />
@@ -269,7 +284,7 @@ const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
           status={prompt.status}
           weeks={weeks}
           onConfirm={(extra) => {
-            moveTask(prompt.task.id, prompt.status, extra).catch(console.error);
+            moveTask(prompt.task.id, prompt.status, extra).catch(fail);
             setPrompt(null);
           }}
           onClose={() => setPrompt(null)}
@@ -281,6 +296,7 @@ const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
           onImported={() => window.location.reload()}
         />
       )}
+      {notice !== null && <Toast message={notice} onClose={() => setNotice(null)} />}
       {deleteTarget !== null && (
         <ConfirmDelete
           task={deleteTarget}
