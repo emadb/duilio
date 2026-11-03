@@ -12,6 +12,8 @@ interface StatusSectionProps {
   onToggleImportant: (id: string) => void;
   tagColorMap: TagColorMap;
   defaultCollapsed?: boolean;
+  // Mobile: the column fills the scroll container and snaps into place
+  fullWidth?: boolean;
 }
 
 export const StatusSection: React.FC<StatusSectionProps> = ({
@@ -23,6 +25,7 @@ export const StatusSection: React.FC<StatusSectionProps> = ({
   onToggleImportant,
   tagColorMap,
   defaultCollapsed = false,
+  fullWidth = false,
 }) => {
   const [collapsed, setCollapsed] = useState(defaultCollapsed);
   const [dragOver, setDragOver] = useState(false);
@@ -59,9 +62,11 @@ export const StatusSection: React.FC<StatusSectionProps> = ({
         padding: 8,
         display: 'flex',
         flexDirection: 'column',
-        flex: '1 0 280px',
-        minWidth: 280,
-        maxWidth: 360,
+        ...(fullWidth
+          ? { flex: '0 0 100%', minWidth: 0, maxWidth: 'none', boxSizing: 'border-box' as const }
+          : { flex: '1 0 280px', minWidth: 280, maxWidth: 360 }),
+        scrollSnapAlign: 'start',
+        scrollSnapStop: 'always',
         minHeight: collapsed ? 0 : 160,
         transition: 'background 0.15s ease, border-color 0.15s ease',
       }}

@@ -6,6 +6,7 @@ import { ConfirmDelete } from './components/ConfirmDelete/ConfirmDelete';
 import { AuthModal } from './components/AuthModal/AuthModal';
 import { useTasks } from './hooks/useTasks';
 import { useReview } from './hooks/useReview';
+import { useIsMobile } from './hooks/useIsMobile';
 import { TrelloImport } from './components/TrelloImport/TrelloImport';
 import { WeeklyLog } from './components/WeeklyLog/WeeklyLog';
 import { WeeklyReview } from './components/WeeklyReview/WeeklyReview';
@@ -45,6 +46,7 @@ const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
   const [importOpen, setImportOpen] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [view, setView] = useState<'board' | 'log'>('board');
+  const isMobile = useIsMobile();
 
   const [search, setSearch] = useState('');
   const [modalTask, setModalTask] = useState<Partial<Task> | null>(null);
@@ -185,7 +187,7 @@ const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
         style={{
           maxWidth: 1600,
           margin: '0 auto',
-          padding: '28px 24px 60px',
+          padding: isMobile ? '16px 12px 40px' : '28px 24px 60px',
         }}
       >
         {review?.needsReview && (
@@ -228,10 +230,15 @@ const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
             style={{
               display: 'flex',
               alignItems: 'stretch',
-              gap: 16,
+              gap: isMobile ? 0 : 16,
               overflowX: 'auto',
-              padding: '4px 4px 16px',
-              margin: '0 -4px',
+              padding: isMobile ? '4px 0 16px' : '4px 4px 16px',
+              margin: isMobile ? 0 : '0 -4px',
+              ...(isMobile && {
+                scrollSnapType: 'x mandatory',
+                overscrollBehaviorX: 'contain',
+                WebkitOverflowScrolling: 'touch',
+              }),
             }}
           >
             {visibleStatuses.map((s) => (
@@ -244,13 +251,14 @@ const TaskApp: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
                 onDropTask={handleDropTask}
                 onToggleImportant={(id) => { toggleImportant(id).catch(fail); }}
                 tagColorMap={tagColorMap}
+                fullWidth={isMobile}
               />
             ))}
           </div>
         )}
 
         {drawerStatus && !noResults && (
-          <div style={{ marginTop: 16, maxWidth: 360 }}>
+          <div style={{ marginTop: 16, maxWidth: isMobile ? 'none' : 360 }}>
             <StatusSection
               key={drawerStatus.value}
               status={drawerStatus}
